@@ -3,6 +3,7 @@ local glx = require "src.bindings.glx"
 local x11 = require "src.bindings.x11"
 
 local window = require "src.window"
+local render = require "src.render"
 
 local function hsvToRgb(h, s, v)
     local c = v * s
@@ -36,27 +37,11 @@ local function main()
 
     local display = window.display
 
-    do -- Init glx
-        local screen = x11.defaultScreen(display)
-        local visual = glx.chooseVisual(display, screen, { glx.RGBA, glx.DEPTH_SIZE, 16, glx.DOUBLEBUFFER })
-        if visual == nil then
-            io.stderr:write("Failed to choose visual\n")
-            x11.closeDisplay(display)
-            return 1
-        end
-
-        local ctx = glx.createContext(display, visual, nil, 1)
-        if ctx == nil then
-            x11.destroyWindow(display, window.id)
-            x11.closeDisplay(display)
-            error("Failed to create GLX context")
-        end
-
-        if glx.makeCurrent(display, window.id, ctx) == 0 then
-            x11.destroyWindow(display, window.id)
-            x11.closeDisplay(display)
-            error("Failed to make GLX context current")
-        end
+    local ctx = render.Context.new(display, window)
+    if not ctx then
+        window:destroy()
+        x11.closeDisplay(display)
+        return 1
     end
 
     eventLoop:run(function(event, handler)
@@ -69,15 +54,20 @@ local function main()
         elseif event.name == "resize" then
             gl.viewport(0, 0, window.width, window.height)
         elseif event.name == "redraw" then
+            ctx:makeCurrent()
+
             local time = os.clock()
             local hue = (time * 1000) % 360
             local r, g, b = hsvToRgb(hue, 0.8, 1.0)
 
             gl.clearColor(r, g, b, 1.0)
             gl.clear(gl.COLOR_BUFFER_BIT)
-            glx.swapBuffers(display, window.id)
+
+            ctx:swapBuffers()
         end
     end)
+
+    ctx:destroy()
 end
 
 return main()

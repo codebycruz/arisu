@@ -11,7 +11,10 @@ ffi.cdef[[
     GLXContext glXCreateContext(Display*, XVisualInfo*, GLXContext, int);
     int glXMakeCurrent(Display*, Window, GLXContext);
     void glXSwapBuffers(Display*, Window);
+    void glXDestroyContext(Display*, GLXContext);
 ]]
+
+---@class GLXContext: userdata
 
 local C = ffi.load("GL")
 
@@ -31,12 +34,15 @@ return {
         return C.glXChooseVisual(display, screen, attribList)
     end,
 
-    ---@type fun(display: userdata, vis: userdata, share_list: userdata, direct: number): userdata
+    ---@type fun(display: XDisplay, vis: userdata, share_list: userdata, direct: number): userdata
     createContext = C.glXCreateContext,
 
-    ---@type fun(display: userdata, window: number, ctx: userdata): number
+    ---@type fun(display: XDisplay, window: number, ctx: GLXContext): number
     makeCurrent = C.glXMakeCurrent,
 
-    ---@type fun(display: userdata, window: number)
+    ---@type fun(display: XDisplay, window: number)
     swapBuffers = C.glXSwapBuffers,
+
+    ---@type fun(display: XDisplay, ctx: GLXContext)
+    destroyContext = C.glXDestroyContext,
 }

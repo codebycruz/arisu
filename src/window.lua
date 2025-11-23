@@ -13,6 +13,10 @@ function Window.new(display --[[@param display XDisplay]], id --[[@param id numb
     return setmetatable({ width = width, height = height, display = display, id = id }, Window)
 end
 
+function Window:destroy()
+    x11.destroyWindow(self.display, self.id)
+end
+
 --- @class WindowBuilder
 --- @field width number
 --- @field height number
