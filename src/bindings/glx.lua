@@ -13,19 +13,23 @@ ffi.cdef[[
     void glXSwapBuffers(Display*, Window);
 ]]
 
-local GLX_RGBA = 4
-local GLX_DEPTH_SIZE = 12
-local GLX_DOUBLEBUFFER = 5
-
 local C = ffi.load("GL")
 
 return {
-    GLX_RGBA = GLX_RGBA,
-    GLX_DEPTH_SIZE = GLX_DEPTH_SIZE,
-    GLX_DOUBLEBUFFER = GLX_DOUBLEBUFFER,
+    RGBA = 4,
+    DEPTH_SIZE = 12,
+    DOUBLEBUFFER = 5,
 
-    ---@type fun(display: userdata, screen: number, attribs: userdata): userdata
-    chooseVisual = C.glXChooseVisual,
+    ---@param display XDisplay
+    ---@param screen number
+    ---@param attributes number[]
+    ---@return userdata
+    chooseVisual = function(display, screen, attributes)
+        local attribList = ffi.new("int[?]", #attributes + 1, attributes)
+        attribList[#attributes] = 0
+
+        return C.glXChooseVisual(display, screen, attribList)
+    end,
 
     ---@type fun(display: userdata, vis: userdata, share_list: userdata, direct: number): userdata
     createContext = C.glXCreateContext,

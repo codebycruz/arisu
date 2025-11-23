@@ -120,7 +120,7 @@ return {
             atoms[i - 1] = C.XInternAtom(display, protocols[i], 0)
         end
 
-        C.XSetWMProtocols(display, window.window, atoms, #protocols)
+        C.XSetWMProtocols(display, window.id, atoms, #protocols)
     end,
 
     ---@type fun(display: XDisplay, event_return: XEvent)

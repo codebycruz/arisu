@@ -41,6 +41,31 @@ local function main()
         :withSize(800, 600)
         :build(eventLoop)
 
+    local display = window.display
+
+    do -- Init glx
+        local screen = x11.defaultScreen(display)
+        local visual = glx.chooseVisual(display, screen, { glx.RGBA, glx.DEPTH_SIZE, 16, glx.DOUBLEBUFFER })
+        if visual == nil then
+            io.stderr:write("Failed to choose visual\n")
+            x11.closeDisplay(display)
+            return 1
+        end
+
+        local ctx = glx.createContext(display, visual, nil, 1)
+        if ctx == nil then
+            x11.destroyWindow(display, window.id)
+            x11.closeDisplay(display)
+            error("Failed to create GLX context")
+        end
+
+        if glx.makeCurrent(display, window.id, ctx) == 0 then
+            x11.destroyWindow(display, window.id)
+            x11.closeDisplay(display)
+            error("Failed to make GLX context current")
+        end
+    end
+
     eventLoop:run(function(event, handler)
         handler:setMode("poll")
 
@@ -49,70 +74,15 @@ local function main()
         elseif event.name == "aboutToWait" then
             handler:requestRedraw(window)
         elseif event.name == "redraw" then
-            print("redraw")
+            local time = os.clock()
+            local hue = (time * 1000) % 360
+            local r, g, b = hsvToRgb(hue, 0.8, 1.0)
+
+            gl.clearColor(r, g, b, 1.0)
+            gl.clear(gl.COLOR_BUFFER_BIT)
+            glx.swapBuffers(display, window.id)
         end
     end)
-
-
-    local attribs = ffi.new("int[7]", {
-        glx.GLX_RGBA,
-        glx.GLX_DEPTH_SIZE, 16,
-        glx.GLX_DOUBLEBUFFER,
-        0
-    })
-
-    local screen = x11.defaultScreen(display)
-    local visual = glx.chooseVisual(display, screen, attribs)
-    if visual == nil then
-        io.stderr:write("Failed to choose visual\n")
-        x11.closeDisplay(display)
-        return 1
-    end
-
-    local ctx = glx.createContext(display, visual, nil, 1)
-    if ctx == nil then
-        io.stderr:write("Failed to create GLX context\n")
-        x11.destroyWindow(display, window)
-        x11.closeDisplay(display)
-        return 1
-    end
-
-    if glx.makeCurrent(display, window, ctx) == 0 then
-        io.stderr:write("Failed to make GLX context current\n")
-        x11.destroyWindow(display, window)
-        x11.closeDisplay(display)
-        return 1
-    end
-
-
-
-    local wm_delete_window = x11.internAtom(display, "WM_DELETE_WINDOW", x11.False)
-    local protocols = x11.newAtomArray(wm_delete_window)
-    x11.setWMProtocols(display, window, protocols, 1)
-
-    local event = x11.newEvent()
-    while isActive do
-        while x11.pending(display) > 0 do
-            x11.nextEvent(display, event)
-
-            if event.type == x11.ClientMessage then
-                if event.xclient.data.l[0] == wm_delete_window then
-                    onDelete(event.xclient.display, event.xclient.window)
-                end
-            end
-        end
-
-        local time = os.clock()
-        local hue = (time * 1000) % 360
-        local r, g, b = hsvToRgb(hue, 0.8, 1.0)
-
-        gl.clearColor(r, g, b, 1.0)
-        gl.clear(gl.COLOR_BUFFER_BIT)
-        glx.swapBuffers(display, window)
-    end
-
-    x11.closeDisplay(display)
-    return 0
 end
 
 return main()

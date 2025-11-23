@@ -1,7 +1,7 @@
 local x11 = require "src.bindings.x11"
 
 --- @class Window
---- @field window number
+--- @field id number
 --- @field display XDisplay
 --- @field width number
 --- @field height number
@@ -9,8 +9,8 @@ local x11 = require "src.bindings.x11"
 local Window = {}
 Window.__index = Window
 
-function Window.new(display --[[@param display XDisplay]], window --[[@param window number]], width --[[@param width number]] , height --[[@param height number]])
-    return setmetatable({ width = width, height = height, display = display, window = window }, Window)
+function Window.new(display --[[@param display XDisplay]], id --[[@param id number]], width --[[@param width number]] , height --[[@param height number]])
+    return setmetatable({ width = width, height = height, display = display, id = id }, Window)
 end
 
 --- @class WindowBuilder
@@ -82,7 +82,7 @@ function EventLoop.new()
 end
 
 function EventLoop:register(window --[[@param window Window]])
-    self.windows[tostring(window.window)] = window
+    self.windows[tostring(window.id)] = window
 end
 
 ---@alias EventHandler { exit: fun(), requestRedraw: fun(self, window: Window), setMode: fun(self, mode: "poll" | "wait") }
