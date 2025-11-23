@@ -98,7 +98,7 @@ ffi.cdef[[
     Window XCreateSimpleWindow(Display* display, Window parent, int x, int y, unsigned int width, unsigned int height, unsigned int border_width, unsigned long border, unsigned long background);
     void XMapWindow(Display* display, Window w);
     Atom XInternAtom(Display* display, const char* atom_name, Bool only_if_exists);
-    void XSetWMProtocols(Display* display, Window w, Atom* protocols, int count);
+    Status XSetWMProtocols(Display* display, Window w, Atom* protocols, int count);
     void XNextEvent(Display* display, XEvent* event_return);
     int XDefaultScreen(Display* display);
     int XPending(Display* display);
@@ -144,9 +144,6 @@ return {
 
     ---@type fun(display: XDisplay, atom_name: string, only_if_exists: number): number
     internAtom = C.XInternAtom,
-
-    -- ---@type fun(display: XDisplay, w: number, protocols: userdata, count: number)
-    -- setWMProtocols = C.XSetWMProtocols,
 
     setWMProtocols = function(display --[[@param display XDisplay]], window --[[@param window Window]], protocols --[=[@param protocols string[]]=])
         assert(display == window.display, "Display mismatch in setWMProtocols")

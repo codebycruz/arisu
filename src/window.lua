@@ -92,6 +92,8 @@ function EventLoop:run(callback --[[@param callback fun(event: Event, handler: E
     local display = self.display
     local event = x11.newEvent()
 
+    local wmDeleteWindow = x11.internAtom(display, "WM_DELETE_WINDOW", 0)
+
     local isActive = true
     local currentMode = "poll"
 
@@ -116,7 +118,9 @@ function EventLoop:run(callback --[[@param callback fun(event: Event, handler: E
         assert(window ~= nil, "Received event for unregistered window")
 
         if event.type == x11.ClientMessage then
-            callback({ window = window, name = "deleteWindow" }, handler)
+            if event.xclient.data.l[0] == wmDeleteWindow then
+                callback({ window = window, name = "deleteWindow" }, handler)
+            end
         elseif event.type == x11.Expose then
             callback({ window = window, name = "redraw" }, handler)
         elseif event.type == x11.DestroyNotify then
