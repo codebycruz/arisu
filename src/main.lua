@@ -1,7 +1,9 @@
-local gl = require "src.gl"
-local glx = require "src.glx"
-local x11 = require "src.x11"
+local gl = require "src.bindings.gl"
+local glx = require "src.bindings.glx"
+local x11 = require "src.bindings.x11"
 local ffi = require "ffi"
+
+local window = require "src.window"
 
 local function hsvToRgb(h, s, v)
     local c = v * s
@@ -33,20 +35,24 @@ local function onDelete(display, window)
 end
 
 local function main()
-    local display = x11.openDisplay(nil)
-    if display == nil then
-        io.stderr:write("Failed to initialize display\n")
-        return 1
-    end
+    local eventLoop = window.EventLoop.new()
+    local window = window.WindowBuilder.new()
+        :withTitle("GLX Window")
+        :withSize(800, 600)
+        :build(eventLoop)
 
-    local root = x11.defaultRootWindow(display)
-    if root == x11.None then
-        io.stderr:write("No root window found\n")
-        x11.closeDisplay(display)
-        return 1
-    end
+    eventLoop:run(function(event, handler)
+        handler:setMode("poll")
 
-    local screen = x11.defaultScreen(display)
+        if event.name == "deleteWindow" then
+            handler:exit()
+        elseif event.name == "aboutToWait" then
+            handler:requestRedraw(window)
+        elseif event.name == "redraw" then
+            print("redraw")
+        end
+    end)
+
 
     local attribs = ffi.new("int[7]", {
         glx.GLX_RGBA,
@@ -55,16 +61,10 @@ local function main()
         0
     })
 
+    local screen = x11.defaultScreen(display)
     local visual = glx.chooseVisual(display, screen, attribs)
     if visual == nil then
         io.stderr:write("Failed to choose visual\n")
-        x11.closeDisplay(display)
-        return 1
-    end
-
-    local window = x11.createSimpleWindow(display, root, 0, 0, 800, 600, 0, 0, 0x000000)
-    if window == x11.None then
-        io.stderr:write("Failed to create window\n")
         x11.closeDisplay(display)
         return 1
     end
@@ -77,8 +77,6 @@ local function main()
         return 1
     end
 
-    x11.mapWindow(display, window)
-
     if glx.makeCurrent(display, window, ctx) == 0 then
         io.stderr:write("Failed to make GLX context current\n")
         x11.destroyWindow(display, window)
@@ -89,8 +87,7 @@ local function main()
 
 
     local wm_delete_window = x11.internAtom(display, "WM_DELETE_WINDOW", x11.False)
-    local protocols = x11.newAtomArray(1)
-    protocols[0] = wm_delete_window
+    local protocols = x11.newAtomArray(wm_delete_window)
     x11.setWMProtocols(display, window, protocols, 1)
 
     local event = x11.newEvent()
@@ -110,7 +107,7 @@ local function main()
         local r, g, b = hsvToRgb(hue, 0.8, 1.0)
 
         gl.clearColor(r, g, b, 1.0)
-        gl.clear(0x4000)
+        gl.clear(gl.COLOR_BUFFER_BIT)
         glx.swapBuffers(display, window)
     end
 
