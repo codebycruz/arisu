@@ -1,7 +1,6 @@
 local gl = require "src.bindings.gl"
 local glx = require "src.bindings.glx"
 local x11 = require "src.bindings.x11"
-local ffi = require "ffi"
 
 local window = require "src.window"
 
@@ -26,12 +25,6 @@ local function hsvToRgb(h, s, v)
     end
 
     return r + m, g + m, b + m
-end
-
-local isActive = true
-local function onDelete(display, window)
-    x11.destroyWindow(display, window)
-    isActive = false
 end
 
 local function main()
@@ -73,6 +66,8 @@ local function main()
             handler:exit()
         elseif event.name == "aboutToWait" then
             handler:requestRedraw(window)
+        elseif event.name == "resize" then
+            gl.viewport(0, 0, window.width, window.height)
         elseif event.name == "redraw" then
             local time = os.clock()
             local hue = (time * 1000) % 360

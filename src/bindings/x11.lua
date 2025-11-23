@@ -5,6 +5,10 @@ ffi.cdef[[
     typedef unsigned long Window;
     typedef unsigned long Atom;
     typedef int Bool;
+    typedef int Status;
+    typedef void Visual;
+    typedef unsigned long Colormap;
+    typedef void Screen;
 
     typedef struct {
         int type;
@@ -37,6 +41,7 @@ ffi.cdef[[
         unsigned long serial;
         Bool send_event;
         Display *display;
+        Window event;
         Window window;
         int x, y;
         int width, height;
@@ -62,6 +67,30 @@ ffi.cdef[[
         long pad[24];
     } XEvent;
 
+    typedef struct {
+        int x, y;
+        int width, height;
+        int border_width;
+        int depth;
+        Visual* visual;
+        Window root;
+        int class;
+        int bit_gravity;
+        int win_gravity;
+        int backing_store;
+        unsigned long backing_planes;
+        unsigned long backing_pixel;
+        Bool save_under;
+        Colormap colormap;
+        Bool map_installed;
+        int map_state;
+        long all_event_masks;
+        long your_event_mask;
+        long do_not_propagate_mask;
+        Bool override_redirect;
+        Screen *screen;
+    } XWindowAttributes;
+
     Display* XOpenDisplay(const char* display_name);
     int XCloseDisplay(Display* display);
     void XDestroyWindow(Display* display, unsigned long window);
@@ -74,6 +103,7 @@ ffi.cdef[[
     int XDefaultScreen(Display* display);
     int XPending(Display* display);
     void XSelectInput(Display* display, Window w, long event_mask);
+    Status XGetWindowAttributes(Display* display, Window w, XWindowAttributes* window_attributes_return);
 ]]
 
 local C = ffi.load("X11")
@@ -86,6 +116,12 @@ local C = ffi.load("X11")
 ---@field xconfigure { window: number, x: number, y: number, width: number, height: number }
 
 ---@class XDisplay: userdata
+
+---@class XWindowAttributes: userdata
+---@field x number
+---@field y number
+---@field width number
+---@field height number
 
 return {
     ---@type fun(display_name: string): XDisplay?
@@ -135,11 +171,24 @@ return {
     ---@type fun(display: XDisplay, w: number, event_mask: number)
     selectInput = C.XSelectInput,
 
+    ---@return XWindowAttributes?
+    getWindowAttributes = function(display --[[@param display XDisplay]], w --[[@param w Window]])
+        local attrs = ffi.new("XWindowAttributes")
+
+        local status = C.XGetWindowAttributes(display, w.id, attrs)
+        if status == 0 then
+            return nil
+        end
+
+        return attrs
+    end,
+
     None = 0,
     ClientMessage = 33,
     Expose = 12,
     KeyPress = 2,
     KeyRelease = 3,
+    UnmapNotify = 18,
     MapNotify = 19,
     ConfigureNotify = 22,
     DestroyNotify = 17,

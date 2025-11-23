@@ -61,7 +61,8 @@ function WindowBuilder:build(eventLoop --[[@param eventLoop EventLoop]]) ---@ret
     return window
 end
 
----@alias Event { window?: Window, name: "deleteWindow" | "aboutToWait" | "redraw" | "resize" }
+---@alias EventName "deleteWindow" | "aboutToWait" | "redraw" | "resize" | "map" | "unmap"
+---@alias Event { window?: Window, name: EventName }
 
 ---@class EventLoopHandler
 local EventLoopHandler = {}
@@ -112,6 +113,7 @@ function EventLoop:run(callback --[[@param callback fun(event: Event, handler: E
     local function processEvent()
         local windowIdHash = tostring(event.xany.window)
         local window = self.windows[windowIdHash]
+        assert(window ~= nil, "Received event for unregistered window")
 
         if event.type == x11.ClientMessage then
             callback({ window = window, name = "deleteWindow" }, handler)
@@ -127,9 +129,14 @@ function EventLoop:run(callback --[[@param callback fun(event: Event, handler: E
                 window.width = newWidth
                 window.height = newHeight
                 callback({ window = window, name = "resize" }, handler)
+            else -- Move event?
+                -- Ignored for now
             end
+
         elseif event.type == x11.MapNotify then
             callback({ window = window, name = "map" }, handler)
+        elseif event.type == x11.UnmapNotify then
+            callback({ window = window, name = "unmap" }, handler)
         else
             print("unhandled event type:", event.type)
         end

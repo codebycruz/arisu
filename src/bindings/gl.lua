@@ -4,13 +4,17 @@ ffi.cdef[[
     // Types
     typedef unsigned int GLenum;
     typedef unsigned int GLuint;
-    typedef int GLsizei;
-    typedef int GLint;
+    typedef int32_t GLsizei;
+    typedef int32_t GLint;
+    typedef uint8_t GLubyte;
+    typedef float GLfloat;
     typedef char GLchar;
+
     typedef void (*GLDEBUGPROC)(unsigned int, unsigned int, unsigned int, unsigned int, int, const char*, const void*);
 
     void glClear(unsigned int mask);
     void glClearColor(float r, float g, float b, float a);
+    void glViewport(int x, int y, GLsizei width, GLsizei height);
 
     // Compiling shaders
     GLuint glCreateShaderProgramv(GLenum type, GLsizei count, const char** strings);
@@ -57,4 +61,7 @@ return {
 
     ---@type fun(r: number, g: number, b: number, a: number)
     clearColor = C.glClearColor,
+
+    ---@type fun(x: number, y: number, width: number, height: number)
+    viewport = C.glViewport,
 }
