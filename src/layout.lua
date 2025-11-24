@@ -32,6 +32,7 @@ end
 ---@field gap number
 ---@field children Layout[]
 ---@field direction Direction
+---@field style Style
 local Layout = {}
 Layout.__index = Layout
 
@@ -72,11 +73,17 @@ function Layout:withChildren(...)
     return self
 end
 
+function Layout:withStyle(style --[[@param style Style]])
+    self.style = style
+    return self
+end
+
 ---@class ComputedLayout
 ---@field width number
 ---@field height number
 ---@field x number
 ---@field y number
+---@field style Style
 ---@field children ComputedLayout[]
 
 ---@param parentWidth number

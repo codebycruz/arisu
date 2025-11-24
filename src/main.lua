@@ -43,10 +43,13 @@ local function main()
     local x = Layout.new()
         :withSize(512, 512)
         :withDirection("column")
+        :withStyle({ bg = { r = 1.0, g = 0.0, b = 0.0, a = 1.0 } })
         :withChildren(
             Layout.new()
+                :withStyle({ bg = { r = 0.0, g = 1.0, b = 0.0, a = 1.0 } })
                 :withSize(256, 256),
             Layout.new()
+                :withStyle({ bg = { r = 0.0, g = 0.0, b = 1.0, a = 1.0 } })
                 :withSize(256, 256)
         )
         :solve(1280, 720)
