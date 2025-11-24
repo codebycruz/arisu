@@ -212,14 +212,23 @@ function Arisu.runApp(cons)
             end
         elseif event.name == "mousePress" then
             local computedLayout = layoutTree:solve(window.width, window.height)
-            local clickedElement = findElementAtPosition(ui, computedLayout, event.x, event.y, 0, 0, function(el)
-                return el.onclick ~= nil
+
+            local mouseDownElement = findElementAtPosition(ui, computedLayout, event.x, event.y, 0, 0, function(el)
+                return el.onmousedown ~= nil
             end)
 
-            if clickedElement then
-                runUpdate(clickedElement.onclick)
+            if mouseDownElement then
+                runUpdate(mouseDownElement.onmousedown)
             end
         elseif event.name == "mouseRelease" then
+            local computedLayout = layoutTree:solve(window.width, window.height)
+            local mouseUpElement = findElementAtPosition(ui, computedLayout, event.x, event.y, 0, 0, function(el)
+                return el.onmouseup ~= nil
+            end)
+
+            if mouseUpElement then
+                runUpdate(mouseUpElement.onmouseup)
+            end
         elseif event.name == "redraw" then
             local currentTime = os.clock()
             local deltaTime = currentTime - lastFrameTime

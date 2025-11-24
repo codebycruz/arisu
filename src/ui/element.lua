@@ -1,8 +1,8 @@
 --- The View is a small layer above the Layout that bridges interactivity with the layout.
 
----@class Element<T>: { type: string, onclick: T, onmousemove: fun(x: number, y: number): T, layoutStyle: LayoutStyle, visualStyle: VisualStyle }
+---@class Element<T>: { type: string, onclick: T, onmousemove: fun(x: number, y: number): T, onmousedown: T, onmouseup: T, layoutStyle: LayoutStyle, visualStyle: VisualStyle }
 
----@class Div<T>: { onclick: T | nil }
+---@class Div<T>: { onclick: T | nil, onmousedown: T | nil, onmouseup: T | nil }
 ---@field type "div"
 ---@field children Element[]
 ---@field visualStyle VisualStyle
@@ -36,14 +36,20 @@ function Div:withStyle(style --[[@param style LayoutStyle | VisualStyle]] )
 end
 
 ---@generic T
-function Div:onClick(message --[[@param message T]])
-    self.onclick = message
+function Div:onMouseMove(message --[[@param message T]])
+    self.onmousemove = message
     return self
 end
 
 ---@generic T
-function Div:onMouseMove(message --[[@param message T]])
-    self.onmousemove = message
+function Div:onMouseDown(message --[[@param message T]])
+    self.onmousedown = message
+    return self
+end
+
+---@generic T
+function Div:onMouseUp(message --[[@param message T]])
+    self.onmouseup = message
     return self
 end
 
