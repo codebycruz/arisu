@@ -2,11 +2,13 @@
 
 A painting program implemented entirely from scratch in LuaJIT.
 
-## Support
+## Requirements
 
-This only supports Linux due rolling its own window management, input handling, and OpenGL context creation using X11 and GLX.
+- A linux machine
+- Support for OpenGL 4.3
+- That's it.
 
-It works on wayland via XWayland of course.
+There are no dependencies used by the library. Pure X11 and OpenGL.
 
 ## Goals
 
