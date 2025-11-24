@@ -71,7 +71,7 @@ local function generateLayoutQuads(layout, parentX, parentY, vertices, indices, 
     end
 end
 
-local function findElementAtPosition(element, layout, x, y, parentX, parentY)
+local function findElementAtPosition(element, layout, x, y, parentX, parentY, acceptFn)
     local absX = (parentX or 0) + (layout.x or 0)
     local absY = (parentY or 0) + (layout.y or 0)
 
@@ -81,14 +81,16 @@ local function findElementAtPosition(element, layout, x, y, parentX, parentY)
         if layout.children and element.children then
             for i, childLayout in ipairs(layout.children) do
                 local childElement = element.children[i]
-                local found = findElementAtPosition(childElement, childLayout, x, y, absX, absY)
-                if found then
+                local found = findElementAtPosition(childElement, childLayout, x, y, absX, absY, acceptFn)
+                if found and (not acceptFn or acceptFn(found)) then
                     return found
                 end
             end
         end
 
-        return element
+        if not acceptFn or acceptFn(element) then
+            return element
+        end
     end
 
     return nil
@@ -112,6 +114,17 @@ local function main()
                     height = { abs = 256 },
                     bg = { r = 0.0, g = 1.0, b = 0.0, a = 1.0 }
                 })
+                :withChildren(
+                    Element.Div.new()
+                        :withStyle({
+                            width = { abs = 128 },
+                            height = { abs = 128 },
+                            bg = { r = 1.0, g = 1.0, b = 0.0, a = 1.0 }
+                        })
+                        :onClick(function()
+                            print("Yellow button clicked!")
+                        end)
+                )
                 :onClick(function()
                     print("Green button clicked!")
                 end),
@@ -189,9 +202,11 @@ local function main()
             -- print("mousemove", event.x, event.y)
         elseif event.name == "mousePress" then
             local computedLayout = layoutTree:solve(window.width, window.height)
-            local clickedElement = findElementAtPosition(ui, computedLayout, event.x, event.y, 0, 0)
+            local clickedElement = findElementAtPosition(ui, computedLayout, event.x, event.y, 0, 0, function(el)
+                return el.onclick ~= nil
+            end)
 
-            if clickedElement and clickedElement.onclick then
+            if clickedElement then
                 clickedElement.onclick()
             end
         elseif event.name == "mouseRelease" then
