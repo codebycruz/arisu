@@ -12,17 +12,22 @@ local maxLayers = 256
 ---@class TextureManager
 ---@field textures Texture[]
 ---@field sampler2DArray Uniform
+---@field textureUnit number
 ---@field whiteTexture Texture
 ---@field errorTexture Texture
 local TextureManager = {}
 TextureManager.__index = TextureManager
 
 ---@param sampler2DArray Uniform
-function TextureManager.new(sampler2DArray)
+---@param textureUnit number
+function TextureManager.new(sampler2DArray, textureUnit)
+    assert(sampler2DArray.type == "sampler2DArray", "sampler2DArray must be of type sampler2DArray")
+    assert(textureUnit, "textureUnit is required")
+
     gl.createTextures(gl.TEXTURE_2D_ARRAY, 1, ffi.new("GLuint[1]", sampler2DArray.id))
     gl.textureStorage3D(sampler2DArray.id, 1, gl.RGBA8, maxWidth, maxHeight, maxLayers)
 
-    local this = setmetatable({ sampler2DArray = sampler2DArray, textures = {} }, TextureManager)
+    local this = setmetatable({ textureUnit = textureUnit, sampler2DArray = sampler2DArray, textures = {} }, TextureManager)
     this.whiteTexture = this:upload(Image.new(1, 1, 3, ffi.new("uint8_t[?]", 3, {255, 255, 255}), ""))
     this.errorTexture = this:upload(
         Image.new(2, 2, 3, ffi.new("uint8_t[?]", 12, {
@@ -69,6 +74,15 @@ function TextureManager:upload(image)
 
     table.insert(self.textures, layer)
     return layer
+end
+
+function TextureManager:bind()
+    self.sampler2DArray:set(self.textureUnit)
+    gl.bindTextureUnit(self.textureUnit, self.sampler2DArray.id)
+end
+
+function TextureManager:unbind()
+    gl.bindTextureUnit(self.textureUnit, 0)
 end
 
 return TextureManager

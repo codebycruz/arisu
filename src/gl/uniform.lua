@@ -32,6 +32,8 @@ function Uniform:set(value)
         gl.uniformMatrix4fv(self.id, 1, gl.GL_FALSE, matBuffer)
     elseif self.type == "sampler2D" then
         gl.uniform1i(self.id, value)
+    elseif self.type == "sampler2DArray" then
+        gl.uniform1i(self.id, value)
     else
         error("Unsupported uniform type: " .. tostring(self.type))
     end

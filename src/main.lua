@@ -131,7 +131,7 @@ local function main()
     vao:setIndexBuffer(index)
 
     local samplers = Uniform.new("sampler2DArray", 0)
-    local textureManager = TextureManager.new(samplers)
+    local textureManager = TextureManager.new(samplers, 0)
 
     local pattern = Image.fromPath("assets/texture2.ppm")
     assert(pattern, "Failed to load texture image")
@@ -163,6 +163,7 @@ local function main()
                 gl.clearColor(0.1, 0.1, 0.1, 1.0)
                 gl.clear(gl.COLOR_BUFFER_BIT)
 
+                textureManager:bind()
                 vao:bind()
                 gl.drawElements(gl.TRIANGLES, #indices, gl.UNSIGNED_INT, nil)
 
