@@ -156,6 +156,12 @@ local function main()
             handler:requestRedraw(window)
         elseif event.name == "resize" then
             gl.viewport(0, 0, window.width, window.height)
+        elseif event.name == "mouseMove" then
+            -- print("mousemove", event.x, event.y)
+        elseif event.name == "mousePress" then
+            print("mousepress", event.button, event.x, event.y)
+        elseif event.name == "mouseRelease" then
+            print("mouserelease", event.button, event.x, event.y)
         elseif event.name == "redraw" then
             local currentTime = os.clock()
             local deltaTime = currentTime - lastFrameTime

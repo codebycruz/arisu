@@ -9,6 +9,7 @@ ffi.cdef[[
     typedef void Visual;
     typedef unsigned long Colormap;
     typedef void Screen;
+    typedef unsigned long Time;
 
     typedef struct {
         int type;
@@ -56,6 +57,38 @@ ffi.cdef[[
         Bool send_event;
         Display *display;
         Window window;
+        Window root;
+        Window subwindow;
+        Time time;
+        int x, y;
+        int x_root, y_root;
+        unsigned int state;
+        char is_hint;
+        Bool same_screen;
+    } XMotionEvent;
+
+    typedef struct {
+        int type;
+        unsigned long serial;
+        Bool send_event;
+        Display *display;
+        Window window;
+        Window root;
+        Window subwindow;
+        Time time;
+        int x, y;
+        int x_root, y_root;
+        unsigned int state;
+        unsigned int button;
+        Bool same_screen;
+    } XButtonEvent;
+
+    typedef struct {
+        int type;
+        unsigned long serial;
+        Bool send_event;
+        Display *display;
+        Window window;
     } XAnyEvent;
 
     typedef union {
@@ -64,6 +97,8 @@ ffi.cdef[[
         XClientMessageEvent xclient;
         XExposeEvent xexpose;
         XConfigureEvent xconfigure;
+        XMotionEvent xmotion;
+        XButtonEvent xbutton;
         long pad[24];
     } XEvent;
 
@@ -114,6 +149,8 @@ local C = ffi.load("X11")
 ---@field xexpose { window: number }
 ---@field xany { window: number }
 ---@field xconfigure { window: number, x: number, y: number, width: number, height: number }
+---@field xmotion { x: number, y: number }
+---@field xbutton { x: number, y: number, button: number }
 
 ---@class XDisplay: userdata
 
@@ -185,6 +222,9 @@ return {
     Expose = 12,
     KeyPress = 2,
     KeyRelease = 3,
+    ButtonPress = 4,
+    ButtonRelease = 5,
+    MotionNotify = 6,
     UnmapNotify = 18,
     MapNotify = 19,
     ConfigureNotify = 22,
@@ -194,6 +234,9 @@ return {
     ExposureMask = 0x00008000,
     KeyPressMask = 0x00000001,
     KeyReleaseMask = 0x00000002,
+    ButtonPressMask = 0x00000004,
+    ButtonReleaseMask = 0x00000008,
+    PointerMotionMask = 0x00000040,
     StructureNotifyMask = 0x00020000,
 
     --- @type fun(): XEvent

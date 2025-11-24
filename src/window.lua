@@ -59,13 +59,13 @@ function WindowBuilder:build(eventLoop --[[@param eventLoop EventLoop]]) ---@ret
 
     local window = Window.new(display, id, self.width, self.height)
     x11.setWMProtocols(display, window, {"WM_DELETE_WINDOW"})
-    x11.selectInput(display, id, bit.bor(x11.ExposureMask, x11.StructureNotifyMask))
+    x11.selectInput(display, id, bit.bor(x11.ExposureMask, x11.StructureNotifyMask, x11.ButtonPressMask, x11.ButtonReleaseMask, x11.PointerMotionMask))
     eventLoop:register(window)
 
     return window
 end
 
----@alias EventName "deleteWindow" | "aboutToWait" | "redraw" | "resize" | "map" | "unmap"
+---@alias EventName "deleteWindow" | "aboutToWait" | "redraw" | "resize" | "map" | "unmap" | "mouseMove" | "mousePress" | "mouseRelease"
 ---@alias Event { window?: Window, name: EventName }
 
 ---@class EventLoopHandler
@@ -144,6 +144,12 @@ function EventLoop:run(callback --[[@param callback fun(event: Event, handler: E
             callback({ window = window, name = "map" }, handler)
         elseif event.type == x11.UnmapNotify then
             callback({ window = window, name = "unmap" }, handler)
+        elseif event.type == x11.MotionNotify then
+            callback({ window = window, name = "mouseMove", x = event.xmotion.x, y = event.xmotion.y }, handler)
+        elseif event.type == x11.ButtonPress then
+            callback({ window = window, name = "mousePress", x = event.xbutton.x, y = event.xbutton.y, button = event.xbutton.button }, handler)
+        elseif event.type == x11.ButtonRelease then
+            callback({ window = window, name = "mouseRelease", x = event.xbutton.x, y = event.xbutton.y, button = event.xbutton.button }, handler)
         else
             print("unhandled event type:", event.type)
         end
