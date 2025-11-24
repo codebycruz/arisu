@@ -16,9 +16,7 @@ local ffi = require("ffi")
 
 ---@class App
 ---@field r number
----@field patternImage Image
 ---@field patternTexture Texture
----@field qoiImage Image
 ---@field qoiTexture Texture
 ---@field canvasTexture Texture
 ---@field textureManager TextureManager
@@ -206,11 +204,11 @@ Arisu.runApp(function(textureManager)
     this.lastGPUUpdate = 0
     this.gpuUpdateInterval = 1.0 / 30
 
-    this.patternImage = assert(Image.fromPath("assets/gradient.qoi"), "Failed to load pattern image")
-    this.patternTexture = textureManager:upload(this.patternImage)
+    local patternImage = assert(Image.fromPath("assets/gradient.qoi"), "Failed to load pattern image")
+    this.patternTexture = textureManager:upload(patternImage)
 
-    this.qoiImage = assert(Image.fromPath("assets/airman.qoi"), "Failed to load QOI image")
-    this.qoiTexture = textureManager:upload(this.qoiImage)
+    local qoiImage = assert(Image.fromPath("assets/airman.qoi"), "Failed to load QOI image")
+    this.qoiTexture = textureManager:upload(qoiImage)
 
     this.canvasBuffer = ffi.new("uint8_t[?]", 600 * 450 * 4)
     for i = 0, 600 * 450 * 4 - 1 do
