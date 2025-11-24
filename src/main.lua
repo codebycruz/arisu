@@ -61,6 +61,10 @@ local function main()
 
     local display = window.display
 
+    local lastFrameTime = os.clock()
+    local targetFPS = 60
+    local frameTime = 1.0 / targetFPS
+
     local ctx = render.Context.new(display, window)
     if not ctx then
         window:destroy()
@@ -106,17 +110,23 @@ local function main()
         elseif event.name == "resize" then
             gl.viewport(0, 0, window.width, window.height)
         elseif event.name == "redraw" then
-            local time = os.clock()
-            local hue = (time * 1000) % 360
-            local r, g, b = hsvToRgb(hue, 0.8, 1.0)
+            local currentTime = os.clock()
+            local deltaTime = currentTime - lastFrameTime
 
-            gl.clearColor(r, g, b, 1.0)
-            gl.clear(gl.COLOR_BUFFER_BIT)
+            if deltaTime >= frameTime then
+                local time = currentTime
+                local hue = (time * 1000) % 360
+                local r, g, b = hsvToRgb(hue, 0.8, 1.0)
 
-            vao:bind()
-            gl.drawElements(gl.TRIANGLES, 6, gl.UNSIGNED_INT, nil)
+                gl.clearColor(r, g, b, 1.0)
+                gl.clear(gl.COLOR_BUFFER_BIT)
 
-            ctx:swapBuffers()
+                vao:bind()
+                gl.drawElements(gl.TRIANGLES, 6, gl.UNSIGNED_INT, nil)
+
+                ctx:swapBuffers()
+                lastFrameTime = currentTime
+            end
         end
     end)
 
