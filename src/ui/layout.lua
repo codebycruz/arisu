@@ -263,7 +263,7 @@ function Layout:solve(parentWidth, parentHeight)
     }
 end
 
----@param element Element
+---@param element Element<any>
 function Layout.fromElement(element)
     local layout = Layout.new()
 

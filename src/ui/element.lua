@@ -3,7 +3,7 @@
 ---@alias Padding { top: number?, bottom: number?, left: number?, right: number? } | number
 ---@alias IntoPadding number | Padding
 
----@class Element<T>: { type: string, onclick: T, onmousemove: fun(x: number, y: number): T, onmousedown: T, onmouseup: T, layoutStyle: LayoutStyle, visualStyle: VisualStyle }
+---@class Element<T>: { visualStyle: VisualStyle?, layoutStyle: LayoutStyle?, type: string, onclick: T, onmousemove: fun(x: number, y: number): T, onmousedown: T, onmouseup: T, layoutStyle: LayoutStyle, visualStyle: VisualStyle }
 
 ---@class Div<T>: { onclick: T | nil, onmousedown: T | nil, onmouseup: T | nil }
 ---@field type "div"
