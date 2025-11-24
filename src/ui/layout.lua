@@ -4,6 +4,7 @@
 ---@alias Justify "start" | "center" | "end" | "space-between" | "space-around"
 ---@alias Padding { top: number?, bottom: number?, left: number?, right: number? } | number
 ---@alias Margin { top: number?, bottom: number?, left: number?, right: number? } | number
+---@alias Visibility "visible" | "none"
 
 ---@alias IntoScaleUnit number | ScaleUnit
 ---@alias IntoPadding number | Padding
@@ -73,6 +74,8 @@ end
 ---@field justify Justify
 ---@field padding Padding
 ---@field margin Margin
+---@field zIndex number
+---@field visibility Visibility
 
 ---@class Layout: LayoutStyle
 ---@field visualStyle VisualStyle
@@ -136,6 +139,16 @@ function Layout:withMargin(margin --[[@param margin IntoMargin]])
     return self
 end
 
+function Layout:withZIndex(zIndex --[[@param zIndex number]])
+    self.zIndex = zIndex
+    return self
+end
+
+function Layout:withVisibility(visibility --[[@param visibility Visibility]])
+    self.visibility = visibility
+    return self
+end
+
 function Layout:withChildren(...)
     self.children = { ... }
     return self
@@ -153,12 +166,26 @@ end
 ---@field y number
 ---@field style VisualStyle
 ---@field children ComputedLayout[]
+---@field visible boolean
 
 ---@param parentWidth number
 ---@param parentHeight number
 ---@return ComputedLayout
 function Layout:solve(parentWidth, parentHeight)
-    -- Apply margin first to reduce available space
+    local visibility = self.visibility or "visible"
+
+    if visibility == "none" then
+        return {
+            width = 0,
+            height = 0,
+            x = 0,
+            y = 0,
+            style = self.style,
+            children = {},
+            visible = false
+        }
+    end
+
     local margin = { top = 0, bottom = 0, left = 0, right = 0 }
     if self.margin then
         margin.top = self.margin.top or 0
@@ -173,7 +200,7 @@ function Layout:solve(parentWidth, parentHeight)
     local width = self.width.abs or (self.width.rel * availableWidth)
     local height = self.height.abs or (self.height.rel * availableHeight)
 
-    -- Apply padding
+
     local padding = { top = 0, bottom = 0, left = 0, right = 0 }
     if self.padding then
         padding.top = self.padding.top or 0
@@ -184,7 +211,7 @@ function Layout:solve(parentWidth, parentHeight)
     local contentWidth = width - padding.left - padding.right
     local contentHeight = height - padding.top - padding.bottom
 
-    -- Axis-agnostic helpers
+
     local isRow = self.direction == "row"
     local function mainSize(result)
         return isRow and result.width or result.height
@@ -201,18 +228,23 @@ function Layout:solve(parentWidth, parentHeight)
     local containerMainSize = isRow and contentWidth or contentHeight
     local containerCrossSize = isRow and contentHeight or contentWidth
 
-    -- First pass: compute all child sizes
+
     local childResults = {}
     local totalMainSize = 0
+    local visibleChildCount = 0
 
     for i = 1, #self.children do
         local childResult = self.children[i]:solve(contentWidth, contentHeight)
         table.insert(childResults, childResult)
-        totalMainSize = totalMainSize + mainSize(childResult)
+
+        if childResult.width > 0 or childResult.height > 0 then
+            totalMainSize = totalMainSize + mainSize(childResult)
+            visibleChildCount = visibleChildCount + 1
+        end
     end
 
-    -- Calculate justify-content
-    local totalGaps = math.max(0, #self.children - 1) * (self.gap or 0)
+
+    local totalGaps = math.max(0, visibleChildCount - 1) * (self.gap or 0)
     totalMainSize = totalMainSize + totalGaps
     local freeSpace = containerMainSize - totalMainSize
 
@@ -232,26 +264,30 @@ function Layout:solve(parentWidth, parentHeight)
         spacing = spacing + spaceUnit
     end
 
-    -- Second pass: position children
+
     local align = self.align or "start"
 
+    local processedVisible = 0
     for i, childResult in ipairs(childResults) do
-        local isLastChild = i == #childResults
+        local isVisible = childResult.width > 0 or childResult.height > 0
 
-        -- Main axis positioning (offset by padding)
-        setMainPos(childResult, offset + (isRow and padding.left or padding.top))
-        offset = offset + mainSize(childResult) + (isLastChild and 0 or spacing)
+        if isVisible then
+            processedVisible = processedVisible + 1
+            local isLastVisible = processedVisible == visibleChildCount
 
-        -- Cross axis positioning (offset by padding)
-        local crossOffset = isRow and padding.top or padding.left
-        if align == "center" then
-            setCrossPos(childResult, crossOffset + (containerCrossSize - crossSize(childResult)) / 2)
-        elseif align == "end" then
-            setCrossPos(childResult, crossOffset + containerCrossSize - crossSize(childResult))
-        else
-            setCrossPos(childResult, crossOffset)
+            setMainPos(childResult, offset + (isRow and padding.left or padding.top))
+            offset = offset + mainSize(childResult) + (isLastVisible and 0 or spacing)
+
+            local crossOffset = isRow and padding.top or padding.left
+            if align == "center" then
+                setCrossPos(childResult, crossOffset + (containerCrossSize - crossSize(childResult)) / 2)
+            elseif align == "end" then
+                setCrossPos(childResult, crossOffset + containerCrossSize - crossSize(childResult))
+            else
+                setCrossPos(childResult, crossOffset)
+            end
         end
-    end
+end
 
     return {
         width = width,
@@ -259,7 +295,8 @@ function Layout:solve(parentWidth, parentHeight)
         x = margin.left,
         y = margin.top,
         style = self.style,
-        children = childResults
+        children = childResults,
+        visible = true
     }
 end
 
