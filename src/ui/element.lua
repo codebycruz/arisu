@@ -36,8 +36,14 @@ function Div:withStyle(style --[[@param style LayoutStyle | VisualStyle]] )
 end
 
 ---@generic T
-function Div:onClick(message --[[@param message T]] )
+function Div:onClick(message --[[@param message T]])
     self.onclick = message
+    return self
+end
+
+---@generic T
+function Div:onMouseMove(message --[[@param message T]])
+    self.onmousemove = message
     return self
 end
 
