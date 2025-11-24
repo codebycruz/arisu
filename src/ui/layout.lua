@@ -87,6 +87,7 @@ function Layout.new()
         width = { rel = 1.0 },
         height = { rel = 1.0 },
         direction = "row",
+        zIndex = 0,
         children = {}
     }, Layout)
 end
@@ -167,6 +168,7 @@ end
 ---@field style VisualStyle
 ---@field children ComputedLayout[]
 ---@field visible boolean
+---@field zIndex number
 
 ---@param parentWidth number
 ---@param parentHeight number
@@ -200,7 +202,6 @@ function Layout:solve(parentWidth, parentHeight)
     local width = self.width.abs or (self.width.rel * availableWidth)
     local height = self.height.abs or (self.height.rel * availableHeight)
 
-
     local padding = { top = 0, bottom = 0, left = 0, right = 0 }
     if self.padding then
         padding.top = self.padding.top or 0
@@ -210,7 +211,6 @@ function Layout:solve(parentWidth, parentHeight)
     end
     local contentWidth = width - padding.left - padding.right
     local contentHeight = height - padding.top - padding.bottom
-
 
     local isRow = self.direction == "row"
     local function mainSize(result)
@@ -227,7 +227,6 @@ function Layout:solve(parentWidth, parentHeight)
     end
     local containerMainSize = isRow and contentWidth or contentHeight
     local containerCrossSize = isRow and contentHeight or contentWidth
-
 
     local childResults = {}
     local totalMainSize = 0
@@ -287,7 +286,7 @@ function Layout:solve(parentWidth, parentHeight)
                 setCrossPos(childResult, crossOffset)
             end
         end
-end
+    end
 
     return {
         width = width,
@@ -296,6 +295,7 @@ end
         y = margin.top,
         style = self.style,
         children = childResults,
+        zIndex = self.zIndex,
         visible = true
     }
 end

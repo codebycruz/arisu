@@ -31,10 +31,11 @@ local function generateLayoutQuads(layout, parentX, parentY, vertices, indices, 
     local y = (parentY or 0) + (layout.y or 0)
     local width = layout.width
     local height = layout.height
+    local z = layout.zIndex
 
     if layout.style then
         local color = layout.style.bg or { r = 1.0, g = 1.0, b = 1.0, a = 1.0 }
-        local baseIdx = #vertices / 9
+        local baseIdx = #vertices / 10
 
         local left = toNDC(x, windowWidth)
         local right = toNDC(x + width, windowWidth)
@@ -47,10 +48,10 @@ local function generateLayoutQuads(layout, parentX, parentY, vertices, indices, 
         end
 
         for _, v in ipairs {
-            left, top, color.r, color.g, color.b, color.a, 0, 0, textureId,
-            right, top, color.r, color.g, color.b, color.a, 1, 0, textureId,
-            right, bottom, color.r, color.g, color.b, color.a, 1, 1, textureId,
-            left, bottom, color.r, color.g, color.b, color.a, 0, 1, textureId
+            left, top, z, color.r, color.g, color.b, color.a, 0, 0, textureId,
+            right, top, z, color.r, color.g, color.b, color.a, 1, 0, textureId,
+            right, bottom, z, color.r, color.g, color.b, color.a, 1, 1, textureId,
+            left, bottom, z, color.r, color.g, color.b, color.a, 0, 1, textureId
         } do
             table.insert(vertices, v)
         end
@@ -150,10 +151,10 @@ function Arisu.runApp(cons)
     pipeline:bind()
 
     local vertexDescriptor = BufferDescriptor.new()
-        :withAttribute({ type = "f32", size = 2, offset = 0 })  -- position (vec2)
-        :withAttribute({ type = "f32", size = 4, offset = 8 })  -- color (rgba)
-        :withAttribute({ type = "f32", size = 2, offset = 24 }) -- uv
-        :withAttribute({ type = "f32", size = 1, offset = 32 }) -- texture id
+        :withAttribute({ type = "f32", size = 3, offset = 0 })  -- position (vec3)
+        :withAttribute({ type = "f32", size = 4, offset = 12 })  -- color (rgba)
+        :withAttribute({ type = "f32", size = 2, offset = 28 }) -- uv
+        :withAttribute({ type = "f32", size = 1, offset = 36 }) -- texture id
 
     local vertex = Buffer.new()
     local index = Buffer.new()
