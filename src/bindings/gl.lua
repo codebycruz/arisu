@@ -66,6 +66,10 @@ ffi.cdef[[
     // Uniform Buffer Objects
     void glBindBufferBase(GLenum target, GLuint index, GLuint buffer);
 
+    // Compute shaders
+    void glDispatchCompute(GLuint num_groups_x, GLuint num_groups_y, GLuint num_groups_z);
+    void glMemoryBarrier(unsigned int barriers);
+
     // Misc
     char* glGetString(GLenum name);
 ]]
@@ -83,6 +87,7 @@ return {
 
     VERTEX_SHADER_BIT = 0x00000001,
     FRAGMENT_SHADER_BIT = 0x00000002,
+    COMPUTE_SHADER_BIT = 0x00000020,
 
     FLOAT = 0x1406,
     UNSIGNED_INT = 0x1405,
@@ -94,6 +99,7 @@ return {
     ShaderType = {
         VERTEX = 0x8B31,
         FRAGMENT = 0x8B30,
+        COMPUTE = 0x91B9,
     },
 
     TEXTURE_2D_ARRAY = 0x8C1A,
@@ -115,6 +121,11 @@ return {
     LINEAR = 0x2601,
 
     UNIFORM_BUFFER = 0x8A11,
+    SHADER_STORAGE_BUFFER = 0x90D2,
+
+    SHADER_STORAGE_BARRIER_BIT = 0x00002000,
+    BUFFER_UPDATE_BARRIER_BIT = 0x00000200,
+    ALL_BARRIER_BITS = 0xFFFFFFFF,
 
     --- @param type ShaderType
     --- @param src string
@@ -248,4 +259,10 @@ return {
 
     ---@type fun(target: number, index: number, buffer: number)
     bindBufferBase = C.glBindBufferBase,
+
+    ---@type fun(num_groups_x: number, num_groups_y: number, num_groups_z: number)
+    dispatchCompute = C.glDispatchCompute,
+
+    ---@type fun(barriers: number)
+    memoryBarrier = C.glMemoryBarrier,
 }
