@@ -14,6 +14,8 @@ local VAO = require "src.gl.vao"
 local Layout = require "src.ui.layout"
 local Element = require "src.ui.element"
 
+local Image = require "src.image"
+
 local vertexShader = io.open("src/shaders/main.vert.glsl", "r"):read("*a")
 local fragmentShader = io.open("src/shaders/main.frag.glsl", "r"):read("*a")
 
