@@ -1,12 +1,13 @@
 --- The View is a small layer above the Layout that bridges interactivity with the layout.
 
----@alias Element Div | Button | Text
+---@alias Element Div | Text
 
 ---@class Div
 ---@field type "div"
 ---@field children Element[]
 ---@field visualStyle VisualStyle
 ---@field layoutStyle LayoutStyle
+---@field onclick fun() | nil
 local Div = {}
 Div.__index = Div
 
@@ -35,23 +36,7 @@ function Div:withStyle(style --[[@param style LayoutStyle | VisualStyle]] )
     return self
 end
 
----@class Button
----@field type "button"
----@field onclick fun()
----@field inner Element
-local Button = {}
-Button.__index = Button
-
-function Button.new()
-    return setmetatable({ type = "button", inner = Div.new() }, Button)
-end
-
-function Button:withInner(element --[[@param element Element]] )
-    self.inner = element
-    return self
-end
-
-function Button:onClick(callback --[[@param callback fun()]] )
+function Div:onClick(callback --[[@param callback fun()]] )
     self.onclick = callback
     return self
 end
@@ -61,6 +46,7 @@ end
 ---@field content string
 ---@field visualStyle VisualStyle
 ---@field layoutStyle LayoutStyle
+---@field onclick fun() | nil
 local Text = {}
 Text.__index = Text
 
@@ -68,8 +54,12 @@ function Text.from(content)
     return setmetatable({ type = "text", visualStyle = {}, layoutStyle = {}, content = content }, Text)
 end
 
+function Text:onClick(callback --[[@param callback fun()]] )
+    self.onclick = callback
+    return self
+end
+
 return {
     Div = Div,
-    Button = Button,
     Text = Text
 }

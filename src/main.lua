@@ -86,12 +86,6 @@ local function findElementAtPosition(element, layout, x, y, parentX, parentY)
                     return found
                 end
             end
-        elseif element.type == "button" and element.inner then
-            -- Button wraps its inner element but uses the same layout
-            local found = findElementAtPosition(element.inner, layout, x, y, parentX, parentY)
-            if found then
-                return element  -- Return the button, not the inner element
-            end
         end
 
         return element
@@ -112,23 +106,21 @@ local function main()
             bgImage = 2
         })
         :withChildren(
-            Element.Button.new()
-                :withInner(Element.Div.new()
-                    :withStyle({
-                        width = { abs = 256 },
-                        height = { abs = 256 },
-                        bg = { r = 0.0, g = 1.0, b = 0.0, a = 1.0 }
-                    }))
+            Element.Div.new()
+                :withStyle({
+                    width = { abs = 256 },
+                    height = { abs = 256 },
+                    bg = { r = 0.0, g = 1.0, b = 0.0, a = 1.0 }
+                })
                 :onClick(function()
                     print("Green button clicked!")
                 end),
-            Element.Button.new()
-                :withInner(Element.Div.new()
-                    :withStyle({
-                        width = { abs = 256 },
-                        height = { abs = 256 },
-                        bg = { r = 0.0, g = 0.0, b = 1.0, a = 1.0 }
-                    }))
+            Element.Div.new()
+                :withStyle({
+                    width = { abs = 256 },
+                    height = { abs = 256 },
+                    bg = { r = 0.0, g = 0.0, b = 1.0, a = 1.0 }
+                })
                 :onClick(function()
                     print("Blue button clicked!")
                 end)
@@ -199,7 +191,7 @@ local function main()
             local computedLayout = layoutTree:solve(window.width, window.height)
             local clickedElement = findElementAtPosition(ui, computedLayout, event.x, event.y, 0, 0)
 
-            if clickedElement and clickedElement.type == "button" and clickedElement.onclick then
+            if clickedElement and clickedElement.onclick then
                 clickedElement.onclick()
             end
         elseif event.name == "mouseRelease" then
