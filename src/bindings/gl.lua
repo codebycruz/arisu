@@ -46,6 +46,9 @@ ffi.cdef[[
 
     // Drawing
     void glDrawElements(GLenum mode, GLsizei count, GLenum type, const void* indices);
+
+    // Misc
+    char* glGetString(GLenum name);
 ]]
 
 local C = ffi.load("GL")
@@ -161,4 +164,10 @@ return {
 
     ---@type fun(mode: number, count: number, type: number, indices: userdata?)
     drawElements = C.glDrawElements,
+
+    ---@type fun(name: number): string
+    getString = function(name)
+        local str = C.glGetString(name)
+        return ffi.string(str)
+    end,
 }
