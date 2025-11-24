@@ -188,7 +188,7 @@ local function main()
 
     local patternTexture = textureManager:upload(pattern)
 
-    local qoiImage = Image.fromPath("assets/gradient.qoi")
+    local qoiImage = Image.fromPath("assets/airman.qoi")
     assert(qoiImage, "Failed to load QOI image")
 
     local qoiTexture = textureManager:upload(qoiImage)
