@@ -119,7 +119,6 @@ function EventLoop:run(callback --[[@param callback fun(event: Event, handler: E
     local function processEvent()
         local windowIdHash = tostring(event.xany.window)
         local window = self.windows[windowIdHash]
-        assert(window ~= nil, "Received event for unregistered window")
 
         if event.type == x11.ClientMessage then
             if event.xclient.data.l[0] == wmDeleteWindow then

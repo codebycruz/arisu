@@ -5,6 +5,29 @@ local x11 = require "src.bindings.x11"
 local window = require "src.window"
 local render = require "src.render"
 
+local Pipeline = require "src.gl.pipeline"
+local Program = require "src.gl.program"
+local BufferDescriptor = require "src.gl.buffer_descriptor"
+local Buffer = require "src.gl.buffer"
+
+local vertexShader = [[
+    #version 330 core
+    layout(location = 0) in vec3 aPos;
+    void main()
+    {
+        gl_Position = vec4(aPos, 1.0);
+    }
+]]
+
+local fragmentShader = [[
+    #version 330 core
+    out vec4 FragColor;
+    void main()
+    {
+        FragColor = vec4(1.0, 0.5, 0.2, 1.0);
+    }
+]]
+
 local function hsvToRgb(h, s, v)
     local c = v * s
     local x = c * (1 - math.abs((h / 60) % 2 - 1))
@@ -44,6 +67,30 @@ local function main()
         return 1
     end
 
+    ctx:makeCurrent()
+
+    local pipeline = Pipeline.new()
+    pipeline:setProgram(gl.ShaderType.VERTEX, Program.new(gl.ShaderType.FRAGMENT, fragmentShader))
+    pipeline:setProgram(gl.ShaderType.FRAGMENT, Program.new(gl.ShaderType.VERTEX, vertexShader))
+    pipeline:bind()
+
+    local vertexDescriptor = BufferDescriptor.new()
+        :withAttribute({ type = "f32", size = 3, offset = 0 }) -- pos
+
+    local vertex = Buffer.new()
+    vertex:setData("f32", {
+         0.5,  0.5, 0.0,
+         0.5, -0.5, 0.0,
+        -0.5, -0.5, 0.0,
+        -0.5,  0.5, 0.0,
+    })
+
+    local index = Buffer.new()
+    index:setData("u32", {
+        0, 1, 3,
+        1, 2, 3,
+    })
+
     eventLoop:run(function(event, handler)
         handler:setMode("poll")
 
@@ -54,8 +101,6 @@ local function main()
         elseif event.name == "resize" then
             gl.viewport(0, 0, window.width, window.height)
         elseif event.name == "redraw" then
-            ctx:makeCurrent()
-
             local time = os.clock()
             local hue = (time * 1000) % 360
             local r, g, b = hsvToRgb(hue, 0.8, 1.0)
