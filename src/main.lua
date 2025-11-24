@@ -2,12 +2,39 @@ local Arisu = require "src.arisu"
 local Element = require "src.ui.element"
 local Image = require "src.image"
 
----@enum Message
-local Message = {
-    GreenClicked = 1,
-    YellowClicked = 2,
-    BlueClicked = 3
-}
+---@alias Message
+--- | { type: "GreenClicked" }
+--- | { type: "YellowClicked" }
+--- | { type: "BlueClicked" }
+--- | { type: "Hovered", x: number, y: number }
+
+---@class Canvas<T>: Element<T>
+---@field type "canvas"
+---@field visualStyle VisualStyle
+---@field layoutStyle LayoutStyle
+local Canvas = {}
+Canvas.__index = Canvas
+
+function Canvas.new()
+    return setmetatable({ type = "canvas" }, Canvas)
+end
+
+---@param style VisualStyle | LayoutStyle
+function Canvas:withStyle(style)
+    self.visualStyle = style
+    self.layoutStyle = style
+    return self
+end
+
+function Canvas:onMouseMove(message)
+    self.onmousemove = message
+    return self
+end
+
+function Canvas:onClick(message)
+    self.onclick = message
+    return self
+end
 
 ---@class App
 ---@field r number
@@ -33,34 +60,39 @@ function App:view()
                     bg = { r = 0.0, g = 1.0, b = 0.0, a = 1.0 }
                 })
                 :withChildren(
-                    Element.Div.new()
+                    Canvas.new()
                         :withStyle({
                             width = { abs = 128 },
                             height = { abs = 128 },
                             bg = { r = 1.0, g = 1.0, b = 0.0, a = 1.0 }
                         })
-                        :onClick(Message.YellowClicked)
+                        :onClick({ type = "YellowClicked" })
+                        :onMouseMove(function(x, y)
+                            return { type = "Hovered", x = x, y = y }
+                        end)
                 )
-                :onClick(Message.GreenClicked),
+                :onClick({ type = "GreenClicked" }),
             Element.Div.new()
                 :withStyle({
                     width = { abs = 256 },
                     height = { abs = 256 },
                     bg = { r = 0.0, g = 0.0, b = 1.0, a = 1.0 }
                 })
-                :onClick(Message.BlueClicked)
+                :onClick({ type = "BlueClicked" })
         )
 end
 
 ---@param message Message
 function App:update(message)
-    if message == Message.GreenClicked then
+    if message.type == "GreenClicked" then
         print("Green clicked!")
-        self.r = math.min(self.r + 0.1, 1.0)
-    elseif message == Message.YellowClicked then
+        self.r = math.random()
+    elseif message.type == "YellowClicked" then
         print("Yellow clicked!")
-    elseif message == Message.BlueClicked then
+    elseif message.type == "BlueClicked" then
         print("Blue clicked!")
+    elseif message.type == "Hovered" then
+        print(string.format("Hovered at (%.2f, %.2f)", message.x, message.y))
     end
 
     return true

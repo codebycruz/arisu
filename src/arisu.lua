@@ -79,8 +79,7 @@ local function findElementAtPosition(element, layout, x, y, parentX, parentY, ac
 
         if layout.children and element.children then
             for i, childLayout in ipairs(layout.children) do
-                local childElement = element.children[i]
-                local found = findElementAtPosition(childElement, childLayout, x, y, absX, absY, acceptFn)
+                local found = findElementAtPosition(element.children[i], childLayout, x, y, absX, absY, acceptFn)
                 if found and (not acceptFn or acceptFn(found)) then
                     return found
                 end
@@ -95,11 +94,34 @@ local function findElementAtPosition(element, layout, x, y, parentX, parentY, ac
     return nil
 end
 
+---@param results table<Element, { layout: ComputedLayout, absX: number, absY: number }>
+---@return boolean
+local function findElementsAtPosition(element, layout, x, y, parentX, parentY, results)
+    local absX = (parentX or 0) + (layout.x or 0)
+    local absY = (parentY or 0) + (layout.y or 0)
+
+    if x >= absX and x <= absX + layout.width and
+        y >= absY and y <= absY + layout.height then
+
+        results[element] = { layout = layout, absX = absX, absY = absY }
+        if layout.children and element.children then
+            for i, childLayout in ipairs(layout.children) do
+                local found = findElementsAtPosition(element.children[i], childLayout, x, y, absX, absY, results)
+                if not found then
+                    break
+                end
+            end
+        end
+    end
+
+    return true
+end
+
 local Arisu = {}
 
 ---@generic T
 ---@generic Message
----@param cons fun(textureManager: TextureManager): { view: fun(self: T), update: fun(self: T, message: Message) }
+---@param cons fun(textureManager: TextureManager): { view: fun(self: T), update: fun(self: T, message: Message), event: fun(self: T, event: Event): Message }
 function Arisu.runApp(cons)
     local eventLoop = window.EventLoop.new()
     local window = window.WindowBuilder.new()
@@ -147,6 +169,7 @@ function Arisu.runApp(cons)
     -- Run the app constructor in the rendering context so they can initialize any
     -- GL resources they need.
     local app = cons(textureManager)
+    app.event = app.event or function(_) end
 
     local ui = app:view()
     local layoutTree = Layout.fromElement(ui)
@@ -156,6 +179,13 @@ function Arisu.runApp(cons)
         if didUpdate then
             ui = app:view()
             layoutTree = Layout.fromElement(ui)
+        end
+    end
+
+    local function runEvent(event)
+        local message = app:event(event)
+        if message then
+            runUpdate(message)
         end
     end
 
@@ -169,7 +199,17 @@ function Arisu.runApp(cons)
         elseif event.name == "resize" then
             gl.viewport(0, 0, window.width, window.height)
         elseif event.name == "mouseMove" then
-            -- print("mousemove", event.x, event.y)
+            local computedLayout = layoutTree:solve(window.width, window.height)
+
+            ---@type table<Element<any>, {absX: number, absY: number}>
+            local hoveredElements = {}
+            findElementsAtPosition(ui, computedLayout, event.x, event.y, 0, 0, hoveredElements)
+
+            for el, layout in pairs(hoveredElements) do
+                if el.onmousemove then
+                    runUpdate(el.onmousemove(event.x - layout.absX, event.y - layout.absY))
+                end
+            end
         elseif event.name == "mousePress" then
             local computedLayout = layoutTree:solve(window.width, window.height)
             local clickedElement = findElementAtPosition(ui, computedLayout, event.x, event.y, 0, 0, function(el)

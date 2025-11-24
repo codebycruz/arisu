@@ -65,8 +65,16 @@ function WindowBuilder:build(eventLoop --[[@param eventLoop EventLoop]]) ---@ret
     return window
 end
 
----@alias EventName "deleteWindow" | "aboutToWait" | "redraw" | "resize" | "map" | "unmap" | "mouseMove" | "mousePress" | "mouseRelease"
----@alias Event { window?: Window, name: EventName }
+---@alias Event
+--- | { name: "deleteWindow" }
+--- | { name: "aboutToWait" }
+--- | { window: Window, name: "redraw" }
+--- | { window: Window, name: "resize" }
+--- | { window: Window, name: "map" }
+--- | { window: Window, name: "unmap" }
+--- | { window: Window, name: "mouseMove", x: number, y: number }
+--- | { window: Window, name: "mousePress", x: number, y: number, button: number }
+--- | { window: Window, name: "mouseRelease", x: number, y: number, button: number }
 
 ---@class EventLoopHandler
 local EventLoopHandler = {}

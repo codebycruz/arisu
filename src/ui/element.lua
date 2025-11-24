@@ -1,6 +1,6 @@
 --- The View is a small layer above the Layout that bridges interactivity with the layout.
 
----@alias Element Div | Text
+---@class Element<T>: { type: string, onclick: T, onmousemove: fun(x: number, y: number): T, layoutStyle: LayoutStyle, visualStyle: VisualStyle }
 
 ---@class Div<T>: { onclick: T | nil }
 ---@field type "div"
@@ -51,6 +51,12 @@ Text.__index = Text
 
 function Text.from(content)
     return setmetatable({ type = "text", visualStyle = {}, layoutStyle = {}, content = content }, Text)
+end
+
+function Text:withStyle(style --[[@param style LayoutStyle | VisualStyle]] )
+    self.visualStyle = style
+    self.layoutStyle = style
+    return self
 end
 
 ---@generic T
