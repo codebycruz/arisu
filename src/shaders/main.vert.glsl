@@ -1,4 +1,7 @@
-#version 330 core
+#version 430 core
+
+layout(location = 0) uniform sampler2DArray uTextureArray;
+
 layout(location = 0) in vec2 aPos;
 layout(location = 1) in vec4 aColor;
 

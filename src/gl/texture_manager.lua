@@ -11,7 +11,6 @@ end
 
 ---@return Texture
 function TextureManager:allocate()
-
 end
 
 return TextureManager

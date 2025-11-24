@@ -1,7 +1,7 @@
 local gl = require "src.bindings.gl"
 local ffi = require("ffi")
 
----@alias UniformType "int" | "float" | "vec2" | "vec3" | "vec4" | "mat4" | "sampler2D"
+---@alias UniformType "int" | "float" | "vec2" | "vec3" | "vec4" | "mat4" | "sampler2D" | "sampler2DArray"
 
 ---@class Uniform
 ---@field id number

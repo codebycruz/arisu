@@ -10,6 +10,9 @@ local Program = require "src.gl.program"
 local BufferDescriptor = require "src.gl.buffer_descriptor"
 local Buffer = require "src.gl.buffer"
 local VAO = require "src.gl.vao"
+local Uniform = require "src.gl.uniform"
+local Texture = require "src.gl.texture"
+local TextureManager = require "src.gl.texture_manager"
 
 local Layout = require "src.ui.layout"
 local Element = require "src.ui.element"
@@ -126,6 +129,9 @@ local function main()
     local vao = VAO.new()
     vao:setVertexBuffer(vertex, vertexDescriptor)
     vao:setIndexBuffer(index)
+
+    local samplers = Uniform.new("sampler2DArray", 0)
+    local textureManager = TextureManager.new(samplers)
 
     eventLoop:run(function(event, handler)
         handler:setMode("poll")
