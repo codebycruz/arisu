@@ -118,6 +118,23 @@ local function findElementsAtPosition(element, layout, x, y, parentX, parentY, r
     return true
 end
 
+local function getTopElementWithCursor(elements)
+    local topElement = nil
+    local topZ = -math.huge
+
+    for element, data in pairs(elements) do
+        if element.visualStyle and element.visualStyle.cursor then
+            local z = data.layout.zIndex or 0
+            if z > topZ then
+                topZ = z
+                topElement = element
+            end
+        end
+    end
+
+    return topElement
+end
+
 local Arisu = {}
 
 ---@generic T
@@ -174,6 +191,7 @@ function Arisu.runApp(cons)
 
     local ui = app:view()
     local layoutTree = Layout.fromElement(ui)
+    local currentCursor = nil
 
     local function runUpdate(message)
         local didUpdate = app:update(message)
@@ -205,6 +223,20 @@ function Arisu.runApp(cons)
             ---@type table<Element<any>, {absX: number, absY: number}>
             local hoveredElements = {}
             findElementsAtPosition(ui, computedLayout, event.x, event.y, 0, 0, hoveredElements)
+
+            local anyWithMouseDown = false
+            for el, _ in pairs(hoveredElements) do
+                if el.onmousedown then
+                    anyWithMouseDown = true
+                    break
+                end
+            end
+
+            if anyWithMouseDown then
+                window:setCursor("hand2")
+            else
+                window:resetCursor()
+            end
 
             for el, layout in pairs(hoveredElements) do
                 if el.onmousemove then

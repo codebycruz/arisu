@@ -6,15 +6,45 @@ local x11 = require "src.bindings.x11"
 --- @field width number
 --- @field height number
 --- @field shouldRedraw boolean
+--- @field currentCursor number?
 local Window = {}
 Window.__index = Window
 
 function Window.new(display --[[@param display XDisplay]], id --[[@param id number]], width --[[@param width number]] , height --[[@param height number]])
-    return setmetatable({ width = width, height = height, display = display, id = id }, Window)
+    return setmetatable({ width = width, height = height, display = display, id = id, currentCursor = nil }, Window)
 end
 
 function Window:destroy()
+    if self.currentCursor then
+        x11.freeCursor(self.display, self.currentCursor)
+    end
+
     x11.destroyWindow(self.display, self.id)
+end
+
+local cursors = {
+    pointer = x11.XC_left_ptr,
+    hand2 = x11.XC_hand2,
+}
+
+---@param shape "pointer" | "hand2"
+function Window:setCursor(shape)
+    if self.currentCursor then
+        x11.freeCursor(self.display, self.currentCursor)
+    end
+
+    local cursor = x11.createFontCursor(self.display, cursors[shape])
+    x11.defineCursor(self.display, self.id, cursor)
+    self.currentCursor = cursor
+end
+
+function Window:resetCursor()
+    if self.currentCursor then
+        x11.freeCursor(self.display, self.currentCursor)
+        self.currentCursor = nil
+    end
+
+    x11.undefineCursor(self.display, self.id)
 end
 
 --- @class WindowBuilder
