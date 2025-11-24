@@ -2,8 +2,10 @@
 ---@alias Direction "row" | "column"
 ---@alias Alignment "start" | "center" | "end"
 ---@alias Justify "start" | "center" | "end" | "space-between" | "space-around"
+---@alias Padding { top: number?, bottom: number?, left: number?, right: number? } | number
 
 ---@alias IntoScaleUnit number | ScaleUnit
+---@alias IntoPadding number | Padding
 
 ---@return ScaleUnit
 local function intoScaleUnit(value --[[@param value IntoScaleUnit]] )
@@ -28,6 +30,22 @@ local function intoDirection(value --[[@param value Direction]] )
     end
 end
 
+---@return Padding
+local function intoPadding(value --[[@param value IntoPadding]] )
+    if type(value) == "number" then
+        return { top = value, bottom = value, left = value, right = value }
+    elseif type(value) == "table" then
+        return {
+            top = value.top or 0,
+            bottom = value.bottom or 0,
+            left = value.left or 0,
+            right = value.right or 0
+        }
+    else
+        error("Invalid Padding value")
+    end
+end
+
 ---@class LayoutStyle
 ---@field width ScaleUnit
 ---@field height ScaleUnit
@@ -35,6 +53,7 @@ end
 ---@field direction Direction
 ---@field align Alignment
 ---@field justify Justify
+---@field padding Padding
 
 ---@class Layout: LayoutStyle
 ---@field visualStyle VisualStyle
@@ -88,6 +107,11 @@ function Layout:withJustify(justify --[[@param justify Justify]])
     return self
 end
 
+function Layout:withPadding(padding --[[@param padding IntoPadding]])
+    self.padding = intoPadding(padding)
+    return self
+end
+
 function Layout:withChildren(...)
     self.children = { ... }
     return self
@@ -113,6 +137,17 @@ function Layout:solve(parentWidth, parentHeight)
     local width = self.width.abs or (self.width.rel * parentWidth)
     local height = self.height.abs or (self.height.rel * parentHeight)
 
+    -- Apply padding
+    local padding = { top = 0, bottom = 0, left = 0, right = 0 }
+    if self.padding then
+        padding.top = self.padding.top or 0
+        padding.bottom = self.padding.bottom or 0
+        padding.left = self.padding.left or 0
+        padding.right = self.padding.right or 0
+    end
+    local contentWidth = width - padding.left - padding.right
+    local contentHeight = height - padding.top - padding.bottom
+
     -- Axis-agnostic helpers
     local isRow = self.direction == "row"
     local function mainSize(result)
@@ -127,15 +162,15 @@ function Layout:solve(parentWidth, parentHeight)
     local function setCrossPos(result, value)
         if isRow then result.y = value else result.x = value end
     end
-    local containerMainSize = isRow and width or height
-    local containerCrossSize = isRow and height or width
+    local containerMainSize = isRow and contentWidth or contentHeight
+    local containerCrossSize = isRow and contentHeight or contentWidth
 
     -- First pass: compute all child sizes
     local childResults = {}
     local totalMainSize = 0
 
     for i = 1, #self.children do
-        local childResult = self.children[i]:solve(width, height)
+        local childResult = self.children[i]:solve(contentWidth, contentHeight)
         table.insert(childResults, childResult)
         totalMainSize = totalMainSize + mainSize(childResult)
     end
@@ -167,17 +202,18 @@ function Layout:solve(parentWidth, parentHeight)
     for i, childResult in ipairs(childResults) do
         local isLastChild = i == #childResults
 
-        -- Main axis positioning
-        setMainPos(childResult, offset)
+        -- Main axis positioning (offset by padding)
+        setMainPos(childResult, offset + (isRow and padding.left or padding.top))
         offset = offset + mainSize(childResult) + (isLastChild and 0 or spacing)
 
-        -- Cross axis positioning
+        -- Cross axis positioning (offset by padding)
+        local crossOffset = isRow and padding.top or padding.left
         if align == "center" then
-            setCrossPos(childResult, (containerCrossSize - crossSize(childResult)) / 2)
+            setCrossPos(childResult, crossOffset + (containerCrossSize - crossSize(childResult)) / 2)
         elseif align == "end" then
-            setCrossPos(childResult, containerCrossSize - crossSize(childResult))
+            setCrossPos(childResult, crossOffset + containerCrossSize - crossSize(childResult))
         else
-            setCrossPos(childResult, 0)
+            setCrossPos(childResult, crossOffset)
         end
     end
 

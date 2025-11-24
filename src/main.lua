@@ -54,7 +54,8 @@ function App:view()
                             height = { abs = 40 },
                             bg = { r = 0.7, g = 0.7, b = 0.7, a = 1.0 },
                             justify = "center",
-                            align = "center"
+                            align = "center",
+                            padding = { top = 5, bottom = 5, left = 5, right = 5 }
                         })
                         :onMouseDown({ type = "BrushClicked" }),
 
@@ -65,7 +66,8 @@ function App:view()
                             height = { abs = 40 },
                             bg = { r = 0.7, g = 0.7, b = 0.7, a = 1.0 },
                             justify = "center",
-                            align = "center"
+                            align = "center",
+                            padding = { top = 5, bottom = 5, left = 5, right = 5 }
                         })
                         :onMouseDown({ type = "EraserClicked" }),
 
@@ -76,7 +78,8 @@ function App:view()
                             height = { abs = 40 },
                             bg = { r = 0.2, g = 0.2, b = 0.2, a = 1.0 },
                             justify = "center",
-                            align = "center"
+                            align = "center",
+                            padding = { top = 5, bottom = 5, left = 5, right = 5 }
                         })
                         :onMouseDown({ type = "ColorClicked" }),
 
@@ -87,7 +90,8 @@ function App:view()
                             height = { abs = 40 },
                             bg = { r = 0.9, g = 0.5, b = 0.5, a = 1.0 },
                             justify = "center",
-                            align = "center"
+                            align = "center",
+                            padding = { top = 5, bottom = 5, left = 5, right = 5 }
                         })
                         :onMouseDown({ type = "ClearClicked" }),
 
@@ -98,7 +102,8 @@ function App:view()
                             height = { abs = 40 },
                             bg = { r = 0.5, g = 0.8, b = 0.5, a = 1.0 },
                             justify = "center",
-                            align = "center"
+                            align = "center",
+                            padding = { top = 5, bottom = 5, left = 5, right = 5 }
                         })
                         :onMouseDown({ type = "SaveClicked" }),
 
@@ -109,7 +114,8 @@ function App:view()
                             height = { abs = 40 },
                             bg = { r = 0.5, g = 0.5, b = 0.8, a = 1.0 },
                             justify = "center",
-                            align = "center"
+                            align = "center",
+                            padding = { top = 5, bottom = 5, left = 5, right = 5 }
                         })
                         :onMouseDown({ type = "LoadClicked" })
                 ),
@@ -120,7 +126,8 @@ function App:view()
                     size = {1.0, 1.0},
                     justify = "center",
                     align = "center",
-                    bg = { r = 0.9, g = 0.9, b = 0.9, a = 1.0 }
+                    bg = { r = 0.9, g = 0.9, b = 0.9, a = 1.0 },
+                    padding = { top = 5, bottom = 5, left = 5, right = 5 }
                 })
                 :withChildren(
                     Element.Div.new()
@@ -128,7 +135,8 @@ function App:view()
                             width = { abs = 600 },
                             height = { abs = 450 },
                             bg = { r = 1.0, g = 1.0, b = 1.0, a = 1.0 },
-                            bgImage = self.canvasTexture
+                            bgImage = self.canvasTexture,
+                            padding = { top = 10, bottom = 10, left = 10, right = 10 }
                         })
                         :onMouseDown({ type = "StartDrawing" })
                         :onMouseUp({ type = "StopDrawing" })
