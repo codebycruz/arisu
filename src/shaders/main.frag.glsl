@@ -10,6 +10,6 @@ out vec4 fragColor;
 
 void main() {
     // fragColor = vertexColor;
-    vec4 texColor = texture(uTextureArray, vec3(texCoord, texIndex));
-    fragColor = vertexColor * texColor;
+    vec4 texColor = texture(uTextureArray, vec3(texCoord, 2));
+    fragColor = texColor;
 }

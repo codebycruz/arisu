@@ -13,6 +13,7 @@ local maxLayers = 256
 ---@field textures Texture[]
 ---@field sampler2DArray Uniform
 ---@field textureUnit number
+---@field textureHandle number
 ---@field whiteTexture Texture
 ---@field errorTexture Texture
 local TextureManager = {}
@@ -24,10 +25,17 @@ function TextureManager.new(sampler2DArray, textureUnit)
     assert(sampler2DArray.type == "sampler2DArray", "sampler2DArray must be of type sampler2DArray")
     assert(textureUnit, "textureUnit is required")
 
-    gl.createTextures(gl.TEXTURE_2D_ARRAY, 1, ffi.new("GLuint[1]", sampler2DArray.id))
-    gl.textureStorage3D(sampler2DArray.id, 1, gl.RGBA8, maxWidth, maxHeight, maxLayers)
+    local textureId = ffi.new("GLuint[1]")
+    gl.createTextures(gl.TEXTURE_2D_ARRAY, 1, textureId)
+    local textureHandle = textureId[0]
 
-    local this = setmetatable({ textureUnit = textureUnit, sampler2DArray = sampler2DArray, textures = {} }, TextureManager)
+    gl.textureStorage3D(textureHandle, 1, gl.RGBA8, maxWidth, maxHeight, maxLayers)
+    gl.textureParameteri(textureHandle, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
+    gl.textureParameteri(textureHandle, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
+    gl.textureParameteri(textureHandle, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
+    gl.textureParameteri(textureHandle, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
+
+    local this = setmetatable({ textureHandle = textureHandle, textureUnit = textureUnit, sampler2DArray = sampler2DArray, textures = {} }, TextureManager)
     this.whiteTexture = this:upload(Image.new(1, 1, 3, ffi.new("uint8_t[?]", 3, {255, 255, 255}), ""))
     this.errorTexture = this:upload(
         Image.new(2, 2, 3, ffi.new("uint8_t[?]", 12, {
@@ -59,7 +67,7 @@ function TextureManager:upload(image)
     assert(format, "Unsupported number of channels: " .. tostring(image.channels))
 
     gl.textureSubImage3D(
-        self.sampler2DArray.id,
+        self.textureHandle,
         0,
         0,
         0,
@@ -77,8 +85,8 @@ function TextureManager:upload(image)
 end
 
 function TextureManager:bind()
+    gl.bindTextureUnit(self.textureUnit, self.textureHandle)
     self.sampler2DArray:set(self.textureUnit)
-    gl.bindTextureUnit(self.textureUnit, self.sampler2DArray.id)
 end
 
 function TextureManager:unbind()

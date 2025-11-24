@@ -102,6 +102,15 @@ return {
 
     UNSIGNED_BYTE = 0x1401,
 
+    TEXTURE_WRAP_S = 0x2802,
+    TEXTURE_WRAP_T = 0x2803,
+    CLAMP_TO_EDGE = 0x812F,
+    TEXTURE_MIN_FILTER = 0x2801,
+    TEXTURE_MAG_FILTER = 0x2800,
+    NEAREST = 0x2600,
+    REPEAT = 0x2901,
+    LINEAR = 0x2601,
+
     --- @param type ShaderType
     --- @param src string
     --- @return number
