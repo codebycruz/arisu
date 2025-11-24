@@ -43,9 +43,9 @@ function TextureManager.new(sampler2DArray, textureDims, textureUnit)
     local this = setmetatable({ textureCount = 0, textureDims = {}, textureDimsUniform = textureDims, textureHandle = textureHandle, textureUnit = textureUnit, sampler2DArray = sampler2DArray, textures = {} }, TextureManager)
     this.whiteTexture = this:upload(Image.new(1, 1, 3, ffi.new("uint8_t[?]", 3, {255, 255, 255}), ""))
     this.errorTexture = this:upload(
-        Image.new(2, 2, 3, ffi.new("uint8_t[?]", 12, {
-        255, 0, 255,   0, 0, 0,
-        0, 0, 0,       255, 0, 255
+        Image.new(2, 2, 4, ffi.new("uint8_t[?]", 12, {
+        255, 0, 255, 255,   0, 0, 0, 255,
+        0, 0, 0, 255,       255, 0, 255, 255
     }), ""))
 
     return this

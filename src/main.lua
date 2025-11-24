@@ -104,8 +104,8 @@ local function main()
             gap = 40 * 4,
             justify = "center",
             align = "center",
-            bg = { r = 1.0, g = 0.0, b = 0.0, a = 1.0 },
-            bgImage = 2
+            bg = { r = 1.0, g = 1.0, b = 1.0, a = 1.0 },
+            bgImage = 1
         })
         :withChildren(
             Element.Div.new()
