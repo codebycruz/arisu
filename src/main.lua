@@ -12,7 +12,7 @@ local ffi = require("ffi")
 --- | { type: "LoadClicked" }
 --- | { type: "StartDrawing" }
 --- | { type: "StopDrawing" }
---- | { type: "Hovered", x: number, y: number }
+--- | { type: "Hovered", x: number, y: number, elementWidth: number, elementHeight: number }
 
 ---@class App
 ---@field r number
