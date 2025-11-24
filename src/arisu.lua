@@ -99,8 +99,8 @@ local Arisu = {}
 
 ---@generic T
 ---@generic Message
----@param app { view: fun(self: T), update: fun(self: T, message: Message) }
-function Arisu.runApp(app)
+---@param cons fun(textureManager: TextureManager): { view: fun(self: T), update: fun(self: T, message: Message) }
+function Arisu.runApp(cons)
     local eventLoop = window.EventLoop.new()
     local window = window.WindowBuilder.new()
         :withTitle("Layout Renderer")
@@ -144,18 +144,20 @@ function Arisu.runApp(app)
     local textureDims = UniformBlock.new(0)
     local textureManager = TextureManager.new(samplers, textureDims, 0)
 
-    local pattern = Image.fromPath("assets/texture1.ppm")
-    assert(pattern, "Failed to load texture image")
-
-    local patternTexture = textureManager:upload(pattern)
-
-    local qoiImage = Image.fromPath("assets/airman.qoi")
-    assert(qoiImage, "Failed to load QOI image")
-
-    local qoiTexture = textureManager:upload(qoiImage)
+    -- Run the app constructor in the rendering context so they can initialize any
+    -- GL resources they need.
+    local app = cons(textureManager)
 
     local ui = app:view()
     local layoutTree = Layout.fromElement(ui)
+
+    local function runUpdate(message)
+        local didUpdate = app:update(message)
+        if didUpdate then
+            ui = app:view()
+            layoutTree = Layout.fromElement(ui)
+        end
+    end
 
     eventLoop:run(function(event, handler)
         handler:setMode("poll")
@@ -175,7 +177,7 @@ function Arisu.runApp(app)
             end)
 
             if clickedElement then
-                app:update(clickedElement.onclick)
+                runUpdate(clickedElement.onclick)
             end
         elseif event.name == "mouseRelease" then
         elseif event.name == "redraw" then

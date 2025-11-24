@@ -1,5 +1,6 @@
 local Arisu = require "src.arisu"
 local Element = require "src.ui.element"
+local Image = require "src.image"
 
 ---@enum Message
 local Message = {
@@ -9,6 +10,7 @@ local Message = {
 }
 
 ---@class App
+---@field r number
 local App = {}
 App.__index = App
 
@@ -20,7 +22,7 @@ function App:view()
             gap = 40 * 4,
             justify = "center",
             align = "center",
-            bg = { r = 1.0, g = 1.0, b = 1.0, a = 1.0 },
+            bg = { r = self.r, g = 1.0, b = 1.0, a = 1.0 },
             bgImage = 3
         })
         :withChildren(
@@ -52,7 +54,31 @@ end
 
 ---@param message Message
 function App:update(message)
-    print("Hi updated")
+    if message == Message.GreenClicked then
+        print("Green clicked!")
+        self.r = math.min(self.r + 0.1, 1.0)
+    elseif message == Message.YellowClicked then
+        print("Yellow clicked!")
+    elseif message == Message.BlueClicked then
+        print("Blue clicked!")
+    end
+
+    return true
 end
 
-Arisu.runApp(App)
+Arisu.runApp(function(textureManager)
+    local this = setmetatable({}, App)
+    this.r = 1.0
+
+    local pattern = Image.fromPath("assets/texture1.ppm")
+    assert(pattern, "Failed to load texture image")
+
+    local patternTexture = textureManager:upload(pattern)
+
+    local qoiImage = Image.fromPath("assets/airman.qoi")
+    assert(qoiImage, "Failed to load QOI image")
+
+    local qoiTexture = textureManager:upload(qoiImage)
+
+    return this
+end)
