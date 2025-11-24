@@ -28,15 +28,16 @@ local function intoDirection(value --[[@param value Direction]] )
     end
 end
 
----@class Layout
+---@class LayoutStyle
 ---@field width ScaleUnit
 ---@field height ScaleUnit
 ---@field gap number
----@field children Layout[]
 ---@field direction Direction
 ---@field align Alignment
 ---@field justify Justify
----@field style Style
+
+---@class Layout: LayoutStyle
+---@field visualStyle VisualStyle
 local Layout = {}
 Layout.__index = Layout
 
@@ -92,7 +93,7 @@ function Layout:withChildren(...)
     return self
 end
 
-function Layout:withStyle(style --[[@param style Style]])
+function Layout:withStyle(style --[[@param style VisualStyle]])
     self.style = style
     return self
 end
@@ -102,7 +103,7 @@ end
 ---@field height number
 ---@field x number
 ---@field y number
----@field style Style
+---@field style VisualStyle
 ---@field children ComputedLayout[]
 
 ---@param parentWidth number
@@ -181,6 +182,32 @@ function Layout:solve(parentWidth, parentHeight)
     end
 
     return { width = width, height = height, x = 0, y = 0, style = self.style, children = childResults }
+end
+
+---@param element Element
+function Layout.fromElement(element)
+    local layout = Layout.new()
+
+    if element.visualStyle then
+        layout = layout:withStyle(element.visualStyle)
+    end
+
+    if element.layoutStyle then
+        for k, v in pairs(element.layoutStyle) do
+            layout[k] = v
+        end
+    end
+
+    if element.children then
+        local childLayouts = {}
+        for _, child in ipairs(element.children) do
+            table.insert(childLayouts, Layout.fromElement(child))
+        end
+
+        layout:withChildren(table.unpack(childLayouts))
+    end
+
+    return layout
 end
 
 return Layout

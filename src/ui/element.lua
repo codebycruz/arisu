@@ -5,15 +5,33 @@
 ---@class Div
 ---@field type "div"
 ---@field children Element[]
+---@field visualStyle VisualStyle
+---@field layoutStyle LayoutStyle
 local Div = {}
 Div.__index = Div
 
 function Div.new()
-    return setmetatable({}, Div)
+    return setmetatable({ children = {}, type = "div", visualStyle = {}, layoutStyle = {} }, Div)
 end
 
 function Div:withChildren(...)
     self.children = {...}
+    return self
+end
+
+function Div:withLayoutStyle(style --[[@param style LayoutStyle]] )
+    self.layoutStyle = style
+    return self
+end
+
+function Div:withVisualStyle(style --[[@param style VisualStyle]] )
+    self.visualStyle = style
+    return self
+end
+
+function Div:withStyle(style --[[@param style LayoutStyle | VisualStyle]] )
+    self.visualStyle = style
+    self.layoutStyle = style
     return self
 end
 
@@ -25,7 +43,7 @@ local Button = {}
 Button.__index = Button
 
 function Button.new()
-    return setmetatable({}, Button)
+    return setmetatable({ type = "button", inner = Div.new() }, Button)
 end
 
 function Button:withInner(element --[[@param element Element]] )
@@ -41,11 +59,13 @@ end
 ---@class Text
 ---@field type "text"
 ---@field content string
+---@field visualStyle VisualStyle
+---@field layoutStyle LayoutStyle
 local Text = {}
 Text.__index = Text
 
 function Text.from(content)
-    return setmetatable({ content = content }, Text)
+    return setmetatable({ type = "text", visualStyle = {}, layoutStyle = {}, content = content }, Text)
 end
 
 return {
