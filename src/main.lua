@@ -29,7 +29,7 @@ local function generateLayoutQuads(layout, parentX, parentY, vertices, indices, 
 
     if layout.style and layout.style.bg then
         local color = layout.style.bg
-        local baseIdx = #vertices / 6
+        local baseIdx = #vertices / 8
 
         local left = toNDC(x, windowWidth)
         local right = toNDC(x + width, windowWidth)
@@ -37,10 +37,10 @@ local function generateLayoutQuads(layout, parentX, parentY, vertices, indices, 
         local bottom = -toNDC(y + height, windowHeight)
 
         for _, v in ipairs {
-            left, top, color.r, color.g, color.b, color.a,
-            right, top, color.r, color.g, color.b, color.a,
-            right, bottom, color.r, color.g, color.b, color.a,
-            left, bottom, color.r, color.g, color.b, color.a
+            left, top, color.r, color.g, color.b, color.a, 0, 0,
+            right, top, color.r, color.g, color.b, color.a, 1, 0,
+            right, bottom, color.r, color.g, color.b, color.a, 1, 1,
+            left, bottom, color.r, color.g, color.b, color.a, 0, 1
         } do
             table.insert(vertices, v)
         end
@@ -116,6 +116,7 @@ local function main()
     local vertexDescriptor = BufferDescriptor.new()
         :withAttribute({ type = "f32", size = 2, offset = 0 })  -- position (vec2)
         :withAttribute({ type = "f32", size = 4, offset = 8 })  -- color (rgba)
+        :withAttribute({ type = "f32", size = 2, offset = 24 }) -- uv
 
     local vertex = Buffer.new()
     local index = Buffer.new()
