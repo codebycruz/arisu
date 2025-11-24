@@ -71,6 +71,35 @@ local function generateLayoutQuads(layout, parentX, parentY, vertices, indices, 
     end
 end
 
+local function findElementAtPosition(element, layout, x, y, parentX, parentY)
+    local absX = (parentX or 0) + (layout.x or 0)
+    local absY = (parentY or 0) + (layout.y or 0)
+
+    if x >= absX and x <= absX + layout.width and
+       y >= absY and y <= absY + layout.height then
+
+        if layout.children and element.children then
+            for i, childLayout in ipairs(layout.children) do
+                local childElement = element.children[i]
+                local found = findElementAtPosition(childElement, childLayout, x, y, absX, absY)
+                if found then
+                    return found
+                end
+            end
+        elseif element.type == "button" and element.inner then
+            -- Button wraps its inner element but uses the same layout
+            local found = findElementAtPosition(element.inner, layout, x, y, parentX, parentY)
+            if found then
+                return element  -- Return the button, not the inner element
+            end
+        end
+
+        return element
+    end
+
+    return nil
+end
+
 local function main()
     local ui = Element.Div.new()
         :withStyle({
@@ -83,18 +112,26 @@ local function main()
             bgImage = 2
         })
         :withChildren(
-            Element.Div.new()
-                :withStyle({
-                    width = { abs = 256 },
-                    height = { abs = 256 },
-                    bg = { r = 0.0, g = 1.0, b = 0.0, a = 1.0 }
-                }),
-            Element.Div.new()
-                :withStyle({
-                    width = { abs = 256 },
-                    height = { abs = 256 },
-                    bg = { r = 0.0, g = 0.0, b = 1.0, a = 1.0 }
-                })
+            Element.Button.new()
+                :withInner(Element.Div.new()
+                    :withStyle({
+                        width = { abs = 256 },
+                        height = { abs = 256 },
+                        bg = { r = 0.0, g = 1.0, b = 0.0, a = 1.0 }
+                    }))
+                :onClick(function()
+                    print("Green button clicked!")
+                end),
+            Element.Button.new()
+                :withInner(Element.Div.new()
+                    :withStyle({
+                        width = { abs = 256 },
+                        height = { abs = 256 },
+                        bg = { r = 0.0, g = 0.0, b = 1.0, a = 1.0 }
+                    }))
+                :onClick(function()
+                    print("Blue button clicked!")
+                end)
         )
 
     local layoutTree = Layout.fromElement(ui)
@@ -159,9 +196,13 @@ local function main()
         elseif event.name == "mouseMove" then
             -- print("mousemove", event.x, event.y)
         elseif event.name == "mousePress" then
-            print("mousepress", event.button, event.x, event.y)
+            local computedLayout = layoutTree:solve(window.width, window.height)
+            local clickedElement = findElementAtPosition(ui, computedLayout, event.x, event.y, 0, 0)
+
+            if clickedElement and clickedElement.type == "button" and clickedElement.onclick then
+                clickedElement.onclick()
+            end
         elseif event.name == "mouseRelease" then
-            print("mouserelease", event.button, event.x, event.y)
         elseif event.name == "redraw" then
             local currentTime = os.clock()
             local deltaTime = currentTime - lastFrameTime

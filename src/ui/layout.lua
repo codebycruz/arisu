@@ -186,6 +186,11 @@ end
 
 ---@param element Element
 function Layout.fromElement(element)
+    -- If element is a Button, treat it as its inner element for layout
+    if element.type == "button" and element.inner then
+        return Layout.fromElement(element.inner)
+    end
+    
     local layout = Layout.new()
 
     if element.visualStyle then
