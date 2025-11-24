@@ -11,7 +11,8 @@ local BufferDescriptor = require "src.gl.buffer_descriptor"
 local Buffer = require "src.gl.buffer"
 local VAO = require "src.gl.vao"
 
-local Layout = require "src.layout"
+local Layout = require "src.ui.layout"
+local Element = require "src.ui.element"
 
 local vertexShader = io.open("src/shaders/main.vert.glsl", "r"):read("*a")
 local fragmentShader = io.open("src/shaders/main.frag.glsl", "r"):read("*a")
@@ -60,6 +61,16 @@ local function generateLayoutQuads(layout, parentX, parentY, vertices, indices, 
 end
 
 local function main()
+    local ui = Element.Div.new()
+        :withChildren(
+            Element.Button.new()
+                :withInner(Element.Text.from("Click Me"))
+                :onClick(function()
+                    print("Button clicked!")
+                end),
+            Element.Text.from("Hello, World!")
+        )
+
     local layoutTree = Layout.new()
         :withSize(1.0, 1.0)
         :withDirection("row")
