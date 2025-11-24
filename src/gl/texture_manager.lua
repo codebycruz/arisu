@@ -8,9 +8,11 @@ local maxHeight = 1024
 local maxLayers = 256
 
 ---@alias Texture number
+---@alias TextureMetadata { width: number, height: number, image?: Image }
 
 ---@class TextureManager
----@field textures Texture[]
+---@field textures TextureMetadata[]
+---@field textureCount number
 ---@field textureDims number[]
 ---@field textureDimsUniform UniformBlock
 ---@field sampler2DArray Uniform
@@ -38,7 +40,7 @@ function TextureManager.new(sampler2DArray, textureDims, textureUnit)
     gl.textureParameteri(textureHandle, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
     gl.textureParameteri(textureHandle, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
 
-    local this = setmetatable({ textureDims = {}, textureDimsUniform = textureDims, textureHandle = textureHandle, textureUnit = textureUnit, sampler2DArray = sampler2DArray, textures = {} }, TextureManager)
+    local this = setmetatable({ textureCount = 0, textureDims = {}, textureDimsUniform = textureDims, textureHandle = textureHandle, textureUnit = textureUnit, sampler2DArray = sampler2DArray, textures = {} }, TextureManager)
     this.whiteTexture = this:upload(Image.new(1, 1, 3, ffi.new("uint8_t[?]", 3, {255, 255, 255}), ""))
     this.errorTexture = this:upload(
         Image.new(2, 2, 3, ffi.new("uint8_t[?]", 12, {
@@ -53,13 +55,31 @@ function TextureManager:destroy()
     gl.deleteTextures(1, ffi.new("GLuint[1]", self.sampler2DArray.id))
 end
 
----@param image Image
+---@param width number
+---@param height number
 ---@return Texture
-function TextureManager:upload(image)
-    local layer = #self.textures
+function TextureManager:allocate(width, height)
+    local layer = self.textureCount
     if layer >= maxLayers then
         error("Maximum number of texture layers reached")
     end
+
+    self.textures[layer] = { width = width, height = height }
+
+    self.textureDims[layer * 4 + 1] = width
+    self.textureDims[layer * 4 + 2] = height
+    self.textureDims[layer * 4 + 3] = 0 -- padding
+    self.textureDims[layer * 4 + 4] = 0 -- padding
+    self.textureDimsUniform:set("u32", self.textureDims)
+
+    self.textureCount = self.textureCount + 1
+
+    return layer
+end
+
+---@param image Image
+function TextureManager:update(texture, image)
+    assert(self.textures[texture], "Texture does not exist")
 
     local format = ({
         [2] = gl.RG,
@@ -69,12 +89,16 @@ function TextureManager:upload(image)
 
     assert(format, "Unsupported number of channels: " .. tostring(image.channels))
 
+    self.textureDims[texture * 4 + 1] = image.width
+    self.textureDims[texture * 4 + 2] = image.height
+    self.textureDimsUniform:set("u32", self.textureDims)
+
     gl.textureSubImage3D(
         self.textureHandle,
         0,
         0,
         0,
-        layer,
+        texture,
         image.width,
         image.height,
         1,
@@ -82,19 +106,13 @@ function TextureManager:upload(image)
         gl.UNSIGNED_BYTE,
         image.pixels
     )
+end
 
-    table.insert(self.textures, {
-        image = image,
-    })
-
-    -- Yeah this is gonna break as soon as we start deallocating textures :)
-    table.insert(self.textureDims, image.width)
-    table.insert(self.textureDims, image.height)
-    table.insert(self.textureDims, 0)
-    table.insert(self.textureDims, 0)
-    self.textureDimsUniform:set("u32", self.textureDims)
-
-    return layer
+---@param image Image
+function TextureManager:upload(image)
+    local texture = self:allocate(image.width, image.height)
+    self:update(texture, image)
+    return texture
 end
 
 function TextureManager:bind()
