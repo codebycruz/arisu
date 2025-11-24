@@ -11,23 +11,10 @@ local BufferDescriptor = require "src.gl.buffer_descriptor"
 local Buffer = require "src.gl.buffer"
 local VAO = require "src.gl.vao"
 
-local vertexShader = [[
-    #version 330 core
-    layout(location = 0) in vec3 aPos;
-    void main()
-    {
-        gl_Position = vec4(aPos, 1.0);
-    }
-]]
+local Layout = require "src.layout"
 
-local fragmentShader = [[
-    #version 330 core
-    out vec4 FragColor;
-    void main()
-    {
-        FragColor = vec4(1.0, 0.5, 0.2, 1.0);
-    }
-]]
+local vertexShader = io.open("src/shaders/main.vert.glsl", "r"):read("*a")
+local fragmentShader = io.open("src/shaders/main.frag.glsl", "r"):read("*a")
 
 local function hsvToRgb(h, s, v)
     local c = v * s
@@ -53,6 +40,17 @@ local function hsvToRgb(h, s, v)
 end
 
 local function main()
+    local x = Layout.new()
+        :withSize(512, 512)
+        :withDirection("column")
+        :withChildren(
+            Layout.new()
+                :withSize(256, 256),
+            Layout.new()
+                :withSize(256, 256)
+        )
+        :solve(1280, 720)
+
     local eventLoop = window.EventLoop.new()
     local window = window.WindowBuilder.new()
         :withTitle("GLX Window")
