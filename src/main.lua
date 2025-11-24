@@ -80,7 +80,7 @@ local function main()
             justify = "center",
             align = "center",
             bg = { r = 1.0, g = 0.0, b = 0.0, a = 1.0 },
-            bgImage = 0
+            bgImage = 2
         })
         :withChildren(
             Element.Div.new()
@@ -129,7 +129,7 @@ local function main()
         :withAttribute({ type = "f32", size = 2, offset = 0 })  -- position (vec2)
         :withAttribute({ type = "f32", size = 4, offset = 8 })  -- color (rgba)
         :withAttribute({ type = "f32", size = 2, offset = 24 }) -- uv
-        :withAttribute({ type = "i32", size = 1, offset = 32 }) -- texture id
+        :withAttribute({ type = "f32", size = 1, offset = 32 }) -- texture id
 
     local vertex = Buffer.new()
     local index = Buffer.new()
@@ -142,7 +142,7 @@ local function main()
     local textureDims = UniformBlock.new(0)
     local textureManager = TextureManager.new(samplers, textureDims, 0)
 
-    local pattern = Image.fromPath("assets/texture2.ppm")
+    local pattern = Image.fromPath("assets/texture1.ppm")
     assert(pattern, "Failed to load texture image")
 
     local patternTexture = textureManager:upload(pattern)

@@ -90,6 +90,8 @@ function TextureManager:upload(image)
     -- Yeah this is gonna break as soon as we start deallocating textures :)
     table.insert(self.textureDims, image.width)
     table.insert(self.textureDims, image.height)
+    table.insert(self.textureDims, 0)
+    table.insert(self.textureDims, 0)
     self.textureDimsUniform:set("u32", self.textureDims)
 
     return layer
