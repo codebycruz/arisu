@@ -16,33 +16,56 @@ local Layout = require "src.layout"
 local vertexShader = io.open("src/shaders/main.vert.glsl", "r"):read("*a")
 local fragmentShader = io.open("src/shaders/main.frag.glsl", "r"):read("*a")
 
-local function hsvToRgb(h, s, v)
-    local c = v * s
-    local x = c * (1 - math.abs((h / 60) % 2 - 1))
-    local m = v - c
+local function toNDC(pos, screenSize)
+    return (pos / (screenSize * 0.5)) - 1.0
+end
 
-    local r, g, b
-    if h < 60 then
-        r, g, b = c, x, 0
-    elseif h < 120 then
-        r, g, b = x, c, 0
-    elseif h < 180 then
-        r, g, b = 0, c, x
-    elseif h < 240 then
-        r, g, b = 0, x, c
-    elseif h < 300 then
-        r, g, b = x, 0, c
-    else
-        r, g, b = c, 0, x
+local function generateLayoutQuads(layout, parentX, parentY, vertices, indices, windowWidth, windowHeight)
+    local x = (parentX or 0) + (layout.x or 0)
+    local y = (parentY or 0) + (layout.y or 0)
+    local width = layout.width
+    local height = layout.height
+
+    if layout.style and layout.style.bg then
+        local color = layout.style.bg
+        local baseIdx = #vertices / 6
+
+        local left = toNDC(x, windowWidth)
+        local right = toNDC(x + width, windowWidth)
+        local top = -toNDC(y, windowHeight)
+        local bottom = -toNDC(y + height, windowHeight)
+
+        for _, v in ipairs {
+            left, top, color.r, color.g, color.b, color.a,
+            right, top, color.r, color.g, color.b, color.a,
+            right, bottom, color.r, color.g, color.b, color.a,
+            left, bottom, color.r, color.g, color.b, color.a
+        } do
+            table.insert(vertices, v)
+        end
+
+        for _, idx in ipairs {
+            baseIdx, baseIdx + 1, baseIdx + 2,
+            baseIdx, baseIdx + 2, baseIdx + 3
+        } do
+            table.insert(indices, idx)
+        end
     end
 
-    return r + m, g + m, b + m
+    if layout.children then
+        for _, child in ipairs(layout.children) do
+            generateLayoutQuads(child, x, y, vertices, indices, windowWidth, windowHeight)
+        end
+    end
 end
 
 local function main()
-    local x = Layout.new()
-        :withSize(512, 512)
-        :withDirection("column")
+    local layoutTree = Layout.new()
+        :withSize(1.0, 1.0)
+        :withDirection("row")
+        :withGap(40 * 4)
+        :withJustify("center")
+        :withAlign("center")
         :withStyle({ bg = { r = 1.0, g = 0.0, b = 0.0, a = 1.0 } })
         :withChildren(
             Layout.new()
@@ -52,11 +75,10 @@ local function main()
                 :withStyle({ bg = { r = 0.0, g = 0.0, b = 1.0, a = 1.0 } })
                 :withSize(256, 256)
         )
-        :solve(1280, 720)
 
     local eventLoop = window.EventLoop.new()
     local window = window.WindowBuilder.new()
-        :withTitle("GLX Window")
+        :withTitle("Layout Renderer")
         :withSize(800, 600)
         :build(eventLoop)
 
@@ -81,21 +103,11 @@ local function main()
     pipeline:bind()
 
     local vertexDescriptor = BufferDescriptor.new()
-        :withAttribute({ type = "f32", size = 3, offset = 0 }) -- pos
+        :withAttribute({ type = "f32", size = 2, offset = 0 })  -- position (vec2)
+        :withAttribute({ type = "f32", size = 4, offset = 8 })  -- color (rgba)
 
     local vertex = Buffer.new()
-    vertex:setData("f32", {
-         0.5,  0.5, 0.0,
-         0.5, -0.5, 0.0,
-        -0.5, -0.5, 0.0,
-        -0.5,  0.5, 0.0,
-    })
-
     local index = Buffer.new()
-    index:setData("u32", {
-        0, 1, 3,
-        1, 2, 3,
-    })
 
     local vao = VAO.new()
     vao:setVertexBuffer(vertex, vertexDescriptor)
@@ -115,15 +127,19 @@ local function main()
             local deltaTime = currentTime - lastFrameTime
 
             if deltaTime >= frameTime then
-                local time = currentTime
-                local hue = (time * 1000) % 360
-                local r, g, b = hsvToRgb(hue, 0.8, 1.0)
+                local computedLayout = layoutTree:solve(window.width, window.height)
 
-                gl.clearColor(r, g, b, 1.0)
+                local vertices, indices = {}, {}
+                generateLayoutQuads(computedLayout, 0, 0, vertices, indices, window.width, window.height)
+
+                vertex:setData("f32", vertices)
+                index:setData("u32", indices)
+
+                gl.clearColor(0.1, 0.1, 0.1, 1.0)
                 gl.clear(gl.COLOR_BUFFER_BIT)
 
                 vao:bind()
-                gl.drawElements(gl.TRIANGLES, 6, gl.UNSIGNED_INT, nil)
+                gl.drawElements(gl.TRIANGLES, #indices, gl.UNSIGNED_INT, nil)
 
                 ctx:swapBuffers()
                 lastFrameTime = currentTime
