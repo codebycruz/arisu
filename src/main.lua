@@ -132,16 +132,16 @@ function App:view()
                 :withChildren(
                     Element.Div.new()
                         :withStyle({
-                            width = { abs = 600 },
-                            height = { abs = 450 },
+                            width = { rel = 0.8 },
+                            height = { rel = 0.8 },
                             bg = { r = 1.0, g = 1.0, b = 1.0, a = 1.0 },
                             bgImage = self.canvasTexture,
                             padding = { top = 10, bottom = 10, left = 10, right = 10 }
                         })
                         :onMouseDown({ type = "StartDrawing" })
                         :onMouseUp({ type = "StopDrawing" })
-                        :onMouseMove(function(x, y)
-                            return { type = "Hovered", x = x, y = y }
+                        :onMouseMove(function(x, y, elementWidth, elementHeight)
+                            return { type = "Hovered", x = x, y = y, elementWidth = elementWidth, elementHeight = elementHeight }
                         end)
                 )
         )
@@ -154,34 +154,39 @@ function App:update(message)
         self.isDrawing = true
     elseif message.type == "StopDrawing" then
         self.isDrawing = false
-        local canvasImage = Image.new(600, 450, 4, self.canvasBuffer, "")
+        local canvasImage = Image.new(800, 600, 4, self.canvasBuffer, "")
         self.textureManager:update(self.canvasTexture, canvasImage)
         self.lastGPUUpdate = os.clock()
     elseif message.type == "EraserClicked" then
     elseif message.type == "ColorClicked" then
     elseif message.type == "ClearClicked" then
-        for i = 0, 600 * 450 * 4 - 1 do
+        for i = 0, 800 * 600 * 4 - 1 do
             self.canvasBuffer[i] = 255
         end
 
-        local canvasImage = Image.new(600, 450, 4, self.canvasBuffer, "")
+        local canvasImage = Image.new(800, 600, 4, self.canvasBuffer, "")
         self.textureManager:update(self.canvasTexture, canvasImage)
         self.lastGPUUpdate = os.clock()
     elseif message.type == "SaveClicked" then
     elseif message.type == "LoadClicked" then
     elseif message.type == "Hovered" then
-        if self.isDrawing then
-            local pixelX = math.floor(message.x)
-            local pixelY = math.floor(message.y)
-            if pixelX >= 0 and pixelX < 600 and pixelY >= 0 and pixelY < 450 then
+        if self.isDrawing and message.elementWidth and message.elementHeight then
+            -- Map UI coordinates to texture coordinates
+            local textureX = (message.x / message.elementWidth) * 800
+            local textureY = (message.y / message.elementHeight) * 600
+            
+            local pixelX = math.floor(textureX)
+            local pixelY = math.floor(textureY)
+            
+            if pixelX >= 0 and pixelX < 800 and pixelY >= 0 and pixelY < 600 then
                 local brushSize = 3
                 for dy = -brushSize, brushSize do
                     for dx = -brushSize, brushSize do
                         local x = pixelX + dx
                         local y = pixelY + dy
-                        if x >= 0 and x < 600 and y >= 0 and y < 450 then
+                        if x >= 0 and x < 800 and y >= 0 and y < 600 then
                             if dx * dx + dy * dy <= brushSize * brushSize then
-                                local index = (y * 600 + x) * 4
+                                local index = (y * 800 + x) * 4
                                 self.canvasBuffer[index + 0] = 0
                                 self.canvasBuffer[index + 1] = 0
                                 self.canvasBuffer[index + 2] = 0
@@ -193,7 +198,7 @@ function App:update(message)
 
                 local currentTime = os.clock()
                 if currentTime - self.lastGPUUpdate >= self.gpuUpdateInterval then
-                    local canvasImage = Image.new(600, 450, 4, self.canvasBuffer, "")
+                    local canvasImage = Image.new(800, 600, 4, self.canvasBuffer, "")
                     self.textureManager:update(self.canvasTexture, canvasImage)
                     self.lastGPUUpdate = currentTime
                 end
@@ -218,12 +223,12 @@ Arisu.runApp(function(textureManager)
     local qoiImage = assert(Image.fromPath("assets/airman.qoi"), "Failed to load QOI image")
     this.qoiTexture = textureManager:upload(qoiImage)
 
-    this.canvasBuffer = ffi.new("uint8_t[?]", 600 * 450 * 4)
-    for i = 0, 600 * 450 * 4 - 1 do
+    this.canvasBuffer = ffi.new("uint8_t[?]", 800 * 600 * 4)
+    for i = 0, 800 * 600 * 4 - 1 do
         this.canvasBuffer[i] = 255
     end
 
-    local canvasImage = Image.new(600, 450, 4, this.canvasBuffer, "")
+    local canvasImage = Image.new(800, 600, 4, this.canvasBuffer, "")
     this.canvasTexture = textureManager:upload(canvasImage)
 
     return this

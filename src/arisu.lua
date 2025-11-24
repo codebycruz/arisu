@@ -207,7 +207,7 @@ function Arisu.runApp(cons)
 
             for el, layout in pairs(hoveredElements) do
                 if el.onmousemove then
-                    runUpdate(el.onmousemove(event.x - layout.absX, event.y - layout.absY))
+                    runUpdate(el.onmousemove(event.x - layout.absX, event.y - layout.absY, layout.layout.width, layout.layout.height))
                 end
             end
         elseif event.name == "mousePress" then
