@@ -38,6 +38,10 @@ end
 
 ---@class App
 ---@field r number
+---@field patternImage Image
+---@field patternTexture Texture
+---@field qoiImage Image
+---@field qoiTexture Texture
 local App = {}
 App.__index = App
 
@@ -50,7 +54,7 @@ function App:view()
             justify = "center",
             align = "center",
             bg = { r = self.r, g = 1.0, b = 1.0, a = 1.0 },
-            bgImage = 3
+            bgImage = self.qoiTexture
         })
         :withChildren(
             Element.Div.new()
@@ -102,15 +106,11 @@ Arisu.runApp(function(textureManager)
     local this = setmetatable({}, App)
     this.r = 1.0
 
-    local pattern = Image.fromPath("assets/texture1.ppm")
-    assert(pattern, "Failed to load texture image")
+    this.patternImage = assert(Image.fromPath("assets/gradient.qoi"), "Failed to load pattern image")
+    this.patternTexture = textureManager:upload(this.patternImage)
 
-    local patternTexture = textureManager:upload(pattern)
-
-    local qoiImage = Image.fromPath("assets/airman.qoi")
-    assert(qoiImage, "Failed to load QOI image")
-
-    local qoiTexture = textureManager:upload(qoiImage)
+    this.qoiImage = assert(Image.fromPath("assets/airman.qoi"), "Failed to load QOI image")
+    this.qoiTexture = textureManager:upload(this.qoiImage)
 
     return this
 end)
