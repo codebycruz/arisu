@@ -47,6 +47,14 @@ ffi.cdef[[
     // Drawing
     void glDrawElements(GLenum mode, GLsizei count, GLenum type, const void* indices);
 
+    // Uniforms
+    void glUniform1i(GLint location, GLint v0);
+    void glUniform1f(GLint location, GLfloat v0);
+    void glUniform2f(GLint location, GLfloat v0, GLfloat v1);
+    void glUniform3f(GLint location, GLfloat v0, GLfloat v1, GLfloat v2);
+    void glUniform4f(GLint location, GLfloat v0, GLfloat v1, GLfloat v2, GLfloat v3);
+    void glUniformMatrix4fv(GLint location, GLsizei count, unsigned char transpose, const GLfloat* value);
+
     // Misc
     char* glGetString(GLenum name);
 ]]
@@ -170,4 +178,22 @@ return {
         local str = C.glGetString(name)
         return ffi.string(str)
     end,
+
+    ---@type fun(location: number, v0: number)
+    uniform1i = C.glUniform1i,
+
+    ---@type fun(location: number, v0: number)
+    uniform1f = C.glUniform1f,
+
+    ---@type fun(location: number, v0: number, v1: number)
+    uniform2f = C.glUniform2f,
+
+    ---@type fun(location: number, v0: number, v1: number, v2: number)
+    uniform3f = C.glUniform3f,
+
+    ---@type fun(location: number, v0: number, v1: number, v2: number, v3: number)
+    uniform4f = C.glUniform4f,
+
+    ---@type fun(location: number, count: number, transpose: number, value: userdata)
+    uniformMatrix4fv = C.glUniformMatrix4fv,
 }
