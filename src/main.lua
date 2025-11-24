@@ -62,32 +62,30 @@ end
 
 local function main()
     local ui = Element.Div.new()
-        :withStyle({ bg = { r = 0.2, g = 0.2, b = 0.2, a = 1.0 }, gap = 10 })
+        :withStyle({
+            size = {1.0, 1.0},
+            direction = "row",
+            gap = 40 * 4,
+            justify = "center",
+            align = "center",
+            bg = { r = 1.0, g = 0.0, b = 0.0, a = 1.0 }
+        })
         :withChildren(
-            Element.Button.new()
-                :withInner(Element.Text.from("Click Me"))
-                :onClick(function()
-                    print("Button clicked!")
-                end),
-            Element.Text.from("Hello, World!")
+            Element.Div.new()
+                :withStyle({
+                    width = { abs = 256 },
+                    height = { abs = 256 },
+                    bg = { r = 0.0, g = 1.0, b = 0.0, a = 1.0 }
+                }),
+            Element.Div.new()
+                :withStyle({
+                    width = { abs = 256 },
+                    height = { abs = 256 },
+                    bg = { r = 0.0, g = 0.0, b = 1.0, a = 1.0 }
+                })
         )
 
     local layoutTree = Layout.fromElement(ui)
-    -- local layoutTree = Layout.new()
-    --     :withSize(1.0, 1.0)
-    --     :withDirection("row")
-    --     :withGap(40 * 4)
-    --     :withJustify("center")
-    --     :withAlign("center")
-    --     :withStyle({ bg = { r = 1.0, g = 0.0, b = 0.0, a = 1.0 } })
-    --     :withChildren(
-    --         Layout.new()
-    --             :withStyle({ bg = { r = 0.0, g = 1.0, b = 0.0, a = 1.0 } })
-    --             :withSize(256, 256),
-    --         Layout.new()
-    --             :withStyle({ bg = { r = 0.0, g = 0.0, b = 1.0, a = 1.0 } })
-    --             :withSize(256, 256)
-    --     )
 
     local eventLoop = window.EventLoop.new()
     local window = window.WindowBuilder.new()
