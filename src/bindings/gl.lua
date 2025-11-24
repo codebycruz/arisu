@@ -63,6 +63,9 @@ ffi.cdef[[
     void glBindTextureUnit(GLuint unit, GLuint texture);
     void glDeleteTextures(GLsizei n, const GLuint* textures);
 
+    // Uniform Buffer Objects
+    void glBindBufferBase(GLenum target, GLuint index, GLuint buffer);
+
     // Misc
     char* glGetString(GLenum name);
 ]]
@@ -110,6 +113,8 @@ return {
     NEAREST = 0x2600,
     REPEAT = 0x2901,
     LINEAR = 0x2601,
+
+    UNIFORM_BUFFER = 0x8A11,
 
     --- @param type ShaderType
     --- @param src string
@@ -240,4 +245,7 @@ return {
 
     ---@type fun(n: number, textures: userdata)
     deleteTextures = C.glDeleteTextures,
+
+    ---@type fun(target: number, index: number, buffer: number)
+    bindBufferBase = C.glBindBufferBase,
 }

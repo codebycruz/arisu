@@ -1,6 +1,12 @@
 #version 430 core
 
+#define MAX_LAYERS 256
+
 layout(location = 0) uniform sampler2DArray uTextureArray;
+
+layout(std140, binding = 0) uniform TextureDims {
+    vec2 dims[MAX_LAYERS];
+};
 
 layout(location = 0) in vec2 aPos;
 layout(location = 1) in vec4 aColor;

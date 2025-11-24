@@ -11,6 +11,7 @@ local BufferDescriptor = require "src.gl.buffer_descriptor"
 local Buffer = require "src.gl.buffer"
 local VAO = require "src.gl.vao"
 local Uniform = require "src.gl.uniform"
+local UniformBlock = require "src.gl.uniform_block"
 local TextureManager = require "src.gl.texture_manager"
 
 local Layout = require "src.ui.layout"
@@ -25,14 +26,15 @@ local function toNDC(pos, screenSize)
     return (pos / (screenSize * 0.5)) - 1.0
 end
 
+---@param layout ComputedLayout
 local function generateLayoutQuads(layout, parentX, parentY, vertices, indices, windowWidth, windowHeight)
     local x = (parentX or 0) + (layout.x or 0)
     local y = (parentY or 0) + (layout.y or 0)
     local width = layout.width
     local height = layout.height
 
-    if layout.style and layout.style.bg then
-        local color = layout.style.bg
+    if layout.style then
+        local color = layout.style.bg or { r = 1.0, g = 1.0, b = 1.0, a = 1.0 }
         local baseIdx = #vertices / 9
 
         local left = toNDC(x, windowWidth)
@@ -40,11 +42,16 @@ local function generateLayoutQuads(layout, parentX, parentY, vertices, indices, 
         local top = -toNDC(y, windowHeight)
         local bottom = -toNDC(y + height, windowHeight)
 
+        local textureId = 0 -- default white texture
+        if layout.style.bgImage then
+            textureId = layout.style.bgImage
+        end
+
         for _, v in ipairs {
-            left, top, color.r, color.g, color.b, color.a, 0, 0, 0,
-            right, top, color.r, color.g, color.b, color.a, 1, 0, 0,
-            right, bottom, color.r, color.g, color.b, color.a, 1, 1, 0,
-            left, bottom, color.r, color.g, color.b, color.a, 0, 1, 0
+            left, top, color.r, color.g, color.b, color.a, 0, 0, textureId,
+            right, top, color.r, color.g, color.b, color.a, 1, 0, textureId,
+            right, bottom, color.r, color.g, color.b, color.a, 1, 1, textureId,
+            left, bottom, color.r, color.g, color.b, color.a, 0, 1, textureId
         } do
             table.insert(vertices, v)
         end
@@ -72,7 +79,8 @@ local function main()
             gap = 40 * 4,
             justify = "center",
             align = "center",
-            bg = { r = 1.0, g = 0.0, b = 0.0, a = 1.0 }
+            bg = { r = 1.0, g = 0.0, b = 0.0, a = 1.0 },
+            bgImage = 0
         })
         :withChildren(
             Element.Div.new()
@@ -131,7 +139,8 @@ local function main()
     vao:setIndexBuffer(index)
 
     local samplers = Uniform.new("sampler2DArray", 0)
-    local textureManager = TextureManager.new(samplers, 0)
+    local textureDims = UniformBlock.new(0)
+    local textureManager = TextureManager.new(samplers, textureDims, 0)
 
     local pattern = Image.fromPath("assets/texture2.ppm")
     assert(pattern, "Failed to load texture image")

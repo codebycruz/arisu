@@ -11,6 +11,8 @@ local maxLayers = 256
 
 ---@class TextureManager
 ---@field textures Texture[]
+---@field textureDims number[]
+---@field textureDimsUniform UniformBlock
 ---@field sampler2DArray Uniform
 ---@field textureUnit number
 ---@field textureHandle number
@@ -20,8 +22,9 @@ local TextureManager = {}
 TextureManager.__index = TextureManager
 
 ---@param sampler2DArray Uniform
+---@param textureDims UniformBlock
 ---@param textureUnit number
-function TextureManager.new(sampler2DArray, textureUnit)
+function TextureManager.new(sampler2DArray, textureDims, textureUnit)
     assert(sampler2DArray.type == "sampler2DArray", "sampler2DArray must be of type sampler2DArray")
     assert(textureUnit, "textureUnit is required")
 
@@ -30,12 +33,12 @@ function TextureManager.new(sampler2DArray, textureUnit)
     local textureHandle = textureId[0]
 
     gl.textureStorage3D(textureHandle, 1, gl.RGBA8, maxWidth, maxHeight, maxLayers)
-    gl.textureParameteri(textureHandle, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
-    gl.textureParameteri(textureHandle, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
+    gl.textureParameteri(textureHandle, gl.TEXTURE_MIN_FILTER, gl.NEAREST)
+    gl.textureParameteri(textureHandle, gl.TEXTURE_MAG_FILTER, gl.NEAREST)
     gl.textureParameteri(textureHandle, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
     gl.textureParameteri(textureHandle, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
 
-    local this = setmetatable({ textureHandle = textureHandle, textureUnit = textureUnit, sampler2DArray = sampler2DArray, textures = {} }, TextureManager)
+    local this = setmetatable({ textureDims = {}, textureDimsUniform = textureDims, textureHandle = textureHandle, textureUnit = textureUnit, sampler2DArray = sampler2DArray, textures = {} }, TextureManager)
     this.whiteTexture = this:upload(Image.new(1, 1, 3, ffi.new("uint8_t[?]", 3, {255, 255, 255}), ""))
     this.errorTexture = this:upload(
         Image.new(2, 2, 3, ffi.new("uint8_t[?]", 12, {
@@ -80,7 +83,15 @@ function TextureManager:upload(image)
         image.pixels
     )
 
-    table.insert(self.textures, layer)
+    table.insert(self.textures, {
+        image = image,
+    })
+
+    -- Yeah this is gonna break as soon as we start deallocating textures :)
+    table.insert(self.textureDims, image.width)
+    table.insert(self.textureDims, image.height)
+    self.textureDimsUniform:set("u32", self.textureDims)
+
     return layer
 end
 
