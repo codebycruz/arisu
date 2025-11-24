@@ -9,6 +9,7 @@ local Pipeline = require "src.gl.pipeline"
 local Program = require "src.gl.program"
 local BufferDescriptor = require "src.gl.buffer_descriptor"
 local Buffer = require "src.gl.buffer"
+local VAO = require "src.gl.vao"
 
 local vertexShader = [[
     #version 330 core
@@ -70,8 +71,8 @@ local function main()
     ctx:makeCurrent()
 
     local pipeline = Pipeline.new()
-    pipeline:setProgram(gl.ShaderType.VERTEX, Program.new(gl.ShaderType.FRAGMENT, fragmentShader))
-    pipeline:setProgram(gl.ShaderType.FRAGMENT, Program.new(gl.ShaderType.VERTEX, vertexShader))
+    pipeline:setProgram(gl.ShaderType.VERTEX, Program.new(gl.ShaderType.VERTEX, vertexShader))
+    pipeline:setProgram(gl.ShaderType.FRAGMENT, Program.new(gl.ShaderType.FRAGMENT, fragmentShader))
     pipeline:bind()
 
     local vertexDescriptor = BufferDescriptor.new()
@@ -91,6 +92,10 @@ local function main()
         1, 2, 3,
     })
 
+    local vao = VAO.new()
+    vao:setVertexBuffer(vertex, vertexDescriptor)
+    vao:setIndexBuffer(index)
+
     eventLoop:run(function(event, handler)
         handler:setMode("poll")
 
@@ -107,6 +112,9 @@ local function main()
 
             gl.clearColor(r, g, b, 1.0)
             gl.clear(gl.COLOR_BUFFER_BIT)
+
+            vao:bind()
+            gl.drawElements(gl.TRIANGLES, 6, gl.UNSIGNED_INT, nil)
 
             ctx:swapBuffers()
         end

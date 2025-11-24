@@ -38,10 +38,14 @@ ffi.cdef[[
     void glVertexArrayAttribFormat(GLuint vaobj, GLuint attribindex, GLint size, GLenum type, unsigned char normalized, GLuint relativeoffset);
     void glVertexArrayAttribBinding(GLuint vaobj, GLuint attribindex, GLuint bindingindex);
     void glBindVertexArray(GLuint array);
+    void glCreateVertexArrays(GLsizei n, GLuint* arrays);
 
     void glCreateBuffers(GLsizei n, GLuint* buffers);
     void glNamedBufferData(GLuint buffer, GLsizeiptr size, const void* data, GLenum usage);
     void glNamedBufferSubData(GLuint buffer, GLintptr offset, GLsizeiptr size, const void* data);
+
+    // Drawing
+    void glDrawElements(GLenum mode, GLsizei count, GLenum type, const void* indices);
 ]]
 
 local C = ffi.load("GL")
@@ -57,6 +61,12 @@ return {
 
     VERTEX_SHADER_BIT = 0x00000001,
     FRAGMENT_SHADER_BIT = 0x00000002,
+
+    FLOAT = 0x1406,
+    UNSIGNED_INT = 0x1405,
+    INT = 0x1404,
+
+    TRIANGLES = 0x0004,
 
     --- @enum ShaderType
     ShaderType = {
@@ -133,4 +143,22 @@ return {
 
     ---@type fun(buffer: number, offset: number, size: number, data: userdata)
     namedBufferSubData = C.glNamedBufferSubData,
+
+    ---@type fun(vaobj: number, bindingindex: number, buffer: number, offset: number, stride: number)
+    vertexArrayVertexBuffer = C.glVertexArrayVertexBuffer,
+    ---@type fun(vaobj: number, buffer: number)
+    vertexArrayElementBuffer = C.glVertexArrayElementBuffer,
+    ---@type fun(vaobj: number, attribindex: number)
+    enableVertexArrayAttrib = C.glEnableVertexArrayAttrib,
+    ---@type fun(vaobj: number, attribindex: number, size: number, type: number, normalized: number, relativeoffset: number)
+    vertexArrayAttribFormat = C.glVertexArrayAttribFormat,
+    ---@type fun(vaobj: number, attribindex: number, bindingindex: number)
+    vertexArrayAttribBinding = C.glVertexArrayAttribBinding,
+    ---@type fun(array: number)
+    bindVertexArray = C.glBindVertexArray,
+    ---@type fun(n: number, arrays: userdata)
+    createVertexArrays = C.glCreateVertexArrays,
+
+    ---@type fun(mode: number, count: number, type: number, indices: userdata?)
+    drawElements = C.glDrawElements,
 }

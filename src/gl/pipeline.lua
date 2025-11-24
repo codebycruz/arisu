@@ -12,8 +12,15 @@ function Pipeline.new()
     return setmetatable({ id = pipeline, stages = {} }, Pipeline)
 end
 
-function Pipeline:setProgram(stage --[[@param stage ShaderType]], program --[[@param program Program]])
-    self.stages[stage] = program
+---@param type ShaderType
+---@param program Program
+function Pipeline:setProgram(type, program)
+    local stage = ({
+        [gl.ShaderType.VERTEX] = gl.VERTEX_SHADER_BIT,
+        [gl.ShaderType.FRAGMENT] = gl.FRAGMENT_SHADER_BIT,
+    })[type]
+
+    self.stages[type] = program
     gl.useProgramStages(self.id, stage, program.id)
 end
 
