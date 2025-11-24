@@ -3,9 +3,11 @@
 ---@alias Alignment "start" | "center" | "end"
 ---@alias Justify "start" | "center" | "end" | "space-between" | "space-around"
 ---@alias Padding { top: number?, bottom: number?, left: number?, right: number? } | number
+---@alias Margin { top: number?, bottom: number?, left: number?, right: number? } | number
 
 ---@alias IntoScaleUnit number | ScaleUnit
 ---@alias IntoPadding number | Padding
+---@alias IntoMargin number | Margin
 
 ---@return ScaleUnit
 local function intoScaleUnit(value --[[@param value IntoScaleUnit]] )
@@ -46,6 +48,22 @@ local function intoPadding(value --[[@param value IntoPadding]] )
     end
 end
 
+---@return Margin
+local function intoMargin(value --[[@param value IntoMargin]] )
+    if type(value) == "number" then
+        return { top = value, bottom = value, left = value, right = value }
+    elseif type(value) == "table" then
+        return {
+            top = value.top or 0,
+            bottom = value.bottom or 0,
+            left = value.left or 0,
+            right = value.right or 0
+        }
+    else
+        error("Invalid Margin value")
+    end
+end
+
 ---@class LayoutStyle
 ---@field width ScaleUnit
 ---@field height ScaleUnit
@@ -54,6 +72,7 @@ end
 ---@field align Alignment
 ---@field justify Justify
 ---@field padding Padding
+---@field margin Margin
 
 ---@class Layout: LayoutStyle
 ---@field visualStyle VisualStyle
@@ -112,6 +131,11 @@ function Layout:withPadding(padding --[[@param padding IntoPadding]])
     return self
 end
 
+function Layout:withMargin(margin --[[@param margin IntoMargin]])
+    self.margin = intoMargin(margin)
+    return self
+end
+
 function Layout:withChildren(...)
     self.children = { ... }
     return self
@@ -134,8 +158,20 @@ end
 ---@param parentHeight number
 ---@return ComputedLayout
 function Layout:solve(parentWidth, parentHeight)
-    local width = self.width.abs or (self.width.rel * parentWidth)
-    local height = self.height.abs or (self.height.rel * parentHeight)
+    -- Apply margin first to reduce available space
+    local margin = { top = 0, bottom = 0, left = 0, right = 0 }
+    if self.margin then
+        margin.top = self.margin.top or 0
+        margin.bottom = self.margin.bottom or 0
+        margin.left = self.margin.left or 0
+        margin.right = self.margin.right or 0
+    end
+
+    local availableWidth = parentWidth - margin.left - margin.right
+    local availableHeight = parentHeight - margin.top - margin.bottom
+
+    local width = self.width.abs or (self.width.rel * availableWidth)
+    local height = self.height.abs or (self.height.rel * availableHeight)
 
     -- Apply padding
     local padding = { top = 0, bottom = 0, left = 0, right = 0 }
@@ -217,7 +253,14 @@ function Layout:solve(parentWidth, parentHeight)
         end
     end
 
-    return { width = width, height = height, x = 0, y = 0, style = self.style, children = childResults }
+    return {
+        width = width,
+        height = height,
+        x = margin.left,
+        y = margin.top,
+        style = self.style,
+        children = childResults
+    }
 end
 
 ---@param element Element

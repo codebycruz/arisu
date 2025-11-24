@@ -55,7 +55,8 @@ function App:view()
                             bg = { r = 0.7, g = 0.7, b = 0.7, a = 1.0 },
                             justify = "center",
                             align = "center",
-                            padding = { top = 5, bottom = 5, left = 5, right = 5 }
+                            padding = { top = 5, bottom = 5, left = 5, right = 5 },
+                            margin = { right = 5 }
                         })
                         :onMouseDown({ type = "BrushClicked" }),
 
@@ -67,7 +68,8 @@ function App:view()
                             bg = { r = 0.7, g = 0.7, b = 0.7, a = 1.0 },
                             justify = "center",
                             align = "center",
-                            padding = { top = 5, bottom = 5, left = 5, right = 5 }
+                            padding = { top = 5, bottom = 5, left = 5, right = 5 },
+                            margin = { right = 5 }
                         })
                         :onMouseDown({ type = "EraserClicked" }),
 
@@ -79,7 +81,8 @@ function App:view()
                             bg = { r = 0.2, g = 0.2, b = 0.2, a = 1.0 },
                             justify = "center",
                             align = "center",
-                            padding = { top = 5, bottom = 5, left = 5, right = 5 }
+                            padding = { top = 5, bottom = 5, left = 5, right = 5 },
+                            margin = { left = 15, right = 15 }
                         })
                         :onMouseDown({ type = "ColorClicked" }),
 
@@ -91,7 +94,8 @@ function App:view()
                             bg = { r = 0.9, g = 0.5, b = 0.5, a = 1.0 },
                             justify = "center",
                             align = "center",
-                            padding = { top = 5, bottom = 5, left = 5, right = 5 }
+                            padding = { top = 5, bottom = 5, left = 5, right = 5 },
+                            margin = { left = 15, right = 5 }
                         })
                         :onMouseDown({ type = "ClearClicked" }),
 
@@ -103,7 +107,8 @@ function App:view()
                             bg = { r = 0.5, g = 0.8, b = 0.5, a = 1.0 },
                             justify = "center",
                             align = "center",
-                            padding = { top = 5, bottom = 5, left = 5, right = 5 }
+                            padding = { top = 5, bottom = 5, left = 5, right = 5 },
+                            margin = { right = 5 }
                         })
                         :onMouseDown({ type = "SaveClicked" }),
 
@@ -127,7 +132,8 @@ function App:view()
                     justify = "center",
                     align = "center",
                     bg = { r = 0.9, g = 0.9, b = 0.9, a = 1.0 },
-                    padding = { top = 5, bottom = 5, left = 5, right = 5 }
+                    padding = { top = 5, bottom = 5, left = 5, right = 5 },
+                    margin = { top = 10 }
                 })
                 :withChildren(
                     Element.Div.new()
@@ -136,7 +142,8 @@ function App:view()
                             height = { rel = 0.8 },
                             bg = { r = 1.0, g = 1.0, b = 1.0, a = 1.0 },
                             bgImage = self.canvasTexture,
-                            padding = { top = 10, bottom = 10, left = 10, right = 10 }
+                            padding = { top = 10, bottom = 10, left = 10, right = 10 },
+                            margin = { top = 20, bottom = 20, left = 20, right = 20 }
                         })
                         :onMouseDown({ type = "StartDrawing" })
                         :onMouseUp({ type = "StopDrawing" })
@@ -174,10 +181,10 @@ function App:update(message)
             -- Map UI coordinates to texture coordinates
             local textureX = (message.x / message.elementWidth) * 800
             local textureY = (message.y / message.elementHeight) * 600
-            
+
             local pixelX = math.floor(textureX)
             local pixelY = math.floor(textureY)
-            
+
             if pixelX >= 0 and pixelX < 800 and pixelY >= 0 and pixelY < 600 then
                 local brushSize = 3
                 for dy = -brushSize, brushSize do
