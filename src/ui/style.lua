@@ -1,2 +1,2 @@
 ---@alias Color { r: number, g: number, b: number, a: number }
----@alias VisualStyle { bg: Color, fg: Color }
+---@alias VisualStyle { bg: Color | { id: Texture }, fg: Color }

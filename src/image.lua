@@ -15,6 +15,12 @@ local ImageChannels = {
 local Image = {}
 Image.__index = Image
 
+---@param width number
+---@param height number
+---@param channels number
+---@param pixels userdata
+---@param buffer string
+---@return Image
 function Image.new(width, height, channels, pixels, buffer)
     return setmetatable({ width = width, height = height, channels = channels, pixels = pixels, buffer = buffer }, Image)
 end
