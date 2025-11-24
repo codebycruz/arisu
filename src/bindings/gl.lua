@@ -55,6 +55,14 @@ ffi.cdef[[
     void glUniform4f(GLint location, GLfloat v0, GLfloat v1, GLfloat v2, GLfloat v3);
     void glUniformMatrix4fv(GLint location, GLsizei count, unsigned char transpose, const GLfloat* value);
 
+    // Textures
+    void glCreateTextures(GLenum target, GLsizei n, GLuint* textures);
+    void glTextureStorage3D(GLuint texture, GLsizei levels, GLenum internalformat, GLsizei width, GLsizei height, GLsizei depth);
+    void glTextureSubImage3D(GLuint texture, GLsizei level, GLint xoffset, GLint yoffset, GLint zoffset, GLsizei width, GLsizei height, GLsizei depth, GLenum format, GLenum type, const void* pixels);
+    void glTextureParameteri(GLuint texture, GLenum pname, GLint param);
+    void glBindTextureUnit(GLuint unit, GLuint texture);
+    void glDeleteTextures(GLsizei n, const GLuint* textures);
+
     // Misc
     char* glGetString(GLenum name);
 ]]
@@ -84,6 +92,15 @@ return {
         VERTEX = 0x8B31,
         FRAGMENT = 0x8B30,
     },
+
+    TEXTURE_2D_ARRAY = 0x8C1A,
+    RGBA8 = 0x8058,
+
+    RG = 0x8227,
+    RGB = 0x1907,
+    RGBA = 0x1908,
+
+    UNSIGNED_BYTE = 0x1401,
 
     --- @param type ShaderType
     --- @param src string
@@ -196,4 +213,22 @@ return {
 
     ---@type fun(location: number, count: number, transpose: number, value: userdata)
     uniformMatrix4fv = C.glUniformMatrix4fv,
+
+    ---@type fun(target: number, n: number, textures: userdata)
+    createTextures = C.glCreateTextures,
+
+    ---@type fun(texture: number, levels: number, internalformat: number, width: number, height: number, depth: number)
+    textureStorage3D = C.glTextureStorage3D,
+
+    ---@type fun(texture: number, level: number, xoffset: number, yoffset: number, zoffset: number, width: number, height: number, depth: number, format: number, type: number, pixels: userdata)
+    textureSubImage3D = C.glTextureSubImage3D,
+
+    ---@type fun(texture: number, pname: number, param: number)
+    textureParameteri = C.glTextureParameteri,
+
+    ---@type fun(unit: number, texture: number)
+    bindTextureUnit = C.glBindTextureUnit,
+
+    ---@type fun(n: number, textures: userdata)
+    deleteTextures = C.glDeleteTextures,
 }

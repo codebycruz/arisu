@@ -11,7 +11,6 @@ local BufferDescriptor = require "src.gl.buffer_descriptor"
 local Buffer = require "src.gl.buffer"
 local VAO = require "src.gl.vao"
 local Uniform = require "src.gl.uniform"
-local Texture = require "src.gl.texture"
 local TextureManager = require "src.gl.texture_manager"
 
 local Layout = require "src.ui.layout"
@@ -132,6 +131,11 @@ local function main()
 
     local samplers = Uniform.new("sampler2DArray", 0)
     local textureManager = TextureManager.new(samplers)
+
+    local pattern = Image.fromPath("assets/texture2.ppm")
+    assert(pattern, "Failed to load texture image")
+
+    local patternTexture = textureManager:upload(pattern)
 
     eventLoop:run(function(event, handler)
         handler:setMode("poll")
