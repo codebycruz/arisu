@@ -1,5 +1,4 @@
 local gl = require "src.bindings.gl"
-local glx = require "src.bindings.glx"
 local x11 = require "src.bindings.x11"
 
 local window = require "src.window"
@@ -105,7 +104,7 @@ local function main()
             justify = "center",
             align = "center",
             bg = { r = 1.0, g = 1.0, b = 1.0, a = 1.0 },
-            bgImage = 1
+            bgImage = 3
         })
         :withChildren(
             Element.Div.new()
@@ -188,6 +187,11 @@ local function main()
     assert(pattern, "Failed to load texture image")
 
     local patternTexture = textureManager:upload(pattern)
+
+    local qoiImage = Image.fromPath("assets/gradient.qoi")
+    assert(qoiImage, "Failed to load QOI image")
+
+    local qoiTexture = textureManager:upload(qoiImage)
 
     eventLoop:run(function(event, handler)
         handler:setMode("poll")

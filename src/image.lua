@@ -1,10 +1,5 @@
-local ffi = require("ffi")
-
----@enum ImageChannels
-local ImageChannels = {
-    RGB = 3,
-    RGBA = 4,
-}
+local PPM = require "src.image.ppm"
+local QOI = require "src.image.qoi"
 
 ---@class Image
 ---@field buffer string
@@ -42,19 +37,17 @@ function Image:getPixel(x, y)
     return pixel
 end
 
-local function PPMP6Reader(content --[[@param content string]])
-    local width, height, body = string.match(content, "^P6%s+(%d+)%s+(%d+)%s+%d+%s(.*)$")
-    assert(width, "Invalid PPM file")
-
-    local pixels = ffi.cast("const uint8_t*", body)
-    return Image.new(tonumber(width), tonumber(height), ImageChannels.RGB, pixels, content)
-end
-
 ---@param content string
 ---@return Image?
 function Image.fromData(content)
-    if string.sub(content, 1, 2) == "P6" then
-        return PPMP6Reader(content)
+    if PPM.IsValid(content) then
+        local width, height, channels, pixels = PPM.Decode(content)
+        return Image.new(width, height, channels, pixels, content)
+    end
+
+    if QOI.IsValid(content) then
+        local width, height, channels, pixels = QOI.Decode(content)
+        return Image.new(width, height, channels, pixels, content)
     end
 
     return nil, "Unsupported image format"
