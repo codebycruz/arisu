@@ -1,3 +1,22 @@
+local Text
+
+local function intoElement(t)
+    local ty = type(t)
+    if ty == "table" then
+        if t.type then -- Already an element
+            return t
+        else -- todo: fragment?
+            error("Cannot convert to Element: table without type")
+        end
+    elseif ty == "string" then
+        -- TODO: Need default font handling built-in to do this.
+        -- Store a default bitmap somewhere.
+        error("TBD: convert string to Element")
+    else
+        error("Cannot convert to Element: " .. ty)
+    end
+end
+
 --- The View is a small layer above the Layout that bridges interactivity with the layout.
 ---@class Element<T>: { visualStyle: VisualStyle?, layoutStyle: LayoutStyle?, children: Element[]?, type: string, onclick: T, onmousemove: fun(x: number, y: number): T, onmousedown: T, onmouseup: T, layoutStyle: LayoutStyle, visualStyle: VisualStyle }
 
@@ -14,7 +33,12 @@ function Div.new()
 end
 
 function Div:withChildren(...)
-    self.children = {...}
+    local children = {}
+    for i = 1, select("#", ...) do
+        children[i] = intoElement(select(i, ...))
+    end
+
+    self.children = children
     return self
 end
 
@@ -57,7 +81,7 @@ end
 ---@field content string
 ---@field visualStyle VisualStyle
 ---@field layoutStyle LayoutStyle
-local Text = {}
+Text = {}
 Text.__index = Text
 
 function Text.from(content, bitmap)

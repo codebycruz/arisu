@@ -41,27 +41,27 @@ function App:view()
             -- Top toolbar
             Element.Div.new()
                 :withStyle({
-                    size = {1.0, nil},
-                    height = { abs = 60 },
+                    size = {1.0, 0.2},
+                    height = { abs = 120 },
                     direction = "row",
                     gap = 10,
                     align = "center",
                     padding = { left = 20, right = 20 },
                     bg = { r = 0.85, g = 0.85, b = 0.85, a = 1.0 },
-                    border = { width = 3, color = { r = 0.0, g = 0.0, b = 1.0, a = 1.0 } }
+                    border = { bottom = { width = 1, color = { r = 0.0, g = 0.0, b = 0.0, a = 0.7 } } }
                 })
                 :withChildren(
                     -- Brush tool
                     Element.Div.new()
                         :withStyle({
-                            width = { abs = 50 },
+                            width = { abs = 60 },
                             height = { abs = 40 },
                             bg = { r = 0.7, g = 0.7, b = 0.7, a = 1.0 },
                             justify = "center",
                             align = "center",
                             padding = { top = 5, bottom = 5, left = 5, right = 5 },
                             margin = { right = 5 },
-                            border = { width = 10, color = { r = 0.8, g = 0.4, b = 0.4, a = 1.0 } }
+                            border = { width = 2, color = { r = 0, g = 0, b = 0, a = 1.0 } }
                         })
                         :onMouseDown({ type = "BrushClicked" })
                         :withChildren(
@@ -71,18 +71,18 @@ function App:view()
                     -- Eraser tool
                     Element.Div.new()
                         :withStyle({
-                            width = { abs = 50 },
+                            width = { abs = 60 },
                             height = { abs = 40 },
                             bg = { r = 0.7, g = 0.7, b = 0.7, a = 1.0 },
                             justify = "center",
                             align = "center",
                             padding = { top = 5, bottom = 5, left = 5, right = 5 },
                             margin = { right = 5 },
-                            border = { width = 5, color = { r = 1.0, g = 0.0, b = 0.0, a = 1.0 } }
+                            border = { width = 2, color = { r = 0, g = 0, b = 0, a = 1.0 } }
                         })
                         :onMouseDown({ type = "EraserClicked" })
                         :withChildren(
-                            Element.Text.from("Eraser", self.jbmFont)
+                            Element.Text.from("Erase", self.jbmFont)
                         ),
 
                     -- Color picker
@@ -151,7 +151,6 @@ function App:view()
                         :withChildren(
                             Element.Text.from("Load", self.jbmFont)
                         ),
-
             -- FPS Counter
             Element.Div.new()
                 :withStyle({
@@ -166,12 +165,13 @@ function App:view()
                 :withChildren(
                     Element.Text.from("FPS: " .. math.floor(self.fps), self.jbmFont)
                 )
-                ),
+            ),
 
             -- Main canvas area
             Element.Div.new()
                 :withStyle({
-                    size = {1.0, 1.0},
+                    widthh = { rel = 1.0 },
+                    height = { rel = 0.8 },
                     justify = "center",
                     align = "center",
                     bg = { r = 0.9, g = 0.9, b = 0.9, a = 1.0 },
@@ -181,8 +181,8 @@ function App:view()
                 :withChildren(
                     Element.Div.new()
                         :withStyle({
-                            width = { rel = 0.8 },
-                            height = { rel = 0.8 },
+                            width = { rel = 1.0 },
+                            height = { rel = 1.0 },
                             bg = { r = 1.0, g = 1.0, b = 1.0, a = 1.0 },
                             bgImage = self.canvasTexture,
                             padding = { top = 10, bottom = 10, left = 10, right = 10 },
