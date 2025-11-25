@@ -54,7 +54,11 @@ function QOI.Decode(content)
         index[i][0] = 0
         index[i][1] = 0
         index[i][2] = 0
-        index[i][3] = 255
+
+        -- TODO: This alpha channel thing is probably wrong.
+        -- it goes against the spec.
+        -- But i'll have to get around to fixing it properly later.
+        index[i][3] = channels == 4 and 0 or 255
     end
 
     local pixels = ffi.new("uint8_t[?]", width * height * channels)

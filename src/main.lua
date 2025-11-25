@@ -286,7 +286,6 @@ Arisu.runApp(function(textureManager)
 
     local characters = " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~"
     local jbmFont = assert(Bitmap.fromPath({ margin = 4, gridWidth = 18, gridHeight = 18, characters = characters, perRow = 19 }, "assets/JetBrainsMono.qoi"), "Failed to load bitmap font")
-    print("id is", textureManager:upload(jbmFont.image))
     this.jbmFont = jbmFont
 
     this.canvasBuffer = ffi.new("uint8_t[?]", 800 * 600 * 4)
