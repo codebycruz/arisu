@@ -61,7 +61,7 @@ function App:view()
                         })
                         :onMouseDown({ type = "BrushClicked" })
                         :withChildren(
-                            Element.Text.from("B", self.jbmFont)
+                            Element.Text.from("23", self.jbmFont)
                         ),
 
                     -- Eraser tool

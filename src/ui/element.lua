@@ -62,15 +62,20 @@ Text.__index = Text
 
 function Text.from(content, bitmap)
     local row = Div.new()
-        :withLayoutStyle({ direction = "row" })
+        :withStyle({ direction = "row" })
 
     for i = 1, #content do
         local char = content:sub(i, i)
         local quad = bitmap:getCharUVs(char)
 
         local charDiv = Div.new()
-            :withVisualStyle({ bgImage = 4, bgImageUVs = { quad.u0, quad.v0, quad.u1, quad.v1 } })
-            :withLayoutStyle({ width = { abs = quad.width }, height = { abs = quad.height } })
+            :withStyle({
+                bg = { r = 1.0, g = 1.0, b = 1.0, a = 0.0 },
+                bgImage = 4,
+                bgImageUV = quad,
+                width = { abs = quad.width },
+                height = { abs = quad.height },
+            })
 
         table.insert(row.children, charDiv)
     end
