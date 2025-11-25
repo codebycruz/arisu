@@ -10,14 +10,22 @@ Context.__index = Context
 
 function Context.new(display --[[@param display XDisplay]], window --[[@param window Window]])
     local screen = x11.defaultScreen(display)
-    local visual = glx.chooseVisual(display, screen, { glx.RGBA, glx.DEPTH_SIZE, 16, glx.DOUBLEBUFFER })
-    if visual == nil then
-        return nil, "Failed to choose visual"
+
+    local fbConfig = glx.chooseFBConfig(display, screen, {
+        glx.RENDER_TYPE, glx.RGBA_BIT,
+        glx.DRAWABLE_TYPE, glx.WINDOW_BIT,
+        glx.DOUBLEBUFFER, 1,
+    })
+    if not fbConfig then
+        error("Failed to choose FBConfig")
     end
 
-    local ctx = glx.createContext(display, visual, nil, 1)
-    if ctx == nil then
-        return nil, "Failed to create GLX context"
+    local ctx = glx.createContextAttribsARB(display, fbConfig, nil, 1, {
+        glx.CONTEXT_MAJOR_VERSION_ARB, 3,
+        glx.CONTEXT_MINOR_VERSION_ARB, 3
+    })
+    if not ctx then
+        error("Failed to create GLX context with attributes")
     end
 
     return setmetatable({ ctx = ctx, display = display, window = window }, Context)
