@@ -39,6 +39,7 @@ local ffi = require("ffi")
 ---@field cropTexture Texture
 ---@field resizeTexture Texture
 ---@field rotateTexture Texture
+---@field brushesTexture Texture
 ---@field textureManager TextureManager
 ---@field jbmFont Bitmap
 ---@field canvasBuffer userdata
@@ -111,7 +112,7 @@ function App:view(windowId)
                         :withChildren(
                             Element.Div.new()
                                 :withStyle({
-                                    padding = { top = 3, bottom = 3, left = 3, right = 3 },
+                                    padding = { top = 6, bottom = 6, left = 6, right = 6 },
                                     height = { rel = 0.7 },
                                     gap = 16,
                                     direction = "row"
@@ -145,6 +146,7 @@ function App:view(windowId)
                                                 :withStyle({
                                                     direction = "row",
                                                     gap = 5,
+                                                    width = { rel = 1/2 },
                                                     height = { rel = 1/3 }
                                                 })
                                                 :withChildren(
@@ -162,6 +164,7 @@ function App:view(windowId)
                                                 :withStyle({
                                                     direction = "row",
                                                     gap = 5,
+                                                    width = { rel = 1/2 },
                                                     height = { rel = 1/3 }
                                                 })
                                                 :withChildren(
@@ -229,6 +232,7 @@ function App:view(windowId)
                                                 :withStyle({
                                                     direction = "row",
                                                     gap = 5,
+                                                    width = { rel = 1/2 },
                                                     height = { rel = 1/3 }
                                                 })
                                                 :withChildren(
@@ -246,6 +250,7 @@ function App:view(windowId)
                                                 :withStyle({
                                                     direction = "row",
                                                     gap = 5,
+                                                    width = { rel = 1/2 },
                                                     height = { rel = 1/3 }
                                                 })
                                                 :withChildren(
@@ -263,6 +268,7 @@ function App:view(windowId)
                                                 :withStyle({
                                                     direction = "row",
                                                     gap = 5,
+                                                    width = { rel = 1/2 },
                                                     height = { rel = 1/3 }
                                                 })
                                                 :withChildren(
@@ -384,9 +390,19 @@ function App:view(windowId)
                         :withChildren(
                             Element.Div.new()
                                 :withStyle({
+                                    align = "center",
+                                    justify = "center",
                                     padding = { top = 3, bottom = 3, left = 3, right = 3 },
-                                    height = { rel = 0.7 },
-                                }),
+                                    height = { rel = 0.7 }
+                                })
+                                :withChildren(
+                                    Element.Div.new()
+                                        :withStyle({
+                                            width = { abs = 50 },
+                                            height = { abs = 50 },
+                                            bgImage = self.brushesTexture,
+                                        })
+                                ),
                             Element.Text.from("Brushes", self.jbmFont)
                                 :withStyle({
                                     align = "center",
@@ -802,6 +818,9 @@ Arisu.runApp(function(textureManager)
 
     local rotateImage = assert(Image.fromPath("assets/rotate.qoi"), "Failed to load rotate image")
     this.rotateTexture = textureManager:upload(rotateImage)
+
+    local brushesImage = assert(Image.fromPath("assets/brushes.qoi"), "Failed to load brushes image")
+    this.brushesTexture = textureManager:upload(brushesImage)
 
     this.canvasBuffer = ffi.new("uint8_t[?]", 800 * 600 * 4)
     for i = 0, 800 * 600 * 4 - 1 do
