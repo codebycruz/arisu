@@ -10,7 +10,7 @@ function PPM.Decode(content --[[@param content string]])
     return tonumber(width), tonumber(height), 3, pixels
 end
 
-function PPM.IsValid(content --[[@param content string]])
+function PPM.isValid(content --[[@param content string]])
     return string.sub(content, 1, 2) == "P6"
 end
 

@@ -40,17 +40,21 @@ end
 ---@param content string
 ---@return Image?
 function Image.fromData(content)
-    if PPM.IsValid(content) then
+    if PPM.isValid(content) then
         local width, height, channels, pixels = PPM.Decode(content)
         return Image.new(width, height, channels, pixels, content)
     end
 
-    if QOI.IsValid(content) then
+    if QOI.isValid(content) then
         local width, height, channels, pixels = QOI.Decode(content)
         return Image.new(width, height, channels, pixels, content)
     end
 
     return nil, "Unsupported image format"
+end
+
+function Image.isValid(content)
+    return PPM.isValid(content) or QOI.isValid(content)
 end
 
 ---@param path string

@@ -36,7 +36,7 @@ local function swapEndian(value)
 end
 
 function QOI.Decode(content)
-    assert(QOI.IsValid(content), "Invalid QOI file")
+    assert(QOI.isValid(content), "Invalid QOI file")
 
     local header = ffi.cast("const qoi_header_t*", content)
 
@@ -138,7 +138,7 @@ function QOI.Decode(content)
     return width, height, channels, pixels
 end
 
-function QOI.IsValid(content)
+function QOI.isValid(content)
     if #content < 14 then return false end
     local header = ffi.cast("const qoi_header_t*", content)
     local magic = ffi.string(header.magic, 4)

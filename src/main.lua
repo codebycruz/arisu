@@ -1,6 +1,7 @@
 local Arisu = require "src.arisu"
 local Element = require "src.ui.element"
 local Image = require "src.image"
+local Bitmap = require "src.font.bitmap"
 local ffi = require("ffi")
 
 ---@alias Message
@@ -227,6 +228,10 @@ Arisu.runApp(function(textureManager)
 
     local qoiImage = assert(Image.fromPath("assets/airman.qoi"), "Failed to load QOI image")
     this.qoiTexture = textureManager:upload(qoiImage)
+
+    local characters = " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~"
+    local jbmFont = assert(Bitmap.fromPath({ gridWidth = 18, gridHeight = 18, characters = characters, perRow = 19 }, "assets/JetBrainsMono.qoi"), "Failed to load bitmap font")
+    this.jbmFont = jbmFont
 
     this.canvasBuffer = ffi.new("uint8_t[?]", 800 * 600 * 4)
     for i = 0, 800 * 600 * 4 - 1 do
