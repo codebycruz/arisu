@@ -72,6 +72,9 @@ ffi.cdef[[
 
     // Misc
     char* glGetString(GLenum name);
+    void glEnable(GLenum cap);
+    void glDisable(GLenum cap);
+    void glBlendFunc(GLenum sfactor, GLenum dfactor);
 ]]
 
 local C = ffi.load("GL")
@@ -126,6 +129,10 @@ return {
     SHADER_STORAGE_BARRIER_BIT = 0x00002000,
     BUFFER_UPDATE_BARRIER_BIT = 0x00000200,
     ALL_BARRIER_BITS = 0xFFFFFFFF,
+
+    BLEND = 0x0BE2,
+    SRC_ALPHA = 0x0302,
+    ONE_MINUS_SRC_ALPHA = 0x0303,
 
     --- @param type ShaderType
     --- @param src string
@@ -265,4 +272,13 @@ return {
 
     ---@type fun(barriers: number)
     memoryBarrier = C.glMemoryBarrier,
+
+    ---@type fun(cap: number)
+    enable = C.glEnable,
+
+    ---@type fun(cap: number)
+    disable = C.glDisable,
+
+    ---@type fun(sfactor: number, dfactor: number)
+    blendFunc = C.glBlendFunc,
 }

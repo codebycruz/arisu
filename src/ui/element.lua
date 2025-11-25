@@ -62,7 +62,7 @@ Text.__index = Text
 
 function Text.from(content, bitmap)
     local row = Div.new()
-        :withStyle({ direction = "row" })
+        :withStyle({ direction = "row", bg = { r = 0, g = 0, b = 0, a = 0 } })
 
     for i = 1, #content do
         local char = content:sub(i, i)
@@ -70,7 +70,7 @@ function Text.from(content, bitmap)
 
         local charDiv = Div.new()
             :withStyle({
-                bg = { r = 1.0, g = 1.0, b = 1.0, a = 0.0 },
+                bg = { r = 0.0, g = 0.0, b = 0.0, a = 1.0 },
                 bgImage = 4,
                 bgImageUV = quad,
                 width = { abs = quad.width },

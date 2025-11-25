@@ -175,6 +175,10 @@ function Arisu.runApp(cons)
     quadPipeline:setProgram(gl.ShaderType.FRAGMENT, Program.new(gl.ShaderType.FRAGMENT, fragmentShader))
     quadPipeline:bind()
 
+    -- Crucial!!
+    gl.enable(gl.BLEND)
+    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
+
     local vertexDescriptor = BufferDescriptor.new()
         :withAttribute({ type = "f32", size = 3, offset = 0 })  -- position (vec3)
         :withAttribute({ type = "f32", size = 4, offset = 12 })  -- color (rgba)
