@@ -7,7 +7,8 @@ local ffi = require("ffi")
 ---@alias Message
 --- | { type: "BrushClicked" }
 --- | { type: "EraserClicked" }
---- | { type: "ColorClicked" }
+--- | { type: "ColorClicked", r: number, g: number, b: number }
+--- | { type: "ToolClicked", tool: string }
 --- | { type: "ClearClicked" }
 --- | { type: "SaveClicked" }
 --- | { type: "LoadClicked" }
@@ -27,6 +28,8 @@ local ffi = require("ffi")
 ---@field gpuUpdateInterval number
 ---@field fps number
 ---@field lastFrameTime number
+---@field currentColor {r: number, g: number, b: number}
+---@field selectedTool string
 local App = {}
 App.__index = App
 
@@ -56,10 +59,11 @@ function App:view()
                             border = { right = { width = 1, color = borderColor } }
                         })
                         :withChildren(
-                            Element.Text.from("Center", self.jbmFont)
+                            Element.Div.new()
                                 :withStyle({
                                     padding = { top = 3, bottom = 3, left = 3, right = 3 },
                                     height = { rel = 0.7 },
+                                    bg = { r = 0.9, g = 0.9, b = 0.9, a = 1.0 },
                                 }),
                             Element.Text.from("Clipboard", self.jbmFont)
                                 :withStyle({
@@ -76,10 +80,11 @@ function App:view()
                             border = { right = { width = 1, color = borderColor } }
                         })
                         :withChildren(
-                            Element.Text.from("Center", self.jbmFont)
+                            Element.Div.new()
                                 :withStyle({
                                     padding = { top = 3, bottom = 3, left = 3, right = 3 },
                                     height = { rel = 0.7 },
+                                    bg = { r = 0.9, g = 0.9, b = 0.9, a = 1.0 },
                                 }),
                             Element.Text.from("Image", self.jbmFont)
                                 :withStyle({
@@ -96,11 +101,69 @@ function App:view()
                             border = { right = { width = 1, color = borderColor } }
                         })
                         :withChildren(
-                            Element.Text.from("Center", self.jbmFont)
+                            Element.Div.new()
                                 :withStyle({
                                     padding = { top = 3, bottom = 3, left = 3, right = 3 },
                                     height = { rel = 0.7 },
-                                }),
+                                    direction = "column",
+                                })
+                                :withChildren(
+                                    Element.Div.new()
+                                        :withStyle({
+                                            direction = "row",
+                                            height = { rel = 0.5 },
+                                            padding = { bottom = 1 }
+                                        })
+                                        :withChildren(
+                                            Element.Div.new()
+                                                :withStyle({
+                                                    width = { rel = 0.33 },
+                                                    bg = self.selectedTool == "brush" and { r = 0.7, g = 0.7, b = 1.0, a = 1.0 } or { r = 0.9, g = 0.9, b = 0.9, a = 1.0 },
+                                                    margin = { right = 1 }
+                                                })
+                                                :onMouseDown({ type = "ToolClicked", tool = "brush" }),
+                                            Element.Div.new()
+                                                :withStyle({
+                                                    width = { rel = 0.33 },
+                                                    bg = self.selectedTool == "eraser" and { r = 0.7, g = 0.7, b = 1.0, a = 1.0 } or { r = 0.9, g = 0.9, b = 0.9, a = 1.0 },
+                                                    margin = { right = 1 }
+                                                })
+                                                :onMouseDown({ type = "ToolClicked", tool = "eraser" }),
+                                            Element.Div.new()
+                                                :withStyle({
+                                                    width = { rel = 0.33 },
+                                                    bg = self.selectedTool == "fill" and { r = 0.7, g = 0.7, b = 1.0, a = 1.0 } or { r = 0.9, g = 0.9, b = 0.9, a = 1.0 }
+                                                })
+                                                :onMouseDown({ type = "ToolClicked", tool = "fill" })
+                                        ),
+                                    Element.Div.new()
+                                        :withStyle({
+                                            direction = "row",
+                                            height = { rel = 0.5 }
+                                        })
+                                        :withChildren(
+                                            Element.Div.new()
+                                                :withStyle({
+                                                    width = { rel = 0.33 },
+                                                    bg = self.selectedTool == "line" and { r = 0.7, g = 0.7, b = 1.0, a = 1.0 } or { r = 0.9, g = 0.9, b = 0.9, a = 1.0 },
+                                                    margin = { right = 1 }
+                                                })
+                                                :onMouseDown({ type = "ToolClicked", tool = "line" }),
+                                            Element.Div.new()
+                                                :withStyle({
+                                                    width = { rel = 0.33 },
+                                                    bg = self.selectedTool == "rectangle" and { r = 0.7, g = 0.7, b = 1.0, a = 1.0 } or { r = 0.9, g = 0.9, b = 0.9, a = 1.0 },
+                                                    margin = { right = 1 }
+                                                })
+                                                :onMouseDown({ type = "ToolClicked", tool = "rectangle" }),
+                                            Element.Div.new()
+                                                :withStyle({
+                                                    width = { rel = 0.33 },
+                                                    bg = self.selectedTool == "circle" and { r = 0.7, g = 0.7, b = 1.0, a = 1.0 } or { r = 0.9, g = 0.9, b = 0.9, a = 1.0 }
+                                                })
+                                                :onMouseDown({ type = "ToolClicked", tool = "circle" })
+                                        )
+                                ),
                             Element.Text.from("Tools", self.jbmFont)
                                 :withStyle({
                                     align = "center",
@@ -116,10 +179,11 @@ function App:view()
                             border = { right = { width = 1, color = borderColor } }
                         })
                         :withChildren(
-                            Element.Text.from("Center", self.jbmFont)
+                            Element.Div.new()
                                 :withStyle({
                                     padding = { top = 3, bottom = 3, left = 3, right = 3 },
                                     height = { rel = 0.7 },
+                                    bg = { r = 0.9, g = 0.9, b = 0.9, a = 1.0 },
                                 }),
                             Element.Text.from("Brushes", self.jbmFont)
                                 :withStyle({
@@ -137,10 +201,11 @@ function App:view()
                             border = { right = { width = 1, color = borderColor } }
                         })
                         :withChildren(
-                            Element.Text.from("Center", self.jbmFont)
+                            Element.Div.new()
                                 :withStyle({
                                     padding = { top = 3, bottom = 3, left = 3, right = 3 },
                                     height = { rel = 0.7 },
+                                    bg = { r = 0.9, g = 0.9, b = 0.9, a = 1.0 },
                                 }),
                             Element.Text.from("Shapes", self.jbmFont)
                                 :withStyle({
@@ -158,11 +223,144 @@ function App:view()
                             border = { right = { width = 1, color = borderColor } }
                         })
                         :withChildren(
-                            Element.Text.from("Center", self.jbmFont)
+                            Element.Div.new()
                                 :withStyle({
                                     padding = { top = 3, bottom = 3, left = 3, right = 3 },
                                     height = { rel = 0.7 },
-                                }),
+                                    direction = "row",
+                                    align = "center",
+                                    gap = 5
+                                })
+                                :withChildren(
+                                    Element.Div.new()
+                                        :withStyle({
+                                            width = { abs = 40 },
+                                            height = { abs = 40 },
+                                            bg = self.currentColor,
+                                            border = { all = { width = 1, color = { r = 0.0, g = 0.0, b = 0.0, a = 1.0 } } },
+                                            margin = { right = 5 }
+                                        }),
+                                    Element.Div.new()
+                                        :withStyle({
+                                            direction = "column",
+                                            width = { rel = 1.0 },
+                                            justify = "center",
+                                        })
+                                        :withChildren(
+                                            Element.Div.new()
+                                                :withStyle({
+                                                    direction = "row",
+                                                    height = { rel = 0.4 }
+                                                })
+                                                :withChildren(
+                                                    Element.Div.new()
+                                                        :withStyle({
+                                                            width = { rel = 0.125 },
+                                                            bg = { r = 0.0, g = 0.0, b = 0.0, a = 1.0 },
+                                                            margin = { all = 1 }
+                                                        })
+                                                        :onMouseDown({ type = "ColorClicked", r = 0.0, g = 0.0, b = 0.0 }),
+                                                    Element.Div.new()
+                                                        :withStyle({
+                                                            width = { rel = 0.125 },
+                                                            bg = { r = 1.0, g = 0.0, b = 0.0, a = 1.0 },
+                                                            margin = { all = 1 }
+                                                        })
+                                                        :onMouseDown({ type = "ColorClicked", r = 1.0, g = 0.0, b = 0.0 }),
+                                                    Element.Div.new()
+                                                        :withStyle({
+                                                            width = { rel = 0.125 },
+                                                            bg = { r = 0.0, g = 1.0, b = 0.0, a = 1.0 },
+                                                            margin = { all = 1 }
+                                                        })
+                                                        :onMouseDown({ type = "ColorClicked", r = 0.0, g = 1.0, b = 0.0 }),
+                                                    Element.Div.new()
+                                                        :withStyle({
+                                                            width = { rel = 0.125 },
+                                                            bg = { r = 0.0, g = 0.0, b = 1.0, a = 1.0 },
+                                                            margin = { all = 1 }
+                                                        })
+                                                        :onMouseDown({ type = "ColorClicked", r = 0.0, g = 0.0, b = 1.0 }),
+                                                    Element.Div.new()
+                                                        :withStyle({
+                                                            width = { rel = 0.125 },
+                                                            bg = { r = 1.0, g = 1.0, b = 0.0, a = 1.0 },
+                                                            margin = { all = 1 }
+                                                        })
+                                                        :onMouseDown({ type = "ColorClicked", r = 1.0, g = 1.0, b = 0.0 }),
+                                                    Element.Div.new()
+                                                        :withStyle({
+                                                            width = { rel = 0.125 },
+                                                            bg = { r = 1.0, g = 0.0, b = 1.0, a = 1.0 },
+                                                            margin = { all = 1 }
+                                                        })
+                                                        :onMouseDown({ type = "ColorClicked", r = 1.0, g = 0.0, b = 1.0 }),
+                                                    Element.Div.new()
+                                                        :withStyle({
+                                                            width = { rel = 0.125 },
+                                                            bg = { r = 0.0, g = 1.0, b = 1.0, a = 1.0 },
+                                                            margin = { all = 1 }
+                                                        })
+                                                        :onMouseDown({ type = "ColorClicked", r = 0.0, g = 1.0, b = 1.0 })
+                                                ),
+                                            Element.Div.new()
+                                                :withStyle({
+                                                    direction = "row",
+                                                    height = { rel = 0.4 }
+                                                })
+                                                :withChildren(
+                                                    Element.Div.new()
+                                                        :withStyle({
+                                                            width = { rel = 0.125 },
+                                                            bg = { r = 0.5, g = 0.5, b = 0.5, a = 1.0 },
+                                                            margin = { all = 1 }
+                                                        })
+                                                        :onMouseDown({ type = "ColorClicked", r = 0.5, g = 0.5, b = 0.5 }),
+                                                    Element.Div.new()
+                                                        :withStyle({
+                                                            width = { rel = 0.125 },
+                                                            bg = { r = 0.5, g = 0.0, b = 0.0, a = 1.0 },
+                                                            margin = { all = 1 }
+                                                        })
+                                                        :onMouseDown({ type = "ColorClicked", r = 0.5, g = 0.0, b = 0.0 }),
+                                                    Element.Div.new()
+                                                        :withStyle({
+                                                            width = { rel = 0.125 },
+                                                            bg = { r = 0.0, g = 0.5, b = 0.0, a = 1.0 },
+                                                            margin = { all = 1 }
+                                                        })
+                                                        :onMouseDown({ type = "ColorClicked", r = 0.0, g = 0.5, b = 0.0 }),
+                                                    Element.Div.new()
+                                                        :withStyle({
+                                                            width = { rel = 0.125 },
+                                                            bg = { r = 0.0, g = 0.0, b = 0.5, a = 1.0 },
+                                                            margin = { all = 1 }
+                                                        })
+                                                        :onMouseDown({ type = "ColorClicked", r = 0.0, g = 0.0, b = 0.5 }),
+                                                    Element.Div.new()
+                                                        :withStyle({
+                                                            width = { rel = 0.125 },
+                                                            bg = { r = 0.5, g = 0.5, b = 0.0, a = 1.0 },
+                                                            margin = { all = 1 }
+                                                        })
+                                                        :onMouseDown({ type = "ColorClicked", r = 0.5, g = 0.5, b = 0.0 }),
+                                                    Element.Div.new()
+                                                        :withStyle({
+                                                            width = { rel = 0.125 },
+                                                            bg = { r = 0.5, g = 0.0, b = 0.5, a = 1.0 },
+                                                            margin = { all = 1 }
+                                                        })
+                                                        :onMouseDown({ type = "ColorClicked", r = 0.5, g = 0.0, b = 0.5 }),
+                                                    Element.Div.new()
+                                                        :withStyle({
+                                                            width = { rel = 0.125 },
+                                                            bg = { r = 0.0, g = 0.5, b = 0.5, a = 1.0 },
+                                                            margin = { all = 1 }
+                                                        })
+                                                        :onMouseDown({ type = "ColorClicked", r = 0.0, g = 0.5, b = 0.5 })
+                                                )
+                                        )
+                                ),
                             Element.Text.from("Colors", self.jbmFont)
                                 :withStyle({
                                     align = "center",
@@ -224,6 +422,9 @@ function App:update(message)
         self.lastGPUUpdate = os.clock()
     elseif message.type == "EraserClicked" then
     elseif message.type == "ColorClicked" then
+        self.currentColor = { r = message.r, g = message.g, b = message.b, a = 1.0 }
+    elseif message.type == "ToolClicked" then
+        self.selectedTool = message.tool
     elseif message.type == "ClearClicked" then
         for i = 0, 800 * 600 * 4 - 1 do
             self.canvasBuffer[i] = 255
@@ -252,10 +453,17 @@ function App:update(message)
                         if x >= 0 and x < 800 and y >= 0 and y < 600 then
                             if dx * dx + dy * dy <= brushSize * brushSize then
                                 local index = (y * 800 + x) * 4
-                                self.canvasBuffer[index + 0] = 0
-                                self.canvasBuffer[index + 1] = 0
-                                self.canvasBuffer[index + 2] = 0
-                                self.canvasBuffer[index + 3] = 255
+                                if self.selectedTool == "eraser" then
+                                    self.canvasBuffer[index + 0] = 255
+                                    self.canvasBuffer[index + 1] = 255
+                                    self.canvasBuffer[index + 2] = 255
+                                    self.canvasBuffer[index + 3] = 255
+                                else
+                                    self.canvasBuffer[index + 0] = math.floor(self.currentColor.r * 255)
+                                    self.canvasBuffer[index + 1] = math.floor(self.currentColor.g * 255)
+                                    self.canvasBuffer[index + 2] = math.floor(self.currentColor.b * 255)
+                                    self.canvasBuffer[index + 3] = 255
+                                end
                             end
                         end
                     end
@@ -282,6 +490,8 @@ Arisu.runApp(function(textureManager)
     this.gpuUpdateInterval = 1.0 / 30
     this.fps = 60
     this.lastFrameTime = 0
+    this.currentColor = { r = 0.0, g = 0.0, b = 0.0, a = 1.0 }
+    this.selectedTool = "brush"
 
     local patternImage = assert(Image.fromPath("assets/gradient.qoi"), "Failed to load pattern image")
     this.patternTexture = textureManager:upload(patternImage)
