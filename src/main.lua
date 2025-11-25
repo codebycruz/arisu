@@ -289,7 +289,7 @@ function App:view()
                     Element.Div.new()
                         :withStyle({
                             direction = "column",
-                            width = { abs = 400 },
+                            width = { abs = 300 },
                             height = { rel = 1.0 },
                             border = { right = { width = 1, color = borderColor } }
                         })
@@ -314,7 +314,7 @@ function App:view()
                                     Element.Div.new()
                                         :withStyle({
                                             direction = "column",
-                                            width = { rel = 1.0 },
+                                            width = { rel = 2/3 },
                                             justify = "center",
                                         })
                                         :withChildren(
@@ -468,7 +468,7 @@ function App:view()
                                 })
                         )
                 ),
-            -- Bottom section
+            -- Mid section (canvas)
             Element.Div.new()
                 :withStyle({
                     align = "center",
@@ -495,6 +495,15 @@ function App:view()
                                     return { type = "Hovered", x = x, y = y, elementWidth = elementWidth, elementHeight = elementHeight }
                                 end)
                         )
+                ),
+            Element.Div.new()
+                :withStyle({
+                    height = { abs = 30 },
+                    align = "center",
+                    justify = "center",
+                })
+                :withChildren(
+                    Element.Text.from("FPS: " .. self.fps, self.jbmFont)
                 )
         )
 end
