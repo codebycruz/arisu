@@ -47,11 +47,19 @@ local function generateLayoutQuads(layout, parentX, parentY, vertices, indices, 
             textureId = layout.style.bgImage
         end
 
+        local u0, v0, u1, v1 = 0, 0, 1, 1
+        if layout.style.bgImageUV then
+            u0 = layout.style.bgImageUV.u0 or 0
+            v0 = layout.style.bgImageUV.v0 or 0
+            u1 = layout.style.bgImageUV.u1 or 1
+            v1 = layout.style.bgImageUV.v1 or 1
+        end
+
         for _, v in ipairs {
-            left, top, z, color.r, color.g, color.b, color.a, 0, 0, textureId,
-            right, top, z, color.r, color.g, color.b, color.a, 1, 0, textureId,
-            right, bottom, z, color.r, color.g, color.b, color.a, 1, 1, textureId,
-            left, bottom, z, color.r, color.g, color.b, color.a, 0, 1, textureId
+            left, top, z, color.r, color.g, color.b, color.a, u0, v0, textureId,
+            right, top, z, color.r, color.g, color.b, color.a, u1, v0, textureId,
+            right, bottom, z, color.r, color.g, color.b, color.a, u1, v1, textureId,
+            left, bottom, z, color.r, color.g, color.b, color.a, u0, v1, textureId
         } do
             table.insert(vertices, v)
         end
@@ -162,10 +170,10 @@ function Arisu.runApp(cons)
 
     ctx:makeCurrent()
 
-    local pipeline = Pipeline.new()
-    pipeline:setProgram(gl.ShaderType.VERTEX, Program.new(gl.ShaderType.VERTEX, vertexShader))
-    pipeline:setProgram(gl.ShaderType.FRAGMENT, Program.new(gl.ShaderType.FRAGMENT, fragmentShader))
-    pipeline:bind()
+    local quadPipeline = Pipeline.new()
+    quadPipeline:setProgram(gl.ShaderType.VERTEX, Program.new(gl.ShaderType.VERTEX, vertexShader))
+    quadPipeline:setProgram(gl.ShaderType.FRAGMENT, Program.new(gl.ShaderType.FRAGMENT, fragmentShader))
+    quadPipeline:bind()
 
     local vertexDescriptor = BufferDescriptor.new()
         :withAttribute({ type = "f32", size = 3, offset = 0 })  -- position (vec3)

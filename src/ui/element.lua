@@ -1,8 +1,4 @@
 --- The View is a small layer above the Layout that bridges interactivity with the layout.
-
----@alias Padding { top: number?, bottom: number?, left: number?, right: number? } | number
----@alias IntoPadding number | Padding
-
 ---@class Element<T>: { visualStyle: VisualStyle?, layoutStyle: LayoutStyle?, children: Element[]?, type: string, onclick: T, onmousemove: fun(x: number, y: number): T, onmousedown: T, onmouseup: T, layoutStyle: LayoutStyle, visualStyle: VisualStyle }
 
 ---@class Div<T>: { onclick: T | nil, onmousedown: T | nil, onmouseup: T | nil }
@@ -64,19 +60,27 @@ end
 local Text = {}
 Text.__index = Text
 
-function Text.from(content)
-    return setmetatable({ type = "text", visualStyle = {}, layoutStyle = {}, content = content }, Text)
+function Text.from(content, bitmap)
+    local row = Div.new()
+        :withLayoutStyle({ direction = "row" })
+
+    for i = 1, #content do
+        local char = content:sub(i, i)
+        local quad = bitmap:getCharUVs(char)
+
+        local charDiv = Div.new()
+            :withVisualStyle({ bgImage = 4, bgImageUVs = { quad.u0, quad.v0, quad.u1, quad.v1 } })
+            :withLayoutStyle({ width = { abs = quad.width }, height = { abs = quad.height } })
+
+        table.insert(row.children, charDiv)
+    end
+
+    return row
 end
 
 function Text:withStyle(style --[[@param style LayoutStyle | VisualStyle]] )
     self.visualStyle = style
     self.layoutStyle = style
-    return self
-end
-
----@generic T
-function Text:onClick(message --[[@param message T]] )
-    self.onclick = message
     return self
 end
 

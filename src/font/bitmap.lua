@@ -16,10 +16,8 @@ Bitmap.__index = Bitmap
 ---@alias BitmapQuad { x: number, y: number, u0: number, v0: number, u1: number, v1: number, width: number, height: number }
 
 ---@param char string
----@param x number
----@param y number
 ---@return BitmapQuad
-function Bitmap:getCharQuad(char, x, y)
+function Bitmap:getCharUVs(char)
     local charIdx = assert(self.config.characters:find(char, 1, true), "Character '" .. char .. "' not found in bitmap characters.") - 1
     local row = math.floor(charIdx / self.config.perRow)
     local col = charIdx % self.config.perRow
@@ -27,11 +25,9 @@ function Bitmap:getCharQuad(char, x, y)
     local u0 = col * self.config.gridWidth / self.image.width
     local v0 = row * self.config.gridHeight / self.image.height
     local u1 = (col + 1) * self.config.gridWidth / self.image.width
-    local v1 = (row + 1) * self.config.gridHeight / self
+    local v1 = (row + 1) * self.config.gridHeight / self.image.height
 
     return {
-        x = x,
-        y = y,
         u0 = u0,
         v0 = v0,
         u1 = u1,
@@ -42,14 +38,12 @@ function Bitmap:getCharQuad(char, x, y)
 end
 
 ---@param string string
----@param x number
----@param y number
 ---@return BitmapQuad[]
-function Bitmap:getStringQuads(string, x, y)
+function Bitmap:getStringUVs(string)
     local quads = {}
     for i = 1, #string do
         local char = string:sub(i, i)
-        local quad = self:getCharQuad(char, x + (i - 1) * self.config.gridWidth, y)
+        local quad = self:getCharUVs(char)
 
         table.insert(quads, quad)
     end

@@ -20,6 +20,7 @@ local ffi = require("ffi")
 ---@field qoiTexture Texture
 ---@field canvasTexture Texture
 ---@field textureManager TextureManager
+---@field jbmFont Bitmap
 ---@field canvasBuffer userdata
 ---@field isDrawing boolean
 ---@field lastGPUUpdate number
@@ -58,7 +59,10 @@ function App:view()
                             padding = { top = 5, bottom = 5, left = 5, right = 5 },
                             margin = { right = 5 }
                         })
-                        :onMouseDown({ type = "BrushClicked" }),
+                        :onMouseDown({ type = "BrushClicked" })
+                        :withChildren(
+                            Element.Text.from("B", self.jbmFont)
+                        ),
 
                     -- Eraser tool
                     Element.Div.new()
@@ -231,6 +235,7 @@ Arisu.runApp(function(textureManager)
 
     local characters = " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~"
     local jbmFont = assert(Bitmap.fromPath({ gridWidth = 18, gridHeight = 18, characters = characters, perRow = 19 }, "assets/JetBrainsMono.qoi"), "Failed to load bitmap font")
+    print("id is", textureManager:upload(jbmFont.image))
     this.jbmFont = jbmFont
 
     this.canvasBuffer = ffi.new("uint8_t[?]", 800 * 600 * 4)
