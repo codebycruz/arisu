@@ -201,7 +201,7 @@ local Arisu = {}
 
 ---@generic T
 ---@generic Message
----@param cons fun(textureManager: TextureManager): { view: fun(self: T), update: fun(self: T, message: Message), event: fun(self: T, event: Event): Message }
+---@param cons fun(textureManager: TextureManager): { view: fun(self: T, windowId: number), update: fun(self: T, message: Message): Task?, event: fun(self: T, event: Event): Message }
 function Arisu.runApp(cons)
     local eventLoop = window.EventLoop.new()
     local window = window.WindowBuilder.new()
@@ -255,23 +255,34 @@ function Arisu.runApp(cons)
     local app = cons(textureManager)
     app.event = app.event or function(_) end
 
-    local ui = app:view()
+    local ui = app:view(window.id)
     local layoutTree = Layout.fromElement(ui)
-    local currentCursor = nil
 
-    local function runUpdate(message)
-        local didUpdate = app:update(message)
-        if didUpdate then
-            ui = app:view()
-            layoutTree = Layout.fromElement(ui)
-        end
-    end
+    local runUpdate
 
+    ---@param event Event
     local function runEvent(event)
         local message = app:event(event)
         if message then
             runUpdate(message)
         end
+    end
+
+    local function runTask(task)
+        if not task then
+            return
+        end
+
+        if task.variant == "refreshView" then
+            ui = app:view(window.id)
+            layoutTree = Layout.fromElement(ui)
+        elseif task.variant == "windowOpen" then
+            task.builder:build(eventLoop)
+        end
+    end
+
+    function runUpdate(message)
+        runTask(app:update(message))
     end
 
     eventLoop:run(function(event, handler)

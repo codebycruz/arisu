@@ -2,6 +2,8 @@ local Arisu = require "src.arisu"
 local Element = require "src.ui.element"
 local Image = require "src.image"
 local Bitmap = require "src.font.bitmap"
+local Task = require "src.task"
+local window = require "src.window"
 local ffi = require("ffi")
 
 ---@alias Message
@@ -33,7 +35,8 @@ local ffi = require("ffi")
 local App = {}
 App.__index = App
 
-function App:view()
+---@param windowId number
+function App:view(windowId)
     local borderColor = { r = 0.8, g = 0.8, b = 0.8, a = 1 }
     local squareBorder = {
         top = { width = 1, color = borderColor },
@@ -539,13 +542,12 @@ function App:update(message)
         local canvasImage = Image.new(800, 600, 4, self.canvasBuffer, "")
         self.textureManager:update(self.canvasTexture, canvasImage)
         self.lastGPUUpdate = os.clock()
-    elseif message.type == "EraserClicked" then
     elseif message.type == "ColorClicked" then
         self.currentColor = { r = message.r, g = message.g, b = message.b, a = 1.0 }
-        return true -- UI Refresh to update color preview
+        return Task.refreshView()
     elseif message.type == "ToolClicked" then
         self.selectedTool = message.tool
-        return true -- UI Refresh to highlight selected tool
+        return Task.refreshView()
     elseif message.type == "ClearClicked" then
         for i = 0, 800 * 600 * 4 - 1 do
             self.canvasBuffer[i] = 255
@@ -555,6 +557,11 @@ function App:update(message)
         self.textureManager:update(self.canvasTexture, canvasImage)
         self.lastGPUUpdate = os.clock()
     elseif message.type == "SaveClicked" then
+        local builder = window.WindowBuilder.new()
+            :withTitle("New Window")
+            :withSize(400, 300)
+
+        return Task.openWindow(builder)
     elseif message.type == "LoadClicked" then
     elseif message.type == "Hovered" then
         if self.isDrawing then
