@@ -31,9 +31,10 @@ local App = {}
 App.__index = App
 
 function App:view()
+    local borderColor = { r = 0.0, g = 0.0, b = 0.0, a = 0.7 }
+
     return Element.Div.new()
         :withStyle({
-            size = {1.0, 1.0},
             direction = "column",
             bg = { r = 0.95, g = 0.95, b = 0.95, a = 1.0 }
         })
@@ -41,160 +42,123 @@ function App:view()
             -- Top toolbar
             Element.Div.new()
                 :withStyle({
-                    size = {1.0, 0.2},
-                    height = { abs = 120 },
+                    height = { abs = 100 },
                     direction = "row",
-                    gap = 10,
                     align = "center",
-                    padding = { left = 20, right = 20 },
-                    bg = { r = 0.85, g = 0.85, b = 0.85, a = 1.0 },
-                    border = { bottom = { width = 1, color = { r = 0.0, g = 0.0, b = 0.0, a = 0.7 } } }
-                })
-                :withChildren(
-                    -- Brush tool
-                    Element.Div.new()
-                        :withStyle({
-                            width = { abs = 60 },
-                            height = { abs = 40 },
-                            bg = { r = 0.7, g = 0.7, b = 0.7, a = 1.0 },
-                            justify = "center",
-                            align = "center",
-                            padding = { top = 5, bottom = 5, left = 5, right = 5 },
-                            margin = { right = 5 },
-                            border = { width = 2, color = { r = 0, g = 0, b = 0, a = 1.0 } }
-                        })
-                        :onMouseDown({ type = "BrushClicked" })
-                        :withChildren(
-                            Element.Text.from("Brush", self.jbmFont)
-                        ),
-
-                    -- Eraser tool
-                    Element.Div.new()
-                        :withStyle({
-                            width = { abs = 60 },
-                            height = { abs = 40 },
-                            bg = { r = 0.7, g = 0.7, b = 0.7, a = 1.0 },
-                            justify = "center",
-                            align = "center",
-                            padding = { top = 5, bottom = 5, left = 5, right = 5 },
-                            margin = { right = 5 },
-                            border = { width = 2, color = { r = 0, g = 0, b = 0, a = 1.0 } }
-                        })
-                        :onMouseDown({ type = "EraserClicked" })
-                        :withChildren(
-                            Element.Text.from("Erase", self.jbmFont)
-                        ),
-
-                    -- Color picker
-                    Element.Div.new()
-                        :withStyle({
-                            width = { abs = 50 },
-                            height = { abs = 40 },
-                            bg = { r = 0.2, g = 0.2, b = 0.2, a = 1.0 },
-                            justify = "center",
-                            align = "center",
-                            padding = { top = 5, bottom = 5, left = 5, right = 5 },
-                            margin = { left = 15, right = 15 },
-                            border = { width = 5, color = { r = 0.0, g = 1.0, b = 0.0, a = 1.0 } }
-                        })
-                        :onMouseDown({ type = "ColorClicked" })
-                        :withChildren(
-                            Element.Text.from("Color", self.jbmFont)
-                        ),
-
-                    -- Clear canvas
-                    Element.Div.new()
-                        :withStyle({
-                            width = { abs = 50 },
-                            height = { abs = 40 },
-                            bg = { r = 0.9, g = 0.5, b = 0.5, a = 1.0 },
-                            justify = "center",
-                            align = "center",
-                            padding = { top = 5, bottom = 5, left = 5, right = 5 },
-                            margin = { left = 15, right = 5 },
-                            border = { width = 5, color = { r = 1.0, g = 1.0, b = 0.0, a = 1.0 } }
-                        })
-                        :onMouseDown({ type = "ClearClicked" })
-                        :withChildren(
-                            Element.Text.from("Clear", self.jbmFont)
-                        ),
-
-                    -- Save button
-                    Element.Div.new()
-                        :withStyle({
-                            width = { abs = 50 },
-                            height = { abs = 40 },
-                            bg = { r = 0.5, g = 0.8, b = 0.5, a = 1.0 },
-                            justify = "center",
-                            align = "center",
-                            padding = { top = 5, bottom = 5, left = 5, right = 5 },
-                            margin = { right = 5 },
-                            border = { width = 5, color = { r = 1.0, g = 0.0, b = 1.0, a = 1.0 } }
-                        })
-                        :onMouseDown({ type = "SaveClicked" })
-                        :withChildren(
-                            Element.Text.from("Save", self.jbmFont)
-                        ),
-
-                    -- Load button
-                    Element.Div.new()
-                        :withStyle({
-                            width = { abs = 50 },
-                            height = { abs = 40 },
-                            bg = { r = 0.5, g = 0.5, b = 0.8, a = 1.0 },
-                            justify = "center",
-                            align = "center",
-                            padding = { top = 5, bottom = 5, left = 5, right = 5 },
-                            border = { width = 5, color = { r = 0.0, g = 1.0, b = 1.0, a = 1.0 } }
-                        })
-                        :onMouseDown({ type = "LoadClicked" })
-                        :withChildren(
-                            Element.Text.from("Load", self.jbmFont)
-                        ),
-            -- FPS Counter
-            Element.Div.new()
-                :withStyle({
-                    width = { abs = 80 },
-                    height = { abs = 40 },
-                    bg = { r = 0.8, g = 0.8, b = 0.8, a = 1.0 },
-                    justify = "center",
-                    align = "center",
-                    padding = { top = 5, bottom = 5, left = 5, right = 5 },
-                    margin = { left = 20 }
-                })
-                :withChildren(
-                    Element.Text.from("FPS: " .. math.floor(self.fps), self.jbmFont)
-                )
-            ),
-
-            -- Main canvas area
-            Element.Div.new()
-                :withStyle({
-                    widthh = { rel = 1.0 },
-                    height = { rel = 0.8 },
-                    justify = "center",
-                    align = "center",
-                    bg = { r = 0.9, g = 0.9, b = 0.9, a = 1.0 },
-                    padding = { top = 5, bottom = 5, left = 5, right = 5 },
-                    margin = { top = 10 }
+                    padding = { bottom = 2 },
+                    border = { bottom = { width = 1, color = borderColor } }
                 })
                 :withChildren(
                     Element.Div.new()
                         :withStyle({
-                            width = { rel = 1.0 },
+                            direction = "column",
+                            width = { abs = 150 },
                             height = { rel = 1.0 },
-                            bg = { r = 1.0, g = 1.0, b = 1.0, a = 1.0 },
-                            bgImage = self.canvasTexture,
-                            padding = { top = 10, bottom = 10, left = 10, right = 10 },
-                            margin = { top = 20, bottom = 20, left = 20, right = 20 },
-                            border = { width = 10, color = { r = 0.0, g = 0.0, b = 0.0, a = 1.0 } }
+                            border = { right = { width = 1, color = borderColor } }
                         })
-                        :onMouseDown({ type = "StartDrawing" })
-                        :onMouseUp({ type = "StopDrawing" })
-                        :onMouseMove(function(x, y, elementWidth, elementHeight)
-                            return { type = "Hovered", x = x, y = y, elementWidth = elementWidth, elementHeight = elementHeight }
-                        end)
-                )
+                        :withChildren(
+                            Element.Text.from("Center", self.jbmFont)
+                                :withStyle({
+                                    height = { rel = 0.7 },
+                                }),
+                            Element.Text.from("Clipboard", self.jbmFont)
+                                :withStyle({
+                                    align = "center",
+                                    justify = "center",
+                                    height = { rel = 0.3 },
+                                })
+                        ),
+                    Element.Div.new()
+                        :withStyle({
+                            direction = "column",
+                            width = { abs = 180 },
+                            height = { rel = 1.0 },
+                            border = { right = { width = 1, color = borderColor } }
+                        })
+                        :withChildren(
+                            Element.Text.from("Center", self.jbmFont)
+                                :withStyle({
+                                    height = { rel = 0.7 },
+                                }),
+                            Element.Text.from("Image", self.jbmFont)
+                                :withStyle({
+                                    align = "center",
+                                    justify = "center",
+                                    height = { rel = 0.3 },
+                                })
+                        ),
+                    Element.Div.new()
+                        :withStyle({
+                            direction = "column",
+                            width = { abs = 150 },
+                            height = { rel = 1.0 },
+                            border = { right = { width = 1, color = borderColor } }
+                        })
+                        :withChildren(
+                            Element.Text.from("Center", self.jbmFont)
+                                :withStyle({
+                                    height = { rel = 0.7 },
+                                }),
+                            Element.Text.from("Tools", self.jbmFont)
+                                :withStyle({
+                                    align = "center",
+                                    justify = "center",
+                                    height = { rel = 0.3 },
+                                })
+                        ),
+                    Element.Div.new()
+                        :withStyle({
+                            direction = "column",
+                            width = { abs = 100 },
+                            height = { rel = 1.0 },
+                            border = { right = { width = 1, color = borderColor } }
+                        })
+                        :withChildren(
+                            Element.Text.from("Center", self.jbmFont)
+                                :withStyle({
+                                    height = { rel = 0.7 },
+                                }),
+                            Element.Text.from("Brushes", self.jbmFont)
+                                :withStyle({
+                                    align = "center",
+                                    justify = "center",
+                                    height = { rel = 0.3 },
+                                })
+                        ),
+
+                    Element.Div.new()
+                        :withStyle({
+                            direction = "column",
+                            width = { abs = 200 },
+                            height = { rel = 1.0 },
+                            border = { right = { width = 1, color = borderColor } }
+                        })
+                        :withChildren(
+                            Element.Text.from("Center", self.jbmFont)
+                                :withStyle({
+                                    height = { rel = 0.7 },
+                                }),
+                            Element.Text.from("Shapes", self.jbmFont)
+                                :withStyle({
+                                    align = "center",
+                                    justify = "center",
+                                    height = { rel = 0.3 },
+                                })
+                        )
+                ),
+            -- Canvas
+            Element.Div.new()
+                :withStyle({
+                    height = { rel = 0.7 },
+                    bg = { r = 1.0, g = 1.0, b = 1.0, a = 1.0 },
+                    margin = { top = 10, bottom = 10, left = 10, right = 10 },
+                    bgImage = self.canvasTexture,
+                })
+                :onMouseDown({ type = "StartDrawing" })
+                :onMouseUp({ type = "StopDrawing" })
+                :onMouseMove(function(x, y, elementWidth, elementHeight)
+                    return { type = "Hovered", x = x, y = y, elementWidth = elementWidth, elementHeight = elementHeight }
+                end)
         )
 end
 
