@@ -1,4 +1,4 @@
----@alias ScaleUnit { abs: number } | { rel: number }
+---@alias ScaleUnit { abs: number } | { rel: number } | "auto"
 ---@alias Direction "row" | "column"
 ---@alias Alignment "start" | "center" | "end"
 ---@alias Justify "start" | "center" | "end" | "space-between" | "space-around"
@@ -23,7 +23,9 @@ local function intoScaleUnit(value --[[@param value IntoScaleUnit]] )
         end
 
         return { rel = value }
-    elseif type(value) == "table" and value.abs or value.rel then
+    elseif type(value) == "table" and (value.abs or value.rel) then
+        return value
+    elseif value == "auto" then
         return value
     else
         error("Invalid ScaleUnit value")
@@ -259,8 +261,19 @@ function Layout:solve(parentWidth, parentHeight)
     local availableWidth = parentWidth - margin.left - margin.right - borderWidth
     local availableHeight = parentHeight - margin.top - margin.bottom - borderHeight
 
-    local width = (self.width.abs or (self.width.rel * (availableWidth + borderWidth)))
-    local height = (self.height.abs or (self.height.rel * (availableHeight + borderHeight)))
+    local width
+    if self.width == "auto" then
+        width = availableWidth + borderWidth
+    else
+        width = (self.width.abs or (self.width.rel * (availableWidth + borderWidth)))
+    end
+
+    local height
+    if self.height == "auto" then
+        height = availableHeight + borderHeight
+    else
+        height = (self.height.abs or (self.height.rel * (availableHeight + borderHeight)))
+    end
 
     local padding = { top = 0, bottom = 0, left = 0, right = 0 }
     if self.padding then
@@ -291,13 +304,72 @@ function Layout:solve(parentWidth, parentHeight)
     local childResults = {}
     local totalMainSize = 0
     local visibleChildCount = 0
-
+    local autoCount = 0
+    
+    -- First pass: scan for non-auto sizes and count auto elements
     for i = 1, #self.children do
-        local childResult = self.children[i]:solve(contentWidth, contentHeight)
-        table.insert(childResults, childResult)
+        local child = self.children[i]
+        local childMainDimension = isRow and child.width or child.height
+        
+        if childMainDimension == "auto" then
+            autoCount = autoCount + 1
+        else
+            -- Calculate size assuming rel takes full parent space
+            local tempWidth = contentWidth
+            local tempHeight = contentHeight
+            if child.width and child.width.rel then
+                tempWidth = child.width.rel * contentWidth
+            elseif child.width and child.width.abs then
+                tempWidth = child.width.abs
+            end
+            if child.height and child.height.rel then
+                tempHeight = child.height.rel * contentHeight
+            elseif child.height and child.height.abs then
+                tempHeight = child.height.abs
+            end
+            
+            local childSize = isRow and tempWidth or tempHeight
+            totalMainSize = totalMainSize + childSize
+            visibleChildCount = visibleChildCount + 1
+        end
+    end
+    
+    -- Calculate remaining space for auto children
+    local totalGaps = math.max(0, (#self.children) - 1) * (self.gap or 0)
+    local remainingSpace = containerMainSize - totalMainSize - totalGaps
+    local autoSpace = autoCount > 0 and (remainingSpace / autoCount) or 0
+    
+    -- Second pass: solve all children with known auto size
+    for i = 1, #self.children do
+        local child = self.children[i]
+        local childMainDimension = isRow and child.width or child.height
+        
+        if childMainDimension == "auto" then
+            local tempChild = setmetatable({}, { __index = child })
+            for k, v in pairs(child) do
+                tempChild[k] = v
+            end
+            
+            if isRow then
+                tempChild.width = { abs = autoSpace }
+            else
+                tempChild.height = { abs = autoSpace }
+            end
+            
+            local childResult = tempChild:solve(contentWidth, contentHeight)
+            table.insert(childResults, childResult)
+        else
+            local childResult = child:solve(contentWidth, contentHeight)
+            table.insert(childResults, childResult)
+        end
+    end
 
-        if childResult.width > 0 or childResult.height > 0 then
-            totalMainSize = totalMainSize + mainSize(childResult)
+    -- Recalculate for positioning
+    totalMainSize = 0
+    visibleChildCount = 0
+    for i = 1, #childResults do
+        if childResults[i].width > 0 or childResults[i].height > 0 then
+            totalMainSize = totalMainSize + mainSize(childResults[i])
             visibleChildCount = visibleChildCount + 1
         end
     end

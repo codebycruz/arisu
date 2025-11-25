@@ -471,6 +471,7 @@ function App:view()
             -- Mid section (canvas)
             Element.Div.new()
                 :withStyle({
+                    height = "auto",
                     align = "center",
                     justify = "center",
                     bg = { r = 0.7, g = 0.7, b = 0.8, a = 1.0 },
@@ -499,11 +500,15 @@ function App:view()
             Element.Div.new()
                 :withStyle({
                     height = { abs = 30 },
-                    align = "center",
-                    justify = "center",
+                    bg = { r = 1, g = 0, b = 0, a = 1 },
+                    width = "auto"
                 })
                 :withChildren(
-                    Element.Text.from("FPS: " .. self.fps, self.jbmFont)
+                    Element.Text.from(string.format("FPS: %.2f", self.fps), self.jbmFont)
+                        :withStyle({
+                            align = "center",
+                            justify = "center",
+                        })
                 )
         )
 end
