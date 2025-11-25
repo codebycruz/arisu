@@ -63,7 +63,7 @@ function App:view()
                         })
                         :onMouseDown({ type = "BrushClicked" })
                         :withChildren(
-                            Element.Text.from("!X", self.jbmFont)
+                            Element.Text.from("Brush", self.jbmFont)
                         ),
 
                     -- Eraser tool
@@ -77,7 +77,10 @@ function App:view()
                             padding = { top = 5, bottom = 5, left = 5, right = 5 },
                             margin = { right = 5 }
                         })
-                        :onMouseDown({ type = "EraserClicked" }),
+                        :onMouseDown({ type = "EraserClicked" })
+                        :withChildren(
+                            Element.Text.from("Eraser", self.jbmFont)
+                        ),
 
                     -- Color picker
                     Element.Div.new()
@@ -90,7 +93,10 @@ function App:view()
                             padding = { top = 5, bottom = 5, left = 5, right = 5 },
                             margin = { left = 15, right = 15 }
                         })
-                        :onMouseDown({ type = "ColorClicked" }),
+                        :onMouseDown({ type = "ColorClicked" })
+                        :withChildren(
+                            Element.Text.from("Color", self.jbmFont)
+                        ),
 
                     -- Clear canvas
                     Element.Div.new()
@@ -103,7 +109,10 @@ function App:view()
                             padding = { top = 5, bottom = 5, left = 5, right = 5 },
                             margin = { left = 15, right = 5 }
                         })
-                        :onMouseDown({ type = "ClearClicked" }),
+                        :onMouseDown({ type = "ClearClicked" })
+                        :withChildren(
+                            Element.Text.from("Clear", self.jbmFont)
+                        ),
 
                     -- Save button
                     Element.Div.new()
@@ -116,7 +125,10 @@ function App:view()
                             padding = { top = 5, bottom = 5, left = 5, right = 5 },
                             margin = { right = 5 }
                         })
-                        :onMouseDown({ type = "SaveClicked" }),
+                        :onMouseDown({ type = "SaveClicked" })
+                        :withChildren(
+                            Element.Text.from("Save", self.jbmFont)
+                        ),
 
                     -- Load button
                     Element.Div.new()
@@ -128,7 +140,10 @@ function App:view()
                             align = "center",
                             padding = { top = 5, bottom = 5, left = 5, right = 5 }
                         })
-                        :onMouseDown({ type = "LoadClicked" }),
+                        :onMouseDown({ type = "LoadClicked" })
+                        :withChildren(
+                            Element.Text.from("Load", self.jbmFont)
+                        ),
 
             -- FPS Counter
             Element.Div.new()
