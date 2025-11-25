@@ -47,7 +47,8 @@ function App:view()
                     gap = 10,
                     align = "center",
                     padding = { left = 20, right = 20 },
-                    bg = { r = 0.85, g = 0.85, b = 0.85, a = 1.0 }
+                    bg = { r = 0.85, g = 0.85, b = 0.85, a = 1.0 },
+                    border = { width = 3, color = { r = 0.0, g = 0.0, b = 1.0, a = 1.0 } }
                 })
                 :withChildren(
                     -- Brush tool
@@ -59,7 +60,8 @@ function App:view()
                             justify = "center",
                             align = "center",
                             padding = { top = 5, bottom = 5, left = 5, right = 5 },
-                            margin = { right = 5 }
+                            margin = { right = 5 },
+                            border = { width = 10, color = { r = 0.8, g = 0.4, b = 0.4, a = 1.0 } }
                         })
                         :onMouseDown({ type = "BrushClicked" })
                         :withChildren(
@@ -75,7 +77,8 @@ function App:view()
                             justify = "center",
                             align = "center",
                             padding = { top = 5, bottom = 5, left = 5, right = 5 },
-                            margin = { right = 5 }
+                            margin = { right = 5 },
+                            border = { width = 5, color = { r = 1.0, g = 0.0, b = 0.0, a = 1.0 } }
                         })
                         :onMouseDown({ type = "EraserClicked" })
                         :withChildren(
@@ -91,7 +94,8 @@ function App:view()
                             justify = "center",
                             align = "center",
                             padding = { top = 5, bottom = 5, left = 5, right = 5 },
-                            margin = { left = 15, right = 15 }
+                            margin = { left = 15, right = 15 },
+                            border = { width = 5, color = { r = 0.0, g = 1.0, b = 0.0, a = 1.0 } }
                         })
                         :onMouseDown({ type = "ColorClicked" })
                         :withChildren(
@@ -107,7 +111,8 @@ function App:view()
                             justify = "center",
                             align = "center",
                             padding = { top = 5, bottom = 5, left = 5, right = 5 },
-                            margin = { left = 15, right = 5 }
+                            margin = { left = 15, right = 5 },
+                            border = { width = 5, color = { r = 1.0, g = 1.0, b = 0.0, a = 1.0 } }
                         })
                         :onMouseDown({ type = "ClearClicked" })
                         :withChildren(
@@ -123,7 +128,8 @@ function App:view()
                             justify = "center",
                             align = "center",
                             padding = { top = 5, bottom = 5, left = 5, right = 5 },
-                            margin = { right = 5 }
+                            margin = { right = 5 },
+                            border = { width = 5, color = { r = 1.0, g = 0.0, b = 1.0, a = 1.0 } }
                         })
                         :onMouseDown({ type = "SaveClicked" })
                         :withChildren(
@@ -138,7 +144,8 @@ function App:view()
                             bg = { r = 0.5, g = 0.5, b = 0.8, a = 1.0 },
                             justify = "center",
                             align = "center",
-                            padding = { top = 5, bottom = 5, left = 5, right = 5 }
+                            padding = { top = 5, bottom = 5, left = 5, right = 5 },
+                            border = { width = 5, color = { r = 0.0, g = 1.0, b = 1.0, a = 1.0 } }
                         })
                         :onMouseDown({ type = "LoadClicked" })
                         :withChildren(
@@ -179,7 +186,8 @@ function App:view()
                             bg = { r = 1.0, g = 1.0, b = 1.0, a = 1.0 },
                             bgImage = self.canvasTexture,
                             padding = { top = 10, bottom = 10, left = 10, right = 10 },
-                            margin = { top = 20, bottom = 20, left = 20, right = 20 }
+                            margin = { top = 20, bottom = 20, left = 20, right = 20 },
+                            border = { width = 10, color = { r = 0.0, g = 0.0, b = 0.0, a = 1.0 } }
                         })
                         :onMouseDown({ type = "StartDrawing" })
                         :onMouseUp({ type = "StopDrawing" })

@@ -72,6 +72,60 @@ local function generateLayoutQuads(layout, parentX, parentY, vertices, indices, 
         end
     end
 
+    -- Generate border quads after background (so they render on top)
+    if layout.border then
+        local borderTop = layout.border.top
+        local borderBottom = layout.border.bottom
+        local borderLeft = layout.border.left
+        local borderRight = layout.border.right
+
+        local function addBorderQuad(bx, by, bw, bh, color)
+            if bw <= 0 or bh <= 0 then return end
+
+            local baseIdx = #vertices / 10
+            local left = toNDC(bx, windowWidth)
+            local right = toNDC(bx + bw, windowWidth)
+            local top = -toNDC(by, windowHeight)
+            local bottom = -toNDC(by + bh, windowHeight)
+
+            for _, v in ipairs {
+                left, top, z + 0.002, color.r, color.g, color.b, color.a, 0, 0, 0,
+                right, top, z + 0.002, color.r, color.g, color.b, color.a, 0, 0, 0,
+                right, bottom, z + 0.002, color.r, color.g, color.b, color.a, 0, 0, 0,
+                left, bottom, z + 0.002, color.r, color.g, color.b, color.a, 0, 0, 0
+            } do
+                table.insert(vertices, v)
+            end
+
+            for _, idx in ipairs {
+                baseIdx, baseIdx + 1, baseIdx + 2,
+                baseIdx, baseIdx + 2, baseIdx + 3
+            } do
+                table.insert(indices, idx)
+            end
+        end
+
+        -- Top border
+        if borderTop and borderTop.width and borderTop.width > 0 and borderTop.style ~= "none" then
+            addBorderQuad(x, y, width, borderTop.width, borderTop.color)
+        end
+
+        -- Bottom border
+        if borderBottom and borderBottom.width and borderBottom.width > 0 and borderBottom.style ~= "none" then
+            addBorderQuad(x, y + height - borderBottom.width, width, borderBottom.width, borderBottom.color)
+        end
+
+        -- Left border
+        if borderLeft and borderLeft.width and borderLeft.width > 0 and borderLeft.style ~= "none" then
+            addBorderQuad(x, y, borderLeft.width, height, borderLeft.color)
+        end
+
+        -- Right border
+        if borderRight and borderRight.width and borderRight.width > 0 and borderRight.style ~= "none" then
+            addBorderQuad(x + width - borderRight.width, y, borderRight.width, height, borderRight.color)
+        end
+    end
+
     if layout.children then
         for _, child in ipairs(layout.children) do
             generateLayoutQuads(child, x, y, vertices, indices, windowWidth, windowHeight)

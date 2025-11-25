@@ -5,10 +5,15 @@
 ---@alias Padding { top: number?, bottom: number?, left: number?, right: number? } | number
 ---@alias Margin { top: number?, bottom: number?, left: number?, right: number? } | number
 ---@alias Visibility "visible" | "none"
+---@alias BorderStyle "solid" | "dashed" | "dotted" | "none"
+---@alias Border { width: number?, style: BorderStyle?, color: { r: number, g: number, b: number, a: number }? }
+---@alias Borders { top: Border?, bottom: Border?, left: Border?, right: Border? }
 
 ---@alias IntoScaleUnit number | ScaleUnit
 ---@alias IntoPadding number | Padding
 ---@alias IntoMargin number | Margin
+---@alias IntoBorder number | Border
+---@alias IntoBorders Border | Borders
 
 ---@return ScaleUnit
 local function intoScaleUnit(value --[[@param value IntoScaleUnit]] )
@@ -65,6 +70,43 @@ local function intoMargin(value --[[@param value IntoMargin]] )
     end
 end
 
+---@return Border
+local function intoBorder(value --[[@param value IntoBorder]] )
+    if type(value) == "number" then
+        return {
+            width = value,
+            style = "solid",
+            color = { r = 0, g = 0, b = 0, a = 1 }
+        }
+    elseif type(value) == "table" then
+        return {
+            width = value.width or 1,
+            style = value.style or "solid",
+            color = value.color or { r = 0, g = 0, b = 0, a = 1 }
+        }
+    else
+        error("Invalid Border value")
+    end
+end
+
+---@return Borders
+local function intoBorders(value --[[@param value IntoBorders]] )
+    if type(value) == "number" or (type(value) == "table" and (value.width or value.style or value.color)) then
+        local border = intoBorder(value)
+        return { top = border, bottom = border, left = border, right = border }
+    elseif type(value) == "table" then
+        local defaultBorder = { width = 0, style = "none", color = { r = 0, g = 0, b = 0, a = 1 } }
+        return {
+            top = value.top and intoBorder(value.top) or defaultBorder,
+            bottom = value.bottom and intoBorder(value.bottom) or defaultBorder,
+            left = value.left and intoBorder(value.left) or defaultBorder,
+            right = value.right and intoBorder(value.right) or defaultBorder
+        }
+    else
+        error("Invalid Borders value")
+    end
+end
+
 ---@class LayoutStyle
 ---@field width ScaleUnit
 ---@field height ScaleUnit
@@ -74,6 +116,7 @@ end
 ---@field justify Justify
 ---@field padding Padding
 ---@field margin Margin
+---@field border Borders
 ---@field zIndex number
 ---@field visibility Visibility
 
@@ -140,6 +183,11 @@ function Layout:withMargin(margin --[[@param margin IntoMargin]])
     return self
 end
 
+function Layout:withBorder(border --[[@param border IntoBorders]])
+    self.border = intoBorders(border)
+    return self
+end
+
 function Layout:withZIndex(zIndex --[[@param zIndex number]])
     self.zIndex = zIndex
     return self
@@ -166,6 +214,7 @@ end
 ---@field x number
 ---@field y number
 ---@field style VisualStyle
+---@field border Borders
 ---@field children ComputedLayout[]
 ---@field visible boolean
 ---@field zIndex number
@@ -183,6 +232,7 @@ function Layout:solve(parentWidth, parentHeight)
             x = 0,
             y = 0,
             style = self.style,
+            border = self.border,
             children = {},
             visible = false
         }
@@ -196,11 +246,21 @@ function Layout:solve(parentWidth, parentHeight)
         margin.right = self.margin.right or 0
     end
 
-    local availableWidth = parentWidth - margin.left - margin.right
-    local availableHeight = parentHeight - margin.top - margin.bottom
+    -- Allow shorthand border definitions for all sides
+    local border = self.border or { width = 0, style = "none", color = { r = 0, g = 0, b = 0, a = 1 } }
+    border.top = border.top or border
+    border.bottom = border.bottom or border
+    border.left = border.left or border
+    border.right = border.right or border
 
-    local width = self.width.abs or (self.width.rel * availableWidth)
-    local height = self.height.abs or (self.height.rel * availableHeight)
+    local borderWidth = (border.left.width or 0) + (border.right.width or 0)
+    local borderHeight = (border.top.width or 0) + (border.bottom.width or 0)
+
+    local availableWidth = parentWidth - margin.left - margin.right - borderWidth
+    local availableHeight = parentHeight - margin.top - margin.bottom - borderHeight
+
+    local width = (self.width.abs or (self.width.rel * (availableWidth + borderWidth)))
+    local height = (self.height.abs or (self.height.rel * (availableHeight + borderHeight)))
 
     local padding = { top = 0, bottom = 0, left = 0, right = 0 }
     if self.padding then
@@ -209,8 +269,8 @@ function Layout:solve(parentWidth, parentHeight)
         padding.left = self.padding.left or 0
         padding.right = self.padding.right or 0
     end
-    local contentWidth = width - padding.left - padding.right
-    local contentHeight = height - padding.top - padding.bottom
+    local contentWidth = width - padding.left - padding.right - borderWidth
+    local contentHeight = height - padding.top - padding.bottom - borderHeight
 
     local isRow = self.direction == "row"
     local function mainSize(result)
@@ -294,6 +354,7 @@ function Layout:solve(parentWidth, parentHeight)
         x = margin.left,
         y = margin.top,
         style = self.style,
+        border = border,
         children = childResults,
         zIndex = self.zIndex,
         visible = true
