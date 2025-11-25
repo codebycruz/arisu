@@ -414,15 +414,22 @@ function App:view()
                     Element.Div.new()
                         :withStyle({
                             bg = { r = 1, g = 1, b = 1, a = 1 },
-                            bgImage = self.canvasTexture,
                             width = { rel = 0.95 },
                             height = { rel = 0.95 },
                         })
-                        :onMouseDown({ type = "StartDrawing" })
-                        :onMouseUp({ type = "StopDrawing" })
-                        :onMouseMove(function(x, y, elementWidth, elementHeight)
-                            return { type = "Hovered", x = x, y = y, elementWidth = elementWidth, elementHeight = elementHeight }
-                        end)
+                        :withChildren(
+                            Element.Div.new()
+                                :withStyle({
+                                    bgImage = self.canvasTexture,
+                                    width = { rel = 1.0 },
+                                    height = { rel = 1.0 },
+                                })
+                                :onMouseDown({ type = "StartDrawing" })
+                                :onMouseUp({ type = "StopDrawing" })
+                                :onMouseMove(function(x, y, elementWidth, elementHeight)
+                                    return { type = "Hovered", x = x, y = y, elementWidth = elementWidth, elementHeight = elementHeight }
+                                end)
+                        )
                 )
         )
 end
@@ -470,7 +477,7 @@ function App:update(message)
     elseif message.type == "SaveClicked" then
     elseif message.type == "LoadClicked" then
     elseif message.type == "Hovered" then
-        if self.isDrawing and message.elementWidth and message.elementHeight then
+        if self.isDrawing then
             -- Map UI coordinates to texture coordinates
             local textureX = (message.x / message.elementWidth) * 800
             local textureY = (message.y / message.elementHeight) * 600
@@ -488,10 +495,7 @@ function App:update(message)
                             if dx * dx + dy * dy <= brushSize * brushSize then
                                 local index = (y * 800 + x) * 4
                                 if self.selectedTool == "eraser" then
-                                    self.canvasBuffer[index + 0] = 255
-                                    self.canvasBuffer[index + 1] = 255
-                                    self.canvasBuffer[index + 2] = 255
-                                    self.canvasBuffer[index + 3] = 255
+                                    self.canvasBuffer[index + 3] = 0
                                 else
                                     self.canvasBuffer[index + 0] = math.floor(self.currentColor.r * 255)
                                     self.canvasBuffer[index + 1] = math.floor(self.currentColor.g * 255)
