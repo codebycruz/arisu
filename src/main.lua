@@ -34,7 +34,13 @@ local App = {}
 App.__index = App
 
 function App:view()
-    local borderColor = { r = 0.0, g = 0.0, b = 0.0, a = 0.7 }
+    local borderColor = { r = 0.8, g = 0.8, b = 0.8, a = 1 }
+    local squareBorder = {
+        top = { width = 1, color = borderColor },
+        bottom = { width = 1, color = borderColor },
+        left = { width = 1, color = borderColor },
+        right = { width = 1, color = borderColor }
+    }
 
     return Element.Div.new()
         :withStyle({
@@ -237,7 +243,7 @@ function App:view()
                                             width = { abs = 40 },
                                             height = { abs = 40 },
                                             bg = self.currentColor,
-                                            border = { all = { width = 1, color = { r = 0.0, g = 0.0, b = 0.0, a = 1.0 } } },
+                                            border = squareBorder,
                                             margin = { right = 5 }
                                         }),
                                     Element.Div.new()
@@ -250,55 +256,69 @@ function App:view()
                                             Element.Div.new()
                                                 :withStyle({
                                                     direction = "row",
-                                                    height = { rel = 0.4 }
+                                                    height = { rel = 0.5 }
                                                 })
                                                 :withChildren(
                                                     Element.Div.new()
                                                         :withStyle({
-                                                            width = { rel = 0.125 },
+                                                            width = { abs = 30 },
+                                                            height = { abs = 30 },
                                                             bg = { r = 0.0, g = 0.0, b = 0.0, a = 1.0 },
+                                                            border = squareBorder,
                                                             margin = { all = 1 }
                                                         })
                                                         :onMouseDown({ type = "ColorClicked", r = 0.0, g = 0.0, b = 0.0 }),
                                                     Element.Div.new()
                                                         :withStyle({
-                                                            width = { rel = 0.125 },
+                                                            width = { abs = 30 },
+                                                            height = { abs = 30 },
                                                             bg = { r = 1.0, g = 0.0, b = 0.0, a = 1.0 },
+                                                            border = squareBorder,
                                                             margin = { all = 1 }
                                                         })
                                                         :onMouseDown({ type = "ColorClicked", r = 1.0, g = 0.0, b = 0.0 }),
                                                     Element.Div.new()
                                                         :withStyle({
-                                                            width = { rel = 0.125 },
+                                                            width = { abs = 30 },
+                                                            height = { abs = 30 },
                                                             bg = { r = 0.0, g = 1.0, b = 0.0, a = 1.0 },
+                                                            border = squareBorder,
                                                             margin = { all = 1 }
                                                         })
                                                         :onMouseDown({ type = "ColorClicked", r = 0.0, g = 1.0, b = 0.0 }),
                                                     Element.Div.new()
                                                         :withStyle({
-                                                            width = { rel = 0.125 },
+                                                            width = { abs = 30 },
+                                                            height = { abs = 30 },
                                                             bg = { r = 0.0, g = 0.0, b = 1.0, a = 1.0 },
+                                                            border = squareBorder,
                                                             margin = { all = 1 }
                                                         })
                                                         :onMouseDown({ type = "ColorClicked", r = 0.0, g = 0.0, b = 1.0 }),
                                                     Element.Div.new()
                                                         :withStyle({
-                                                            width = { rel = 0.125 },
+                                                            width = { abs = 30 },
+                                                            height = { abs = 30 },
                                                             bg = { r = 1.0, g = 1.0, b = 0.0, a = 1.0 },
+                                                            border = squareBorder,
                                                             margin = { all = 1 }
                                                         })
                                                         :onMouseDown({ type = "ColorClicked", r = 1.0, g = 1.0, b = 0.0 }),
                                                     Element.Div.new()
                                                         :withStyle({
-                                                            width = { rel = 0.125 },
+                                                            width = { abs = 30 },
+                                                            height = { abs = 30 },
                                                             bg = { r = 1.0, g = 0.0, b = 1.0, a = 1.0 },
+                                                            border = squareBorder,
                                                             margin = { all = 1 }
                                                         })
                                                         :onMouseDown({ type = "ColorClicked", r = 1.0, g = 0.0, b = 1.0 }),
                                                     Element.Div.new()
                                                         :withStyle({
-                                                            width = { rel = 0.125 },
+                                                            width = { abs = 30 },
+                                                            height = { abs = 30 },
                                                             bg = { r = 0.0, g = 1.0, b = 1.0, a = 1.0 },
+                                                            border = squareBorder,
                                                             margin = { all = 1 }
                                                         })
                                                         :onMouseDown({ type = "ColorClicked", r = 0.0, g = 1.0, b = 1.0 })
@@ -306,55 +326,69 @@ function App:view()
                                             Element.Div.new()
                                                 :withStyle({
                                                     direction = "row",
-                                                    height = { rel = 0.4 }
+                                                    height = { rel = 0.5 }
                                                 })
                                                 :withChildren(
                                                     Element.Div.new()
                                                         :withStyle({
-                                                            width = { rel = 0.125 },
+                                                            width = { abs = 30 },
+                                                            height = { abs = 30 },
                                                             bg = { r = 0.5, g = 0.5, b = 0.5, a = 1.0 },
+                                                            border = squareBorder,
                                                             margin = { all = 1 }
                                                         })
                                                         :onMouseDown({ type = "ColorClicked", r = 0.5, g = 0.5, b = 0.5 }),
                                                     Element.Div.new()
                                                         :withStyle({
-                                                            width = { rel = 0.125 },
+                                                            width = { abs = 30 },
+                                                            height = { abs = 30 },
                                                             bg = { r = 0.5, g = 0.0, b = 0.0, a = 1.0 },
+                                                            border = squareBorder,
                                                             margin = { all = 1 }
                                                         })
                                                         :onMouseDown({ type = "ColorClicked", r = 0.5, g = 0.0, b = 0.0 }),
                                                     Element.Div.new()
                                                         :withStyle({
-                                                            width = { rel = 0.125 },
+                                                            width = { abs = 30 },
+                                                            height = { abs = 30 },
                                                             bg = { r = 0.0, g = 0.5, b = 0.0, a = 1.0 },
+                                                            border = squareBorder,
                                                             margin = { all = 1 }
                                                         })
                                                         :onMouseDown({ type = "ColorClicked", r = 0.0, g = 0.5, b = 0.0 }),
                                                     Element.Div.new()
                                                         :withStyle({
-                                                            width = { rel = 0.125 },
+                                                            width = { abs = 30 },
+                                                            height = { abs = 30 },
                                                             bg = { r = 0.0, g = 0.0, b = 0.5, a = 1.0 },
+                                                            border = squareBorder,
                                                             margin = { all = 1 }
                                                         })
                                                         :onMouseDown({ type = "ColorClicked", r = 0.0, g = 0.0, b = 0.5 }),
                                                     Element.Div.new()
                                                         :withStyle({
-                                                            width = { rel = 0.125 },
+                                                            width = { abs = 30 },
+                                                            height = { abs = 30 },
                                                             bg = { r = 0.5, g = 0.5, b = 0.0, a = 1.0 },
+                                                            border = squareBorder,
                                                             margin = { all = 1 }
                                                         })
                                                         :onMouseDown({ type = "ColorClicked", r = 0.5, g = 0.5, b = 0.0 }),
                                                     Element.Div.new()
                                                         :withStyle({
-                                                            width = { rel = 0.125 },
+                                                            width = { abs = 30 },
+                                                            height = { abs = 30 },
                                                             bg = { r = 0.5, g = 0.0, b = 0.5, a = 1.0 },
+                                                            border = squareBorder,
                                                             margin = { all = 1 }
                                                         })
                                                         :onMouseDown({ type = "ColorClicked", r = 0.5, g = 0.0, b = 0.5 }),
                                                     Element.Div.new()
                                                         :withStyle({
-                                                            width = { rel = 0.125 },
+                                                            width = { abs = 30 },
+                                                            height = { abs = 30 },
                                                             bg = { r = 0.0, g = 0.5, b = 0.5, a = 1.0 },
+                                                            border = squareBorder,
                                                             margin = { all = 1 }
                                                         })
                                                         :onMouseDown({ type = "ColorClicked", r = 0.0, g = 0.5, b = 0.5 })
