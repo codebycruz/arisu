@@ -15,7 +15,6 @@ local ffi = require("ffi")
 --- | { type: "Hovered", x: number, y: number, elementWidth: number, elementHeight: number }
 
 ---@class App
----@field r number
 ---@field patternTexture Texture
 ---@field qoiTexture Texture
 ---@field canvasTexture Texture
@@ -218,7 +217,6 @@ end
 
 Arisu.runApp(function(textureManager)
     local this = setmetatable({}, App)
-    this.r = 1.0
     this.isDrawing = false
     this.textureManager = textureManager
     this.lastGPUUpdate = 0
