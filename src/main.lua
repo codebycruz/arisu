@@ -25,6 +25,8 @@ local ffi = require("ffi")
 ---@field isDrawing boolean
 ---@field lastGPUUpdate number
 ---@field gpuUpdateInterval number
+---@field fps number
+---@field lastFrameTime number
 local App = {}
 App.__index = App
 
@@ -61,7 +63,7 @@ function App:view()
                         })
                         :onMouseDown({ type = "BrushClicked" })
                         :withChildren(
-                            Element.Text.from("23", self.jbmFont)
+                            Element.Text.from("!X", self.jbmFont)
                         ),
 
                     -- Eraser tool
@@ -126,7 +128,22 @@ function App:view()
                             align = "center",
                             padding = { top = 5, bottom = 5, left = 5, right = 5 }
                         })
-                        :onMouseDown({ type = "LoadClicked" })
+                        :onMouseDown({ type = "LoadClicked" }),
+
+            -- FPS Counter
+            Element.Div.new()
+                :withStyle({
+                    width = { abs = 80 },
+                    height = { abs = 40 },
+                    bg = { r = 0.8, g = 0.8, b = 0.8, a = 1.0 },
+                    justify = "center",
+                    align = "center",
+                    padding = { top = 5, bottom = 5, left = 5, right = 5 },
+                    margin = { left = 20 }
+                })
+                :withChildren(
+                    Element.Text.from("FPS: " .. math.floor(self.fps), self.jbmFont)
+                )
                 ),
 
             -- Main canvas area
@@ -156,6 +173,23 @@ function App:view()
                         end)
                 )
         )
+end
+
+---@param event Event
+function App:event(event)
+    if event.name == "redraw" then
+        local currentTime = os.clock()
+        local deltaTime = currentTime - self.lastFrameTime
+        local frameTime = 1.0 / 60
+
+        if deltaTime >= frameTime then
+            if self.lastFrameTime > 0 then
+                local actualFps = 1.0 / deltaTime
+                self.fps = self.fps * 0.9 + actualFps * 0.1
+            end
+            self.lastFrameTime = currentTime
+        end
+    end
 end
 
 ---@param message Message
@@ -226,6 +260,8 @@ Arisu.runApp(function(textureManager)
     this.textureManager = textureManager
     this.lastGPUUpdate = 0
     this.gpuUpdateInterval = 1.0 / 30
+    this.fps = 60
+    this.lastFrameTime = 0
 
     local patternImage = assert(Image.fromPath("assets/gradient.qoi"), "Failed to load pattern image")
     this.patternTexture = textureManager:upload(patternImage)

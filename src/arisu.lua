@@ -223,6 +223,8 @@ function Arisu.runApp(cons)
     eventLoop:run(function(event, handler)
         handler:setMode("poll")
 
+        runEvent(event)
+
         if event.name == "deleteWindow" then
             handler:exit()
         elseif event.name == "aboutToWait" then
