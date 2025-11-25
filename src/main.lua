@@ -69,8 +69,40 @@ function App:view()
                                 :withStyle({
                                     padding = { top = 3, bottom = 3, left = 3, right = 3 },
                                     height = { rel = 0.7 },
-                                    bg = { r = 0.9, g = 0.9, b = 0.9, a = 1.0 },
-                                }),
+                                    gap = 16,
+                                    direction = "row"
+                                })
+                                :withChildren(
+                                    Element.Div.new()
+                                        :withStyle({
+                                            direction = "column",
+                                            width = { rel = 1/3 },
+                                            height = { rel = 1.0 },
+                                            gap = 8,
+                                        })
+                                        :withChildren(
+                                            Element.Div.new()
+                                                :withStyle({
+                                                    border = squareBorder,
+                                                    height = { rel = 2/3 }
+                                                }),
+                                            Element.Text.from("Paste", self.jbmFont)
+                                                :withStyle({ height = { rel = 1/3 } })
+                                        ),
+                                    Element.Div.new()
+                                        :withStyle({
+                                            direction = "column",
+                                            width = { rel = 1/2 },
+                                            height = { rel = 1 },
+                                            gap = 2
+                                        })
+                                        :withChildren(
+                                            Element.Text.from("Cut", self.jbmFont)
+                                                :withStyle({ height = { rel = 1/3 } }),
+                                            Element.Text.from("Copy", self.jbmFont)
+                                                :withStyle({ height = { rel = 1/3 } })
+                                        )
+                                ),
                             Element.Text.from("Clipboard", self.jbmFont)
                                 :withStyle({
                                     align = "center",
@@ -90,8 +122,42 @@ function App:view()
                                 :withStyle({
                                     padding = { top = 3, bottom = 3, left = 3, right = 3 },
                                     height = { rel = 0.7 },
-                                    bg = { r = 0.9, g = 0.9, b = 0.9, a = 1.0 },
-                                }),
+                                    gap = 16,
+                                    direction = "row"
+                                })
+                                :withChildren(
+                                    Element.Div.new()
+                                        :withStyle({
+                                            direction = "column",
+                                            width = { rel = 1/3 },
+                                            height = { rel = 1.0 },
+                                            gap = 8,
+                                        })
+                                        :withChildren(
+                                            Element.Div.new()
+                                                :withStyle({
+                                                    border = squareBorder,
+                                                    height = { rel = 2/3 }
+                                                }),
+                                            Element.Text.from("Select", self.jbmFont)
+                                                :withStyle({ height = { rel = 1/3 } })
+                                        ),
+                                    Element.Div.new()
+                                        :withStyle({
+                                            direction = "column",
+                                            width = { rel = 1/2 },
+                                            height = { rel = 1.0 },
+                                            gap = 2
+                                        })
+                                        :withChildren(
+                                            Element.Text.from("Crop", self.jbmFont)
+                                                :withStyle({ height = { rel = 1/3 } }),
+                                            Element.Text.from("Resize", self.jbmFont)
+                                                :withStyle({ height = { rel = 1/3 } }),
+                                            Element.Text.from("Rotate", self.jbmFont)
+                                                :withStyle({ height = { rel = 1/3 } })
+                                        )
+                                ),
                             Element.Text.from("Image", self.jbmFont)
                                 :withStyle({
                                     align = "center",
@@ -189,7 +255,6 @@ function App:view()
                                 :withStyle({
                                     padding = { top = 3, bottom = 3, left = 3, right = 3 },
                                     height = { rel = 0.7 },
-                                    bg = { r = 0.9, g = 0.9, b = 0.9, a = 1.0 },
                                 }),
                             Element.Text.from("Brushes", self.jbmFont)
                                 :withStyle({
