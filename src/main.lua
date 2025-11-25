@@ -590,8 +590,6 @@ function App:update(message)
             end
         end
     end
-
-    return true
 end
 
 Arisu.runApp(function(textureManager)
