@@ -6,6 +6,7 @@ local ffi = require("ffi")
 ---@field gridWidth number
 ---@field gridHeight number
 ---@field perRow number
+---@field margin number?
 
 ---@class Bitmap
 ---@field config BitmapConfig
@@ -21,10 +22,12 @@ function Bitmap:getCharUVs(char)
     local charIdx = assert(self.config.characters:find(char, 1, true), "Character '" .. char .. "' not found in bitmap characters.") - 1
     local row = math.floor(charIdx / self.config.perRow)
     local col = charIdx % self.config.perRow
+    
+    local margin = self.config.margin or 0
 
-    local u0 = col * self.config.gridWidth / self.image.width
+    local u0 = (col * self.config.gridWidth + margin) / self.image.width
     local v0 = row * self.config.gridHeight / self.image.height
-    local u1 = (col + 1) * self.config.gridWidth / self.image.width
+    local u1 = ((col + 1) * self.config.gridWidth - margin) / self.image.width
     local v1 = (row + 1) * self.config.gridHeight / self.image.height
 
     return {
@@ -32,7 +35,7 @@ function Bitmap:getCharUVs(char)
         v0 = v0,
         u1 = u1,
         v1 = v1,
-        width = self.config.gridWidth,
+        width = self.config.gridWidth - (margin * 2),
         height = self.config.gridHeight,
     }
 end
