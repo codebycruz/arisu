@@ -206,7 +206,7 @@ function Arisu.runApp(cons)
     local eventLoop = window.EventLoop.new()
     local window = window.WindowBuilder.new()
         :withTitle("Layout Renderer")
-        :withSize(800, 600)
+        :withSize(1280, 720)
         :build(eventLoop)
 
     local display = window.display

@@ -78,7 +78,7 @@ function WindowBuilder:build(eventLoop --[[@param eventLoop EventLoop]]) ---@ret
         error("No root window found")
     end
 
-    local id = x11.createSimpleWindow(display, root, 0, 0, 800, 600, 0, 0, 0x000000)
+    local id = x11.createSimpleWindow(display, root, 0, 0, self.width, self.height, 0, 0, 0x000000)
     if id == x11.None then
         io.stderr:write("Failed to create window\n")
         x11.closeDisplay(display)

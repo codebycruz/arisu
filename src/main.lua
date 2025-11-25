@@ -46,7 +46,6 @@ function App:view()
                     direction = "row",
                     align = "center",
                     padding = { bottom = 2 },
-                    border = { bottom = { width = 1, color = borderColor } }
                 })
                 :withChildren(
                     Element.Div.new()
@@ -59,6 +58,7 @@ function App:view()
                         :withChildren(
                             Element.Text.from("Center", self.jbmFont)
                                 :withStyle({
+                                    padding = { top = 3, bottom = 3, left = 3, right = 3 },
                                     height = { rel = 0.7 },
                                 }),
                             Element.Text.from("Clipboard", self.jbmFont)
@@ -78,6 +78,7 @@ function App:view()
                         :withChildren(
                             Element.Text.from("Center", self.jbmFont)
                                 :withStyle({
+                                    padding = { top = 3, bottom = 3, left = 3, right = 3 },
                                     height = { rel = 0.7 },
                                 }),
                             Element.Text.from("Image", self.jbmFont)
@@ -97,6 +98,7 @@ function App:view()
                         :withChildren(
                             Element.Text.from("Center", self.jbmFont)
                                 :withStyle({
+                                    padding = { top = 3, bottom = 3, left = 3, right = 3 },
                                     height = { rel = 0.7 },
                                 }),
                             Element.Text.from("Tools", self.jbmFont)
@@ -116,6 +118,7 @@ function App:view()
                         :withChildren(
                             Element.Text.from("Center", self.jbmFont)
                                 :withStyle({
+                                    padding = { top = 3, bottom = 3, left = 3, right = 3 },
                                     height = { rel = 0.7 },
                                 }),
                             Element.Text.from("Brushes", self.jbmFont)
@@ -136,6 +139,7 @@ function App:view()
                         :withChildren(
                             Element.Text.from("Center", self.jbmFont)
                                 :withStyle({
+                                    padding = { top = 3, bottom = 3, left = 3, right = 3 },
                                     height = { rel = 0.7 },
                                 }),
                             Element.Text.from("Shapes", self.jbmFont)
@@ -144,21 +148,50 @@ function App:view()
                                     justify = "center",
                                     height = { rel = 0.3 },
                                 })
+                        ),
+
+                    Element.Div.new()
+                        :withStyle({
+                            direction = "column",
+                            width = { abs = 400 },
+                            height = { rel = 1.0 },
+                            border = { right = { width = 1, color = borderColor } }
+                        })
+                        :withChildren(
+                            Element.Text.from("Center", self.jbmFont)
+                                :withStyle({
+                                    padding = { top = 3, bottom = 3, left = 3, right = 3 },
+                                    height = { rel = 0.7 },
+                                }),
+                            Element.Text.from("Colors", self.jbmFont)
+                                :withStyle({
+                                    align = "center",
+                                    justify = "center",
+                                    height = { rel = 0.3 },
+                                })
                         )
                 ),
-            -- Canvas
+            -- Bottom section
             Element.Div.new()
                 :withStyle({
-                    height = { rel = 0.7 },
-                    bg = { r = 1.0, g = 1.0, b = 1.0, a = 1.0 },
-                    margin = { top = 10, bottom = 10, left = 10, right = 10 },
-                    bgImage = self.canvasTexture,
+                    align = "center",
+                    justify = "center",
+                    bg = { r = 0.7, g = 0.7, b = 0.8, a = 1.0 },
                 })
-                :onMouseDown({ type = "StartDrawing" })
-                :onMouseUp({ type = "StopDrawing" })
-                :onMouseMove(function(x, y, elementWidth, elementHeight)
-                    return { type = "Hovered", x = x, y = y, elementWidth = elementWidth, elementHeight = elementHeight }
-                end)
+                :withChildren(
+                    Element.Div.new()
+                        :withStyle({
+                            bg = { r = 1, g = 1, b = 1, a = 1 },
+                            bgImage = self.canvasTexture,
+                            width = { rel = 0.95 },
+                            height = { rel = 0.95 },
+                        })
+                        :onMouseDown({ type = "StartDrawing" })
+                        :onMouseUp({ type = "StopDrawing" })
+                        :onMouseMove(function(x, y, elementWidth, elementHeight)
+                            return { type = "Hovered", x = x, y = y, elementWidth = elementWidth, elementHeight = elementHeight }
+                        end)
+                )
         )
 end
 
