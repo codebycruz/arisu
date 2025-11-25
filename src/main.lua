@@ -22,6 +22,12 @@ local ffi = require("ffi")
 ---@field patternTexture Texture
 ---@field qoiTexture Texture
 ---@field canvasTexture Texture
+---@field brushTexture Texture
+---@field eraserTexture Texture
+---@field pencilTexture Texture
+---@field bucketTexture Texture
+---@field textTexture Texture
+---@field paletteTexture Texture
 ---@field textureManager TextureManager
 ---@field jbmFont Bitmap
 ---@field canvasBuffer userdata
@@ -51,6 +57,30 @@ function App:view(windowId)
             bg = { r = 0.95, g = 0.95, b = 0.95, a = 1.0 }
         })
         :withChildren(
+            -- Menu bar
+            Element.Div.new()
+                :withStyle({
+                    height = { abs = 30 },
+                    direction = "row",
+                    align = "center",
+                    gap = 5,
+                    padding = { left = 5, top = 5 },
+                    border = {
+                        bottom = { width = 1, color = borderColor }
+                    }
+                })
+                :withChildren(
+                    Element.Text.from("File", self.jbmFont)
+                        :withStyle({ width = { abs = 50 } })
+                        :onMouseDown({ type = "FileClicked" }),
+                    Element.Text.from("Edit", self.jbmFont)
+                        :withStyle({ width = { abs = 50 } }),
+                    Element.Text.from("View", self.jbmFont)
+                        :withStyle({ width = { abs = 50 } }),
+                    Element.Text.from("Clear", self.jbmFont)
+                        :withStyle({ width = { abs = 50 } })
+                        :onMouseDown({ type = "ClearClicked" })
+                ),
             -- Top toolbar
             Element.Div.new()
                 :withStyle({
@@ -171,7 +201,7 @@ function App:view(windowId)
                     Element.Div.new()
                         :withStyle({
                             direction = "column",
-                            width = { abs = 150 },
+                            width = { abs = 120 },
                             height = { rel = 1.0 },
                             border = { right = { width = 1, color = borderColor } }
                         })
@@ -192,48 +222,57 @@ function App:view(windowId)
                                         :withChildren(
                                             Element.Div.new()
                                                 :withStyle({
-                                                    width = { rel = 0.33 },
+                                                    width = { abs = 35 },
+                                                    height = { abs = 35 },
                                                     bg = self.selectedTool == "brush" and { r = 0.7, g = 0.7, b = 1.0, a = 1.0 } or { r = 0.9, g = 0.9, b = 0.9, a = 1.0 },
+                                                    bgImage = self.brushTexture,
                                                     margin = { right = 1 }
                                                 })
                                                 :onMouseDown({ type = "ToolClicked", tool = "brush" }),
                                             Element.Div.new()
                                                 :withStyle({
-                                                    width = { rel = 0.33 },
+                                                    width = { abs = 35 },
+                                                    height = { abs = 35 },
                                                     bg = self.selectedTool == "eraser" and { r = 0.7, g = 0.7, b = 1.0, a = 1.0 } or { r = 0.9, g = 0.9, b = 0.9, a = 1.0 },
                                                     margin = { right = 1 }
                                                 })
                                                 :onMouseDown({ type = "ToolClicked", tool = "eraser" }),
                                             Element.Div.new()
                                                 :withStyle({
-                                                    width = { rel = 0.33 },
-                                                    bg = self.selectedTool == "fill" and { r = 0.7, g = 0.7, b = 1.0, a = 1.0 } or { r = 0.9, g = 0.9, b = 0.9, a = 1.0 }
+                                                    width = { abs = 35 },
+                                                    height = { abs = 35 },
+                                                    bg = self.selectedTool == "fill" and { r = 0.7, g = 0.7, b = 1.0, a = 1.0 } or { r = 0.9, g = 0.9, b = 0.9, a = 1.0 },
+                                                    bgImage = self.bucketTexture,
                                                 })
                                                 :onMouseDown({ type = "ToolClicked", tool = "fill" })
                                         ),
                                     Element.Div.new()
                                         :withStyle({
                                             direction = "row",
-                                            height = { rel = 0.5 }
+                                            height = { rel = 0.5 },
+                                            gap = 3
                                         })
                                         :withChildren(
                                             Element.Div.new()
                                                 :withStyle({
-                                                    width = { rel = 0.33 },
-                                                    bg = self.selectedTool == "line" and { r = 0.7, g = 0.7, b = 1.0, a = 1.0 } or { r = 0.9, g = 0.9, b = 0.9, a = 1.0 },
-                                                    margin = { right = 1 }
+                                                    width = { abs = 35 },
+                                                    height = { abs = 35 },
+                                                    bg = self.selectedTool == "pencil" and { r = 0.7, g = 0.7, b = 1.0, a = 1.0 } or { r = 0.9, g = 0.9, b = 0.9, a = 1.0 },
+                                                    bgImage = self.pencilTexture,
                                                 })
-                                                :onMouseDown({ type = "ToolClicked", tool = "line" }),
+                                                :onMouseDown({ type = "ToolClicked", tool = "pencil" }),
                                             Element.Div.new()
                                                 :withStyle({
-                                                    width = { rel = 0.33 },
-                                                    bg = self.selectedTool == "rectangle" and { r = 0.7, g = 0.7, b = 1.0, a = 1.0 } or { r = 0.9, g = 0.9, b = 0.9, a = 1.0 },
-                                                    margin = { right = 1 }
+                                                    width = { abs = 35 },
+                                                    height = { abs = 35 },
+                                                    bg = self.selectedTool == "text" and { r = 0.7, g = 0.7, b = 1.0, a = 1.0 } or { r = 0.9, g = 0.9, b = 0.9, a = 1.0 },
+                                                    bgImage = self.textTexture,
                                                 })
-                                                :onMouseDown({ type = "ToolClicked", tool = "rectangle" }),
+                                                :onMouseDown({ type = "ToolClicked", tool = "text" }),
                                             Element.Div.new()
                                                 :withStyle({
-                                                    width = { rel = 0.33 },
+                                                    width = { abs = 35 },
+                                                    height = { abs = 35 },
                                                     bg = self.selectedTool == "circle" and { r = 0.7, g = 0.7, b = 1.0, a = 1.0 } or { r = 0.9, g = 0.9, b = 0.9, a = 1.0 }
                                                 })
                                                 :onMouseDown({ type = "ToolClicked", tool = "circle" })
@@ -533,7 +572,8 @@ function App:event(event)
 end
 
 ---@param message Message
-function App:update(message)
+---@param windowId number
+function App:update(message, windowId)
     if message.type == "BrushClicked" then
     elseif message.type == "StartDrawing" then
         self.isDrawing = true
@@ -556,13 +596,12 @@ function App:update(message)
         local canvasImage = Image.new(800, 600, 4, self.canvasBuffer, "")
         self.textureManager:update(self.canvasTexture, canvasImage)
         self.lastGPUUpdate = os.clock()
-    elseif message.type == "SaveClicked" then
+    elseif message.type == "FileClicked" then
         local builder = window.WindowBuilder.new()
             :withTitle("New Window")
             :withSize(400, 300)
 
         return Task.openWindow(builder)
-    elseif message.type == "LoadClicked" then
     elseif message.type == "Hovered" then
         if self.isDrawing then
             -- Map UI coordinates to texture coordinates
@@ -626,6 +665,21 @@ Arisu.runApp(function(textureManager)
     local jbmFont = assert(Bitmap.fromPath({ ymargin = 2, xmargin = 4, gridWidth = 18, gridHeight = 18, characters = characters, perRow = 19 }, "assets/JetBrainsMono.qoi"), "Failed to load bitmap font")
     textureManager:upload(jbmFont.image)
     this.jbmFont = jbmFont
+
+    local brushImage = assert(Image.fromPath("assets/paintbrush.qoi"), "Failed to load brush image")
+    this.brushTexture = textureManager:upload(brushImage)
+
+    local bucketImage = assert(Image.fromPath("assets/paintcan.qoi"), "Failed to load bucket image")
+    this.bucketTexture = textureManager:upload(bucketImage)
+
+    local paletteImage = assert(Image.fromPath("assets/palette.qoi"), "Failed to load palette image")
+    this.paletteTexture = textureManager:upload(paletteImage)
+
+    local pencilImage = assert(Image.fromPath("assets/pencil.qoi"), "Failed to load pencil image")
+    this.pencilTexture = textureManager:upload(pencilImage)
+
+    local textImage = assert(Image.fromPath("assets/text.qoi"), "Failed to load text image")
+    this.textTexture = textureManager:upload(textImage)
 
     this.canvasBuffer = ffi.new("uint8_t[?]", 800 * 600 * 4)
     for i = 0, 800 * 600 * 4 - 1 do

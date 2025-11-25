@@ -1,18 +1,16 @@
----@alias TaskVariant
---- | "windowOpen"
---- | "refreshView"
+---@alias Task
+--- | { variant: "windowOpen", builder: WindowBuilder }
+--- | { variant: "refreshView" }
 
----@class Task
 local Task = {}
-Task.__index = Task
 
 ---@param builder WindowBuilder
-function Task.openWindow(builder)
-    return setmetatable({ variant = "windowOpen", builder = builder }, Task)
+function Task.openWindow(builder) ---@return Task
+    return { variant = "windowOpen", builder = builder }
 end
 
-function Task.refreshView()
-    return setmetatable({ variant = "refreshView" }, Task)
+function Task.refreshView() ---@return Task
+    return { variant = "refreshView" }
 end
 
 return Task

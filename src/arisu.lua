@@ -201,7 +201,7 @@ local Arisu = {}
 
 ---@generic T
 ---@generic Message
----@param cons fun(textureManager: TextureManager): { view: fun(self: T, windowId: number), update: fun(self: T, message: Message): Task?, event: fun(self: T, event: Event): Message }
+---@param cons fun(textureManager: TextureManager): { view: fun(self: T, windowId: number), update: fun(self: T, message: Message, windowId: number): Task?, event: fun(self: T, event: Event): Message }
 function Arisu.runApp(cons)
     local eventLoop = window.EventLoop.new()
     local window = window.WindowBuilder.new()
@@ -268,6 +268,7 @@ function Arisu.runApp(cons)
         end
     end
 
+    ---@param task Task?
     local function runTask(task)
         if not task then
             return
@@ -281,8 +282,8 @@ function Arisu.runApp(cons)
         end
     end
 
-    function runUpdate(message)
-        runTask(app:update(message))
+    function runUpdate(message, windowId)
+        runTask(app:update(message, windowId))
     end
 
     eventLoop:run(function(event, handler)
@@ -291,7 +292,13 @@ function Arisu.runApp(cons)
         runEvent(event)
 
         if event.name == "deleteWindow" then
-            handler:exit()
+            -- Ensure we only exit if the main window is closed
+            -- TODO: Maybe allow users to specify this behavior?
+            if event.window.id == window.id then
+                handler:exit()
+            else
+                eventLoop:close(event.window)
+            end
         elseif event.name == "aboutToWait" then
             handler:requestRedraw(window)
         elseif event.name == "resize" then
@@ -319,7 +326,7 @@ function Arisu.runApp(cons)
 
             for el, layout in pairs(hoveredElements) do
                 if el.onmousemove then
-                    runUpdate(el.onmousemove(event.x - layout.absX, event.y - layout.absY, layout.layout.width, layout.layout.height))
+                    runUpdate(el.onmousemove(event.x - layout.absX, event.y - layout.absY, layout.layout.width, layout.layout.height), window.id)
                 end
             end
         elseif event.name == "mousePress" then
@@ -330,7 +337,7 @@ function Arisu.runApp(cons)
             end)
 
             if mouseDownElement then
-                runUpdate(mouseDownElement.onmousedown)
+                runUpdate(mouseDownElement.onmousedown, window.id)
             end
         elseif event.name == "mouseRelease" then
             local computedLayout = layoutTree:solve(window.width, window.height)
@@ -339,7 +346,7 @@ function Arisu.runApp(cons)
             end)
 
             if mouseUpElement then
-                runUpdate(mouseUpElement.onmouseup)
+                runUpdate(mouseUpElement.onmouseup, window.id)
             end
         elseif event.name == "redraw" then
             local currentTime = os.clock()

@@ -128,6 +128,11 @@ function EventLoop:register(window --[[@param window Window]])
     self.windows[tostring(window.id)] = window
 end
 
+function EventLoop:close(window --[[@param window Window]])
+    window:destroy()
+    self.windows[tostring(window.id)] = nil
+end
+
 ---@alias EventHandler { exit: fun(), requestRedraw: fun(self, window: Window), setMode: fun(self, mode: "poll" | "wait") }
 
 function EventLoop:run(callback --[[@param callback fun(event: Event, handler: EventHandler)]])
