@@ -34,6 +34,11 @@ local ffi = require("ffi")
 ---@field soundTexture Texture
 ---@field soundMuteTexture Texture
 ---@field vectorTexture Texture
+---@field copyTexture Texture
+---@field cutTexture Texture
+---@field cropTexture Texture
+---@field resizeTexture Texture
+---@field rotateTexture Texture
 ---@field textureManager TextureManager
 ---@field jbmFont Bitmap
 ---@field canvasBuffer userdata
@@ -136,10 +141,40 @@ function App:view(windowId)
                                             gap = 2
                                         })
                                         :withChildren(
-                                            Element.Text.from("Cut", self.jbmFont)
-                                                :withStyle({ height = { rel = 1/3 } }),
-                                            Element.Text.from("Copy", self.jbmFont)
-                                                :withStyle({ height = { rel = 1/3 } })
+                                            Element.Div.new()
+                                                :withStyle({
+                                                    direction = "row",
+                                                    gap = 5,
+                                                    height = { rel = 1/3 }
+                                                })
+                                                :withChildren(
+                                                    Element.Div.new()
+                                                        :withStyle({
+                                                            bgImage = self.cutTexture,
+                                                            width = { abs = 15 },
+                                                            height = { abs = 15 },
+                                                            margin = { right = 2 }
+                                                        }),
+                                                    Element.Text.from("Cut", self.jbmFont)
+                                                        :withStyle({ height = { rel = 1.0 } })
+                                                ),
+                                            Element.Div.new()
+                                                :withStyle({
+                                                    direction = "row",
+                                                    gap = 5,
+                                                    height = { rel = 1/3 }
+                                                })
+                                                :withChildren(
+                                                    Element.Div.new()
+                                                        :withStyle({
+                                                            bgImage = self.copyTexture,
+                                                            width = { abs = 15 },
+                                                            height = { abs = 15 },
+                                                            margin = { right = 2 }
+                                                        }),
+                                                    Element.Text.from("Copy", self.jbmFont)
+                                                        :withStyle({ height = { rel = 1.0 } })
+                                                )
                                         )
                                 ),
                             Element.Text.from("Clipboard", self.jbmFont)
@@ -190,12 +225,57 @@ function App:view(windowId)
                                             gap = 2
                                         })
                                         :withChildren(
-                                            Element.Text.from("Crop", self.jbmFont)
-                                                :withStyle({ height = { rel = 1/3 } }),
-                                            Element.Text.from("Resize", self.jbmFont)
-                                                :withStyle({ height = { rel = 1/3 } }),
-                                            Element.Text.from("Rotate", self.jbmFont)
-                                                :withStyle({ height = { rel = 1/3 } })
+                                            Element.Div.new()
+                                                :withStyle({
+                                                    direction = "row",
+                                                    gap = 5,
+                                                    height = { rel = 1/3 }
+                                                })
+                                                :withChildren(
+                                                    Element.Div.new()
+                                                        :withStyle({
+                                                            bgImage = self.cropTexture,
+                                                            width = { abs = 15 },
+                                                            height = { abs = 15 },
+                                                            margin = { right = 2 }
+                                                        }),
+                                                    Element.Text.from("Crop", self.jbmFont)
+                                                        :withStyle({ height = { rel = 1.0 } })
+                                                ),
+                                            Element.Div.new()
+                                                :withStyle({
+                                                    direction = "row",
+                                                    gap = 5,
+                                                    height = { rel = 1/3 }
+                                                })
+                                                :withChildren(
+                                                    Element.Div.new()
+                                                        :withStyle({
+                                                            bgImage = self.resizeTexture,
+                                                            width = { abs = 15 },
+                                                            height = { abs = 15 },
+                                                            margin = { right = 2 }
+                                                        }),
+                                                    Element.Text.from("Resize", self.jbmFont)
+                                                        :withStyle({ height = { rel = 1.0 } })
+                                                ),
+                                            Element.Div.new()
+                                                :withStyle({
+                                                    direction = "row",
+                                                    gap = 5,
+                                                    height = { rel = 1/3 }
+                                                })
+                                                :withChildren(
+                                                    Element.Div.new()
+                                                        :withStyle({
+                                                            bgImage = self.rotateTexture,
+                                                            width = { abs = 15 },
+                                                            height = { abs = 15 },
+                                                            margin = { right = 2 }
+                                                        }),
+                                                    Element.Text.from("Rotate", self.jbmFont)
+                                                        :withStyle({ height = { rel = 1.0 } })
+                                                )
                                         )
                                 ),
                             Element.Text.from("Image", self.jbmFont)
@@ -707,6 +787,21 @@ Arisu.runApp(function(textureManager)
 
     local soundMuteImage = assert(Image.fromPath("assets/sound_mute.qoi"), "Failed to load sound mute image")
     this.soundMuteTexture = textureManager:upload(soundMuteImage)
+
+    local copyImage = assert(Image.fromPath("assets/copy.qoi"), "Failed to load copy image")
+    this.copyTexture = textureManager:upload(copyImage)
+
+    local cutImage = assert(Image.fromPath("assets/cut.qoi"), "Failed to load cut image")
+    this.cutTexture = textureManager:upload(cutImage)
+
+    local cropImage = assert(Image.fromPath("assets/crop.qoi"), "Failed to load crop image")
+    this.cropTexture = textureManager:upload(cropImage)
+
+    local resizeImage = assert(Image.fromPath("assets/resize.qoi"), "Failed to load resize image")
+    this.resizeTexture = textureManager:upload(resizeImage)
+
+    local rotateImage = assert(Image.fromPath("assets/rotate.qoi"), "Failed to load rotate image")
+    this.rotateTexture = textureManager:upload(rotateImage)
 
     this.canvasBuffer = ffi.new("uint8_t[?]", 800 * 600 * 4)
     for i = 0, 800 * 600 * 4 - 1 do
