@@ -500,14 +500,13 @@ function App:view()
             Element.Div.new()
                 :withStyle({
                     height = { abs = 30 },
-                    bg = { r = 1, g = 0, b = 0, a = 1 },
                     width = "auto"
                 })
                 :withChildren(
-                    Element.Text.from(string.format("FPS: %.2f", self.fps), self.jbmFont)
+                    Element.Text.from(string.format("arisu v0.1", self.fps), self.jbmFont)
                         :withStyle({
                             align = "center",
-                            justify = "center",
+                            padding = { left = 10 }
                         })
                 )
         )
@@ -543,8 +542,10 @@ function App:update(message)
     elseif message.type == "EraserClicked" then
     elseif message.type == "ColorClicked" then
         self.currentColor = { r = message.r, g = message.g, b = message.b, a = 1.0 }
+        return true -- UI Refresh to update color preview
     elseif message.type == "ToolClicked" then
         self.selectedTool = message.tool
+        return true -- UI Refresh to highlight selected tool
     elseif message.type == "ClearClicked" then
         for i = 0, 800 * 600 * 4 - 1 do
             self.canvasBuffer[i] = 255
