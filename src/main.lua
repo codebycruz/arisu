@@ -28,6 +28,12 @@ local ffi = require("ffi")
 ---@field bucketTexture Texture
 ---@field textTexture Texture
 ---@field paletteTexture Texture
+---@field selectTexture Texture
+---@field pasteTexture Texture
+---@field magnifierTexture Texture
+---@field soundTexture Texture
+---@field soundMuteTexture Texture
+---@field vectorTexture Texture
 ---@field textureManager TextureManager
 ---@field jbmFont Bitmap
 ---@field canvasBuffer userdata
@@ -116,7 +122,7 @@ function App:view(windowId)
                                         :withChildren(
                                             Element.Div.new()
                                                 :withStyle({
-                                                    border = squareBorder,
+                                                    bgImage = self.pasteTexture,
                                                     height = { rel = 2/3 }
                                                 }),
                                             Element.Text.from("Paste", self.jbmFont)
@@ -170,6 +176,7 @@ function App:view(windowId)
                                             Element.Div.new()
                                                 :withStyle({
                                                     border = squareBorder,
+                                                    bgImage = self.selectTexture,
                                                     height = { rel = 2/3 }
                                                 }),
                                             Element.Text.from("Select", self.jbmFont)
@@ -234,6 +241,7 @@ function App:view(windowId)
                                                     width = { abs = 35 },
                                                     height = { abs = 35 },
                                                     bg = self.selectedTool == "eraser" and { r = 0.7, g = 0.7, b = 1.0, a = 1.0 } or { r = 0.9, g = 0.9, b = 0.9, a = 1.0 },
+                                                    bgImage = self.eraserTexture,
                                                     margin = { right = 1 }
                                                 })
                                                 :onMouseDown({ type = "ToolClicked", tool = "eraser" }),
@@ -273,7 +281,8 @@ function App:view(windowId)
                                                 :withStyle({
                                                     width = { abs = 35 },
                                                     height = { abs = 35 },
-                                                    bg = self.selectedTool == "circle" and { r = 0.7, g = 0.7, b = 1.0, a = 1.0 } or { r = 0.9, g = 0.9, b = 0.9, a = 1.0 }
+                                                    bg = self.selectedTool == "zoom" and { r = 0.7, g = 0.7, b = 1.0, a = 1.0 } or { r = 0.9, g = 0.9, b = 0.9, a = 1.0 },
+                                                    bgImage = self.magnifierTexture
                                                 })
                                                 :onMouseDown({ type = "ToolClicked", tool = "circle" })
                                         )
@@ -598,8 +607,8 @@ function App:update(message, windowId)
         self.lastGPUUpdate = os.clock()
     elseif message.type == "FileClicked" then
         local builder = window.WindowBuilder.new()
-            :withTitle("New Window")
-            :withSize(400, 300)
+            :withTitle("Hi")
+            :withSize(600, 400)
 
         return Task.openWindow(builder)
     elseif message.type == "Hovered" then
@@ -680,6 +689,24 @@ Arisu.runApp(function(textureManager)
 
     local textImage = assert(Image.fromPath("assets/text.qoi"), "Failed to load text image")
     this.textTexture = textureManager:upload(textImage)
+
+    local eraserImage = assert(Image.fromPath("assets/eraser.qoi"), "Failed to load eraser image")
+    this.eraserTexture = textureManager:upload(eraserImage)
+
+    local magnifierImage = assert(Image.fromPath("assets/magnifier.qoi"), "Failed to load magnifier image")
+    this.magnifierTexture = textureManager:upload(magnifierImage)
+
+    local pasteImage = assert(Image.fromPath("assets/paste.qoi"), "Failed to load paste image")
+    this.pasteTexture = textureManager:upload(pasteImage)
+
+    local selectImage = assert(Image.fromPath("assets/select.qoi"), "Failed to load select image")
+    this.selectTexture = textureManager:upload(selectImage)
+
+    local soundImage = assert(Image.fromPath("assets/sound.qoi"), "Failed to load sound image")
+    this.soundTexture = textureManager:upload(soundImage)
+
+    local soundMuteImage = assert(Image.fromPath("assets/sound_mute.qoi"), "Failed to load sound mute image")
+    this.soundMuteTexture = textureManager:upload(soundMuteImage)
 
     this.canvasBuffer = ffi.new("uint8_t[?]", 800 * 600 * 4)
     for i = 0, 800 * 600 * 4 - 1 do
