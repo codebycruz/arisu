@@ -56,14 +56,7 @@ function Context:swapBuffers()
 end
 
 function Context:present()
-    if self.fence then
-        gl.clientWaitSync(self.fence, gl.SYNC_FLUSH_COMMANDS_BIT, 1e9)
-        gl.deleteSync(self.fence)
-        self.fence = nil
-    end
-
     self:swapBuffers()
-    self.fence = gl.fenceSync(gl.SYNC_GPU_COMMANDS_COMPLETE, 0)
 end
 
 function Context:destroy()

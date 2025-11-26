@@ -136,6 +136,7 @@ ffi.cdef[[
     Atom XInternAtom(Display* display, const char* atom_name, Bool only_if_exists);
     Status XSetWMProtocols(Display* display, Window w, Atom* protocols, int count);
     void XNextEvent(Display* display, XEvent* event_return);
+    void XPeekEvent(Display* display, XEvent* event_return);
     int XDefaultScreen(Display* display);
     int XPending(Display* display);
     void XSelectInput(Display* display, Window w, long event_mask);
@@ -202,6 +203,9 @@ return {
 
     ---@type fun(display: XDisplay, event_return: XEvent)
     nextEvent = C.XNextEvent,
+
+    ---@type fun(display: XDisplay, event_return: XEvent)
+    peekEvent = C.XPeekEvent,
 
     ---@type fun(display: XDisplay): number
     defaultScreen = C.XDefaultScreen,

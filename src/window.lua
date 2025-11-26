@@ -282,6 +282,24 @@ function EventLoop:run(callback --[[@param callback fun(event: Event, handler: E
         evtTypeHandler(window)
     end
 
+    local function coalesceMouse()
+        if x11.pending(display) == 0 then
+            return
+        end
+
+        local tempEvent = x11.newEvent()
+        local hasMoreMotion = true
+
+        while hasMoreMotion and x11.pending(display) > 0 do
+            x11.peekEvent(display, tempEvent)
+            if tempEvent.type == x11.MotionNotify and tempEvent.xmotion.window == event.xmotion.window then
+                x11.nextEvent(display, event)
+            else
+                hasMoreMotion = false
+            end
+        end
+    end
+
     local redrawEvent = { name = "redraw" }
     local aboutToWaitEvent = { name = "aboutToWait" }
 
@@ -289,10 +307,18 @@ function EventLoop:run(callback --[[@param callback fun(event: Event, handler: E
         if currentMode == "poll" then
             if x11.pending(display) > 0 then
                 x11.nextEvent(display, event)
+                if event.type == x11.MotionNotify then
+                    coalesceMouse()
+                end
+
                 processEvent()
             end
         else
             x11.nextEvent(display, event)
+            if event.type == x11.MotionNotify then
+                coalesceMouse()
+            end
+
             processEvent()
         end
 
