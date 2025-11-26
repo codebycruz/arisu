@@ -120,7 +120,7 @@ function Compute:fill(x, y, color)
     local canvasHeight = canvasInfo.height
 
     -- This one needs to run iteratively.
-    for i = 1, 40 do
+    for i = 1, 1 do
         -- Ping pong between the two to avoid constant copies
         -- Need to do this so the parallel reads/writes don't conflict
         if i % 2 == 1 then
@@ -138,12 +138,6 @@ function Compute:fill(x, y, color)
         )
 
         gl.memoryBarrier(gl.SHADER_IMAGE_ACCESS_BARRIER_BIT)
-        gl.finish()
-
-        -- Force cpu to wait for gpu every 10 iterations
-        -- if i % 10 == 0 then
-        --     gl.finish()
-        -- end
     end
 end
 
