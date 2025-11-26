@@ -18,6 +18,7 @@ function Pipeline:setProgram(type, program)
     local stage = ({
         [gl.ShaderType.VERTEX] = gl.VERTEX_SHADER_BIT,
         [gl.ShaderType.FRAGMENT] = gl.FRAGMENT_SHADER_BIT,
+        [gl.ShaderType.COMPUTE] = gl.COMPUTE_SHADER_BIT,
     })[type]
 
     self.stages[type] = program
@@ -26,6 +27,13 @@ end
 
 function Pipeline:bind()
     gl.bindProgramPipeline(self.id)
+end
+
+---@param x number
+---@param y number
+---@param z number
+function Pipeline:dispatchCompute(x, y, z)
+    gl.dispatchCompute(x, y, z)
 end
 
 function Pipeline:destroy()

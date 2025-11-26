@@ -69,6 +69,7 @@ ffi.cdef[[
     // Compute shaders
     void glDispatchCompute(GLuint num_groups_x, GLuint num_groups_y, GLuint num_groups_z);
     void glMemoryBarrier(unsigned int barriers);
+    void glBindImageTexture(GLuint unit, GLuint texture, GLint level, unsigned char layered, GLint layer, GLenum access, GLenum format);
 
     // Misc
     char* glGetString(GLenum name);
@@ -133,6 +134,8 @@ return {
     BLEND = 0x0BE2,
     SRC_ALPHA = 0x0302,
     ONE_MINUS_SRC_ALPHA = 0x0303,
+
+    READ_WRITE = 0x88BA,
 
     --- @param type ShaderType
     --- @param src string
@@ -281,4 +284,7 @@ return {
 
     ---@type fun(sfactor: number, dfactor: number)
     blendFunc = C.glBlendFunc,
+
+    ---@type fun(unit: number, texture: number, level: number, layered: number, layer: number, access: number, format: number)
+    bindImageTexture = C.glBindImageTexture,
 }

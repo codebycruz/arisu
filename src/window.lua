@@ -48,7 +48,7 @@ function Window:setIcon(image --[[@param image Image|nil]])
             local b = pixels[i * 4 + 2]
             local a = pixels[i * 4 + 3]
 
-            iconData[i + 2] = bit.lshift(a, 24) + bit.lshift(r, 16) + bit.lshift(g, 8) + b
+            iconData[i + 2] = bit.bor(bit.lshift(a, 24), bit.lshift(r, 16), bit.lshift(g, 8), b)
         end
     else -- RGB8 -> ARGB32 (assuming fully opaque)
         for i = 0, image.width * image.height - 1 do
@@ -56,7 +56,7 @@ function Window:setIcon(image --[[@param image Image|nil]])
             local g = pixels[i * 3 + 1]
             local b = pixels[i * 3 + 2]
 
-            iconData[i + 2] = 0xFF000000 + bit.lshift(r, 16) + bit.lshift(g, 8) + b
+            iconData[i + 2] = bit.bor(0xFF000000, bit.lshift(r, 16), bit.lshift(g, 8), b)
         end
     end
 

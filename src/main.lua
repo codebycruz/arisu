@@ -1,8 +1,9 @@
 local Arisu = require "src.arisu"
 local Element = require "src.ui.element"
 local Image = require "src.image"
-local Bitmap = require "src.font.bitmap"
 local Task = require "src.task"
+local Compute = require "src.tools.compute"
+
 local window = require "src.window"
 local ffi = require("ffi")
 
@@ -42,6 +43,7 @@ local ffi = require("ffi")
 ---@field brushesTexture Texture
 ---@field textureManager TextureManager
 ---@field fontManager FontManager
+---@field compute Compute
 ---@field canvasBuffer userdata
 ---@field isDrawing boolean
 ---@field lastGPUUpdate number
@@ -57,8 +59,8 @@ App.__index = App
 ---@param textureManager TextureManager
 ---@param fontManager FontManager
 function App.new(window, textureManager, fontManager)
-    -- local arisuImage = assert(Image.fromPath("assets/airman.qoi"), "Failed to load window icon")
-    -- window:setIcon(arisuImage)
+    local arisuImage = assert(Image.fromPath("assets/brushes.qoi"), "Failed to load window icon")
+    window:setIcon(arisuImage)
 
     local this = setmetatable({}, App)
     this.isDrawing = false
@@ -129,6 +131,9 @@ function App.new(window, textureManager, fontManager)
 
     local canvasImage = Image.new(800, 600, 4, this.canvasBuffer, "")
     this.canvasTexture = textureManager:upload(canvasImage)
+
+    local compute = Compute.new(textureManager, this.canvasTexture)
+    this.compute = compute
 
     return this
 end
@@ -761,48 +766,54 @@ function App:update(message, windowId)
         self.lastGPUUpdate = os.clock()
     elseif message.type == "FileClicked" then
         local builder = window.WindowBuilder.new()
-            :withTitle("Hi")
+            :withTitle("File Picker")
             :withSize(600, 400)
 
         return Task.openWindow(builder)
     elseif message.type == "Hovered" then
         if self.isDrawing then
+            self.compute:stamp(
+                (message.x / message.elementWidth) * 800,
+                (message.y / message.elementHeight) * 600,
+                10
+            )
+
             -- Map UI coordinates to texture coordinates
-            local textureX = (message.x / message.elementWidth) * 800
-            local textureY = (message.y / message.elementHeight) * 600
+            -- local textureX = (message.x / message.elementWidth) * 800
+            -- local textureY = (message.y / message.elementHeight) * 600
 
-            local pixelX = math.floor(textureX)
-            local pixelY = math.floor(textureY)
+            -- local pixelX = math.floor(textureX)
+            -- local pixelY = math.floor(textureY)
 
-            if pixelX >= 0 and pixelX < 800 and pixelY >= 0 and pixelY < 600 then
-                local brushSize = 3
-                for dy = -brushSize, brushSize do
-                    for dx = -brushSize, brushSize do
-                        local x = pixelX + dx
-                        local y = pixelY + dy
-                        if x >= 0 and x < 800 and y >= 0 and y < 600 then
-                            if dx * dx + dy * dy <= brushSize * brushSize then
-                                local index = (y * 800 + x) * 4
-                                if self.selectedTool == "eraser" then
-                                    self.canvasBuffer[index + 3] = 0
-                                else
-                                    self.canvasBuffer[index + 0] = math.floor(self.currentColor.r * 255)
-                                    self.canvasBuffer[index + 1] = math.floor(self.currentColor.g * 255)
-                                    self.canvasBuffer[index + 2] = math.floor(self.currentColor.b * 255)
-                                    self.canvasBuffer[index + 3] = 255
-                                end
-                            end
-                        end
-                    end
-                end
+            -- if pixelX >= 0 and pixelX < 800 and pixelY >= 0 and pixelY < 600 then
+            --     local brushSize = 3
+            --     for dy = -brushSize, brushSize do
+            --         for dx = -brushSize, brushSize do
+            --             local x = pixelX + dx
+            --             local y = pixelY + dy
+            --             if x >= 0 and x < 800 and y >= 0 and y < 600 then
+            --                 if dx * dx + dy * dy <= brushSize * brushSize then
+            --                     local index = (y * 800 + x) * 4
+            --                     if self.selectedTool == "eraser" then
+            --                         self.canvasBuffer[index + 3] = 0
+            --                     else
+            --                         self.canvasBuffer[index + 0] = math.floor(self.currentColor.r * 255)
+            --                         self.canvasBuffer[index + 1] = math.floor(self.currentColor.g * 255)
+            --                         self.canvasBuffer[index + 2] = math.floor(self.currentColor.b * 255)
+            --                         self.canvasBuffer[index + 3] = 255
+            --                     end
+            --                 end
+            --             end
+            --         end
+            --     end
 
-                local currentTime = os.clock()
-                if currentTime - self.lastGPUUpdate >= self.gpuUpdateInterval then
-                    local canvasImage = Image.new(800, 600, 4, self.canvasBuffer, "")
-                    self.textureManager:update(self.canvasTexture, canvasImage)
-                    self.lastGPUUpdate = currentTime
-                end
-            end
+            --     local currentTime = os.clock()
+            --     if currentTime - self.lastGPUUpdate >= self.gpuUpdateInterval then
+            --         local canvasImage = Image.new(800, 600, 4, self.canvasBuffer, "")
+            --         self.textureManager:update(self.canvasTexture, canvasImage)
+            --         self.lastGPUUpdate = currentTime
+            --     end
+            -- end
         end
     end
 end
