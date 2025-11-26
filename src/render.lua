@@ -39,6 +39,16 @@ function Context:makeCurrent()
     return glx.makeCurrent(self.display, self.window.id, self.ctx) ~= 0
 end
 
+---@param mode "immediate" | "vsync"
+function Context:setPresentMode(mode)
+    local intMode = ({
+        ["immediate"] = 0,
+        ["vsync"] = 1,
+    })[mode]
+
+    glx.swapIntervalEXT(self.display, self.window.id, intMode)
+end
+
 function Context:swapBuffers()
     glx.swapBuffers(self.display, self.window.id)
 end

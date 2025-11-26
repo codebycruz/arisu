@@ -228,7 +228,7 @@ end
 
 local Arisu = {}
 
-local TARGET_FPS = 144
+local TARGET_FPS = 60
 local FRAME_TIME = 1 / TARGET_FPS
 
 ---@class WindowContext
@@ -270,6 +270,7 @@ function Arisu.runApp(cons)
         end
 
         renderCtx:makeCurrent()
+        renderCtx:setPresentMode("immediate")
 
         local vertexDescriptor = BufferDescriptor.new()
             :withAttribute({ type = "f32", size = 3, offset = 0 })  -- position (vec3)
@@ -412,13 +413,13 @@ function Arisu.runApp(cons)
         local eventName = event.name
         if eventName == "redraw" then
             local ctx = windowContexts[event.window]
-            local currentTime = os.clock()
-            local deltaTime = currentTime - ctx.lastFrameTime
+            -- local currentTime = os.clock()
+            -- local deltaTime = currentTime - ctx.lastFrameTime
 
-            if deltaTime >= FRAME_TIME then
+            -- if deltaTime >= FRAME_TIME then
                 draw(ctx)
-                ctx.lastFrameTime = currentTime
-            end
+            --     ctx.lastFrameTime = currentTime
+            -- end
         elseif eventName == "windowClose" then
             -- Ensure we only exit if the main window is closed
             -- TODO: Maybe allow users to specify this behavior?

@@ -11,6 +11,7 @@ ffi.cdef[[
     typedef char GLchar;
     typedef intptr_t GLintptr;
     typedef intptr_t GLsizeiptr;
+    typedef void* GLsync;
 
     typedef void (*GLDEBUGPROC)(unsigned int, unsigned int, unsigned int, unsigned int, int, const char*, const void*);
 
@@ -79,9 +80,16 @@ ffi.cdef[[
     void glDisable(GLenum cap);
     void glBlendFunc(GLenum sfactor, GLenum dfactor);
     void glFinish();
+
+    // Fences
+    GLsync glFenceSync(GLenum condition, unsigned int flags);
+    void glDeleteSync(GLsync sync);
+    GLenum glClientWaitSync(GLsync sync, unsigned int flags, uint64_t timeout);
 ]]
 
 local C = ffi.load("GL")
+
+---@class Fence: userdata
 
 return {
     INVALID_VALUE = 0x0501,
@@ -300,4 +308,13 @@ return {
 
     ---@type fun(srcName: number, srcTarget: number, srcLevel: number, srcX: number, srcY: number, srcZ: number, dstName: number, dstTarget: number, dstLevel: number, dstX: number, dstY: number, dstZ: number, width: number, height: number, depth: number)
     copyImageSubData = C.glCopyImageSubData,
+
+    ---@type fun(condition: number, flags: number): Fence
+    fenceSync = C.glFenceSync,
+
+    ---@type fun(sync: Fence)
+    deleteSync = C.glDeleteSync,
+
+    ---@type fun(sync: Fence, flags: number, timeout: number): number
+    clientWaitSync = C.glClientWaitSync,
 }
