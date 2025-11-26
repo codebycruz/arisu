@@ -145,6 +145,7 @@ end
 
 function TextureManager:bind()
     gl.bindTextureUnit(self.textureUnit, self.textureHandle)
+    gl.bindBufferBase(gl.UNIFORM_BUFFER, self.textureDimsUniform.location, self.textureDimsUniform.buffer.id)
     self.sampler2DArray:set(self.textureUnit)
 end
 

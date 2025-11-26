@@ -143,14 +143,14 @@ end
 ---@param windowId number
 function App:view(windowId)
     if windowId ~= self.mainWindow then
-        print("view for other one")
-        return Element.new("div")
-            :withStyle({
-                direction = "column",
-                width = { abs = 500 },
-                height = { abs = 500 },
-                bg = { r = 1, g = 0, b = 0, a = 1 }
-             })
+        -- print("view for other one")
+        -- return Element.new("div")
+        --     :withStyle({
+        --         direction = "column",
+        --         width = { abs = 500 },
+        --         height = { abs = 500 },
+        --         bg = { r = 1, g = 0, b = 0, a = 1 }
+        --      })
     end
 
     local borderColor = { r = 0.8, g = 0.8, b = 0.8, a = 1 }
