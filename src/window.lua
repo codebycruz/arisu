@@ -88,6 +88,7 @@ function WindowBuilder:build(eventLoop --[[@param eventLoop EventLoop]]) ---@ret
     x11.mapWindow(display, id)
 
     local window = Window.new(display, id, self.width, self.height)
+    x11.changeProperty(display, id, "_NET_WM_NAME", "UTF8_STRING", 8, 0, self.title, #self.title)
     x11.setWMProtocols(display, window, {"WM_DELETE_WINDOW"})
     x11.selectInput(display, id, bit.bor(x11.ExposureMask, x11.StructureNotifyMask, x11.ButtonPressMask, x11.ButtonReleaseMask, x11.PointerMotionMask))
     eventLoop:register(window)

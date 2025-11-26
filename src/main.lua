@@ -411,28 +411,6 @@ function App:view(windowId)
                                 })
                         ),
 
-                    -- Element.Div.new()
-                    --     :withStyle({
-                    --         direction = "column",
-                    --         width = { abs = 200 },
-                    --         height = { rel = 1.0 },
-                    --         border = { right = { width = 1, color = borderColor } }
-                    --     })
-                    --     :withChildren(
-                    --         Element.Div.new()
-                    --             :withStyle({
-                    --                 padding = { top = 3, bottom = 3, left = 3, right = 3 },
-                    --                 height = { rel = 0.7 },
-                    --                 bg = { r = 0.9, g = 0.9, b = 0.9, a = 1.0 },
-                    --             }),
-                    --         Element.Text.from("Shapes", self.jbmFont)
-                    --             :withStyle({
-                    --                 align = "center",
-                    --                 justify = "center",
-                    --                 height = { rel = 0.3 },
-                    --             })
-                    --     ),
-
                     Element.Div.new()
                         :withStyle({
                             direction = "column",

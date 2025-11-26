@@ -145,6 +145,7 @@ ffi.cdef[[
     void XUndefineCursor(Display* display, Window w);
     void XFreeCursor(Display* display, Cursor cursor);
     void XFlush(Display* display);
+    void XChangeProperty(Display* display, Window w, Atom property, Atom type, int format, int mode, const unsigned char* data, int nelements);
 ]]
 
 local C = ffi.load("X11")
@@ -273,6 +274,13 @@ return {
 
     ---@type fun(display: XDisplay)
     flush = C.XFlush,
+
+    changeProperty = function(display --[[@param display XDisplay]], w --[[@param w number]], property --[[@param property string]], type --[[@param type string]], format --[[@param format number]], mode --[[@param mode number]], data --[[@param data userdata]], nelements --[[@param nelements number]])
+        local property_atom = C.XInternAtom(display, property, 0)
+        local type_atom = C.XInternAtom(display, type, 0)
+
+        C.XChangeProperty(display, w, property_atom, type_atom, format, mode, data, nelements)
+    end,
 
     XC_arrow = 2,
     XC_based_arrow_down = 4,
