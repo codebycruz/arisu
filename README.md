@@ -19,3 +19,9 @@ There are no dependencies used by the library. Pure X11 and OpenGL.
 ## Showcase
 
 ![showcase](./showcase.png)
+
+## Attributions
+
+Almost all of the icons are sourced from FamFamFam (Mark James)'s Silk icon set.
+
+The rest are made by me sloppily in GIMP.
