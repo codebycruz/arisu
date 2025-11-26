@@ -8,7 +8,10 @@ local x11 = require "src.bindings.x11"
 local Context = {}
 Context.__index = Context
 
-function Context.new(display --[[@param display XDisplay]], window --[[@param window Window]])
+---@param display XDisplay
+---@param window Window
+---@param sharedCtx Context|nil
+function Context.new(display, window, sharedCtx)
     local screen = x11.defaultScreen(display)
 
     local fbConfig = glx.chooseFBConfig(display, screen, {
@@ -20,7 +23,7 @@ function Context.new(display --[[@param display XDisplay]], window --[[@param wi
         error("Failed to choose FBConfig")
     end
 
-    local ctx = glx.createContextAttribsARB(display, fbConfig, nil, 1, {
+    local ctx = glx.createContextAttribsARB(display, fbConfig, sharedCtx and sharedCtx.ctx, 1, {
         glx.CONTEXT_MAJOR_VERSION_ARB, 3,
         glx.CONTEXT_MINOR_VERSION_ARB, 3
     })
@@ -28,20 +31,7 @@ function Context.new(display --[[@param display XDisplay]], window --[[@param wi
         error("Failed to create GLX context with attributes")
     end
 
-    local self = setmetatable({ ctx = ctx, display = display, window = window }, Context)
-
-    -- Store previous context so as to ensure this function doesn't cause side effects
-    local prevDisplay = glx.getCurrentDisplay()
-    local prevContext = glx.getCurrentContext()
-
-    self:makeCurrent()
-    glx.swapIntervalEXT(display, window.id, 1)  -- Enable V-Sync? doesn't seem to do anything.
-
-    if prevContext and prevDisplay then
-        glx.makeCurrent(prevDisplay, window.id, prevContext)
-    end
-
-    return self
+    return setmetatable({ ctx = ctx, display = display, window = window }, Context)
 end
 
 ---@return boolean # true on success, false on failure

@@ -43,6 +43,7 @@ local ffi = require("ffi")
 ---@field textureManager TextureManager
 ---@field fontManager FontManager
 ---@field compute Compute
+---@field mainWindow number
 ---@field canvasBuffer userdata
 ---@field isDrawing boolean
 ---@field lastGPUUpdate number
@@ -134,11 +135,22 @@ function App.new(window, textureManager, fontManager)
     local compute = Compute.new(textureManager, this.canvasTexture)
     this.compute = compute
 
+    this.mainWindow = window.id
+
     return this
 end
 
 ---@param windowId number
 function App:view(windowId)
+    if windowId ~= self.mainWindow then
+        return Element.new("div")
+            :withStyle({
+                width = "auto",
+                height = "auto",
+                bg = { r = 1, g = 0, b = 0, a = 1.0 }
+             })
+    end
+
     local borderColor = { r = 0.8, g = 0.8, b = 0.8, a = 1 }
     local squareBorder = {
         top = { width = 1, color = borderColor },
