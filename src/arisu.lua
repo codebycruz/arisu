@@ -206,10 +206,11 @@ local function convertTextElements(element, fontManager)
                 })
         end
 
-        return Element.new("div")
-            :withVisualStyle(element.visualStyle)
-            :withLayoutStyle(element.layoutStyle)
-            :withChildren(children)
+        -- INFO: This shouldn't cause any problems but who knows. maybe we'll use the old ui.
+        element.type = "div"
+        element.layoutStyle.direction = "row"
+        element.children = children
+        return element
     end
 
     if element.children then
@@ -305,6 +306,7 @@ function Arisu.runApp(cons)
 
         if task.variant == "refreshView" then
             ui = app:view(window.id)
+            ui = convertTextElements(ui, fontManager)
             layoutTree = Layout.fromElement(ui)
         elseif task.variant == "windowOpen" then
             task.builder:build(eventLoop)
