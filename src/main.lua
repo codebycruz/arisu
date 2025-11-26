@@ -747,9 +747,6 @@ function App:update(message, windowId)
         self.isDrawing = true
     elseif message.type == "StopDrawing" then
         self.isDrawing = false
-        local canvasImage = Image.new(800, 600, 4, self.canvasBuffer, "")
-        self.textureManager:update(self.canvasTexture, canvasImage)
-        self.lastGPUUpdate = os.clock()
     elseif message.type == "ColorClicked" then
         self.currentColor = { r = message.r, g = message.g, b = message.b, a = 1.0 }
         return Task.refreshView()
@@ -772,48 +769,20 @@ function App:update(message, windowId)
         return Task.openWindow(builder)
     elseif message.type == "Hovered" then
         if self.isDrawing then
-            self.compute:stamp(
-                (message.x / message.elementWidth) * 800,
-                (message.y / message.elementHeight) * 600,
-                10
-            )
-
-            -- Map UI coordinates to texture coordinates
-            -- local textureX = (message.x / message.elementWidth) * 800
-            -- local textureY = (message.y / message.elementHeight) * 600
-
-            -- local pixelX = math.floor(textureX)
-            -- local pixelY = math.floor(textureY)
-
-            -- if pixelX >= 0 and pixelX < 800 and pixelY >= 0 and pixelY < 600 then
-            --     local brushSize = 3
-            --     for dy = -brushSize, brushSize do
-            --         for dx = -brushSize, brushSize do
-            --             local x = pixelX + dx
-            --             local y = pixelY + dy
-            --             if x >= 0 and x < 800 and y >= 0 and y < 600 then
-            --                 if dx * dx + dy * dy <= brushSize * brushSize then
-            --                     local index = (y * 800 + x) * 4
-            --                     if self.selectedTool == "eraser" then
-            --                         self.canvasBuffer[index + 3] = 0
-            --                     else
-            --                         self.canvasBuffer[index + 0] = math.floor(self.currentColor.r * 255)
-            --                         self.canvasBuffer[index + 1] = math.floor(self.currentColor.g * 255)
-            --                         self.canvasBuffer[index + 2] = math.floor(self.currentColor.b * 255)
-            --                         self.canvasBuffer[index + 3] = 255
-            --                     end
-            --                 end
-            --             end
-            --         end
-            --     end
-
-            --     local currentTime = os.clock()
-            --     if currentTime - self.lastGPUUpdate >= self.gpuUpdateInterval then
-            --         local canvasImage = Image.new(800, 600, 4, self.canvasBuffer, "")
-            --         self.textureManager:update(self.canvasTexture, canvasImage)
-            --         self.lastGPUUpdate = currentTime
-            --     end
-            -- end
+            if self.selectedTool == "eraser" then
+                self.compute:erase(
+                    (message.x / message.elementWidth) * 800,
+                    (message.y / message.elementHeight) * 600,
+                    10
+                )
+            else
+                self.compute:stamp(
+                    (message.x / message.elementWidth) * 800,
+                    (message.y / message.elementHeight) * 600,
+                    10,
+                    self.currentColor
+                )
+            end
         end
     end
 end

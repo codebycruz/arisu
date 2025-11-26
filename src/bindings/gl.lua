@@ -31,6 +31,15 @@ ffi.cdef[[
     void glBindProgramPipeline(GLuint pipeline);
     void glDeleteProgramPipelines(GLsizei n, const GLuint* pipelines);
 
+    // Pipeline Uniforms
+    void glProgramUniform1i(GLuint program, GLint location, GLint v0);
+    void glProgramUniform1f(GLuint program, GLint location, GLfloat v0);
+    void glProgramUniform2i(GLuint program, GLint location, GLint v0, GLint v1);
+    void glProgramUniform2f(GLuint program, GLint location, GLfloat v0, GLfloat v1);
+    void glProgramUniform3f(GLuint program, GLint location, GLfloat v0, GLfloat v1, GLfloat v2);
+    void glProgramUniform4f(GLuint program, GLint location, GLfloat v0, GLfloat v1, GLfloat v2, GLfloat v3);
+    void glProgramUniformMatrix4fv(GLuint program, GLint location, GLsizei count, unsigned char transpose, const GLfloat* value);
+
     // Buffers
     void glVertexArrayVertexBuffer(GLuint vaobj, GLuint bindingindex, GLuint buffer, GLintptr offset, GLsizei stride);
     void glVertexArrayElementBuffer(GLuint vaobj, GLuint buffer);
@@ -46,14 +55,6 @@ ffi.cdef[[
 
     // Drawing
     void glDrawElements(GLenum mode, GLsizei count, GLenum type, const void* indices);
-
-    // Uniforms
-    void glUniform1i(GLint location, GLint v0);
-    void glUniform1f(GLint location, GLfloat v0);
-    void glUniform2f(GLint location, GLfloat v0, GLfloat v1);
-    void glUniform3f(GLint location, GLfloat v0, GLfloat v1, GLfloat v2);
-    void glUniform4f(GLint location, GLfloat v0, GLfloat v1, GLfloat v2, GLfloat v3);
-    void glUniformMatrix4fv(GLint location, GLsizei count, unsigned char transpose, const GLfloat* value);
 
     // Textures
     void glCreateTextures(GLenum target, GLsizei n, GLuint* textures);
@@ -231,23 +232,26 @@ return {
         return ffi.string(str)
     end,
 
-    ---@type fun(location: number, v0: number)
-    uniform1i = C.glUniform1i,
+    ---@type fun(pId: number, uId: number, v0: userdata)
+    programUniform1i = C.glProgramUniform1i,
 
-    ---@type fun(location: number, v0: number)
-    uniform1f = C.glUniform1f,
+    ---@type fun(pId: number, uId: number, v0: number)
+    programUniform1f = C.glProgramUniform1f,
 
-    ---@type fun(location: number, v0: number, v1: number)
-    uniform2f = C.glUniform2f,
+    ---@type fun(pId: number, uId: number, v0: number, v1: number)
+    programUniform2i = C.glProgramUniform2i,
 
-    ---@type fun(location: number, v0: number, v1: number, v2: number)
-    uniform3f = C.glUniform3f,
+    ---@type fun(pId: number, uId: number, v0: number, v1: number)
+    programUniform2f = C.glProgramUniform2f,
 
-    ---@type fun(location: number, v0: number, v1: number, v2: number, v3: number)
-    uniform4f = C.glUniform4f,
+    ---@type fun(pId: number, uId: number, v0: number, v1: number, v2: number)
+    programUniform3f = C.glProgramUniform3f,
 
-    ---@type fun(location: number, count: number, transpose: number, value: userdata)
-    uniformMatrix4fv = C.glUniformMatrix4fv,
+    ---@type fun(pId: number, uId: number, v0: number, v1: number, v2: number, v3: number)
+    programUniform4f = C.glProgramUniform4f,
+
+    ---@type fun(pId: number, uId: number, count: number, transpose: number, value: userdata)
+    programUniformMatrix4fv = C.glProgramUniformMatrix4fv,
 
     ---@type fun(target: number, n: number, textures: userdata)
     createTextures = C.glCreateTextures,

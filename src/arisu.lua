@@ -250,9 +250,12 @@ function Arisu.runApp(cons)
 
     ctx:makeCurrent()
 
+    local vertexProgram = Program.new(gl.ShaderType.VERTEX, vertexShader)
+    local fragmentProgram = Program.new(gl.ShaderType.FRAGMENT, fragmentShader)
+
     local quadPipeline = Pipeline.new()
-    quadPipeline:setProgram(gl.ShaderType.VERTEX, Program.new(gl.ShaderType.VERTEX, vertexShader))
-    quadPipeline:setProgram(gl.ShaderType.FRAGMENT, Program.new(gl.ShaderType.FRAGMENT, fragmentShader))
+    quadPipeline:setProgram(gl.ShaderType.VERTEX, vertexProgram)
+    quadPipeline:setProgram(gl.ShaderType.FRAGMENT, fragmentProgram)
     quadPipeline:bind()
 
     -- Crucial!!
@@ -272,7 +275,7 @@ function Arisu.runApp(cons)
     vao:setVertexBuffer(vertex, vertexDescriptor)
     vao:setIndexBuffer(index)
 
-    local samplers = Uniform.new("sampler2DArray", 0)
+    local samplers = Uniform.new(fragmentProgram, "sampler2DArray", 0)
     local textureDims = UniformBlock.new(0)
     local textureManager = TextureManager.new(samplers, textureDims, 0)
     local fontManager = FontManager.new(textureManager)
