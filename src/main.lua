@@ -143,11 +143,13 @@ end
 ---@param windowId number
 function App:view(windowId)
     if windowId ~= self.mainWindow then
+        print("view for other one")
         return Element.new("div")
             :withStyle({
-                width = "auto",
-                height = "auto",
-                bg = { r = 1, g = 0, b = 0, a = 1.0 }
+                direction = "column",
+                width = { abs = 500 },
+                height = { abs = 500 },
+                bg = { r = 1, g = 0, b = 0, a = 1 }
              })
     end
 
@@ -813,6 +815,8 @@ function App:update(message, windowId)
                     self.currentColor
                 )
             end
+
+            return Task.refreshView()
         end
     end
 end

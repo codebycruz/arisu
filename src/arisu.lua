@@ -231,7 +231,16 @@ local Arisu = {}
 local TARGET_FPS = 144
 local FRAME_TIME = 1 / TARGET_FPS
 
----@alias WindowContext { lastFrameTime: number, window: Window, ctx: Context, ui: Element, layoutTree: Layout }
+---@class WindowContext
+---@field vao VAO
+---@field vertex Buffer
+---@field index Buffer
+---@field lastFrameTime number
+---@field window Window
+---@field renderCtx Context
+---@field quadPipeline Pipeline
+---@field ui Element
+---@field layoutTree Layout
 
 ---@generic T
 ---@generic Message
@@ -245,19 +254,63 @@ function Arisu.runApp(cons)
     ---@type WindowContext
     local mainCtx
 
+    local vertexProgram ---@type Program
+    local fragmentProgram ---@type Program
+    local samplers ---@type Uniform
+    local textureDims ---@type UniformBlock
+    local textureManager ---@type TextureManager
+    local fontManager ---@type FontManager
+
     ---@param window Window
     ---@return WindowContext
     local function initWindow(window)
-        local renderCtx = render.Context.new(window.display, window, mainCtx and mainCtx.ctx)
+        local renderCtx = render.Context.new(window.display, window, mainCtx and mainCtx.renderCtx)
         if not renderCtx then
             window:destroy()
             x11.closeDisplay(window.display)
             error("Failed to create rendering context for window " .. tostring(window.id))
         end
 
-        local ctx = { window = window, lastFrameTime = os.clock(), ctx = renderCtx }
-        windowContexts[window] = ctx
+        renderCtx:makeCurrent()
 
+        local vertexDescriptor = BufferDescriptor.new()
+            :withAttribute({ type = "f32", size = 3, offset = 0 })  -- position (vec3)
+            :withAttribute({ type = "f32", size = 4, offset = 12 })  -- color (rgba)
+            :withAttribute({ type = "f32", size = 2, offset = 28 }) -- uv
+            :withAttribute({ type = "f32", size = 1, offset = 36 }) -- texture id
+
+        local vertex = Buffer.new()
+        local index = Buffer.new()
+
+        local vao = VAO.new()
+        vao:setVertexBuffer(vertex, vertexDescriptor)
+        vao:setIndexBuffer(index)
+
+        if not mainCtx then
+            vertexProgram = Program.new(gl.ShaderType.VERTEX, vertexShader)
+            fragmentProgram = Program.new(gl.ShaderType.FRAGMENT, fragmentShader)
+
+            samplers = Uniform.new(fragmentProgram, "sampler2DArray", 0)
+            textureDims = UniformBlock.new(0)
+            textureManager = TextureManager.new(samplers, textureDims, 0)
+            fontManager = FontManager.new(textureManager)
+        end
+
+        local quadPipeline = Pipeline.new()
+        quadPipeline:setProgram(gl.ShaderType.VERTEX, vertexProgram)
+        quadPipeline:setProgram(gl.ShaderType.FRAGMENT, fragmentProgram)
+
+        local ctx = {
+            vao = vao,
+            vertex = vertex,
+            index = index,
+            window = window,
+            lastFrameTime = os.clock(),
+            quadPipeline = quadPipeline,
+            renderCtx = renderCtx
+        }
+
+        windowContexts[window] = ctx
         return ctx
     end
 
@@ -267,33 +320,7 @@ function Arisu.runApp(cons)
         :build(eventLoop)
 
     mainCtx = initWindow(mainWindow)
-    mainCtx.ctx:makeCurrent()
-
-    local vertexProgram = Program.new(gl.ShaderType.VERTEX, vertexShader)
-    local fragmentProgram = Program.new(gl.ShaderType.FRAGMENT, fragmentShader)
-
-    local quadPipeline = Pipeline.new()
-    quadPipeline:setProgram(gl.ShaderType.VERTEX, vertexProgram)
-    quadPipeline:setProgram(gl.ShaderType.FRAGMENT, fragmentProgram)
-    quadPipeline:bind()
-
-    local vertexDescriptor = BufferDescriptor.new()
-        :withAttribute({ type = "f32", size = 3, offset = 0 })  -- position (vec3)
-        :withAttribute({ type = "f32", size = 4, offset = 12 })  -- color (rgba)
-        :withAttribute({ type = "f32", size = 2, offset = 28 }) -- uv
-        :withAttribute({ type = "f32", size = 1, offset = 36 }) -- texture id
-
-    local vertex = Buffer.new()
-    local index = Buffer.new()
-
-    local vao = VAO.new()
-    vao:setVertexBuffer(vertex, vertexDescriptor)
-    vao:setIndexBuffer(index)
-
-    local samplers = Uniform.new(fragmentProgram, "sampler2DArray", 0)
-    local textureDims = UniformBlock.new(0)
-    local textureManager = TextureManager.new(samplers, textureDims, 0)
-    local fontManager = FontManager.new(textureManager)
+    mainCtx.renderCtx:makeCurrent()
 
     -- Run the app constructor in the rendering context so they can initialize any
     -- GL resources they need.
@@ -307,33 +334,45 @@ function Arisu.runApp(cons)
     local runUpdate
 
     ---@param event Event
-    local function runEvent(event)
+    ---@param handler EventHandler
+    local function runEvent(event, handler)
         local message = app:event(event)
         if message then
-            runUpdate(message)
+            runUpdate(message, handler)
         end
     end
 
     ---@param ctx WindowContext
-    local function refreshView(ctx)
+    ---@param handler EventHandler
+    local function refreshView(ctx, handler)
         ctx.ui = app:view(ctx.window.id)
         ctx.ui = convertTextElements(ctx.ui, fontManager)
         ctx.layoutTree = Layout.fromElement(ctx.ui)
+
+        -- This is only necessary if we don't force a redraw on aboutToWait
+        -- Just left here for reference.
+        -- handler:requestRedraw(ctx.window)
     end
 
     ---@param task Task?
-    local function runTask(task)
+    ---@param handler EventHandler
+    local function runTask(task, handler)
         if not task then
             return
         end
 
         if task.variant == "refreshView" then
+            if not task.id then
+                refreshView(mainCtx, handler)
+                return
+            end
+
             -- todo: awful
             -- fyi, cant use windowContexts[task.id] because the key is the window object, not the id
             -- cant store the id as the key because its a ULL.
             for window in pairs(windowContexts) do
                 if window.id == task.id then
-                    refreshView(windowContexts[window])
+                    refreshView(windowContexts[window], handler)
                     break
                 end
             end
@@ -344,60 +383,59 @@ function Arisu.runApp(cons)
         end
     end
 
-    function runUpdate(message, windowId)
-        runTask(app:update(message, windowId))
+    ---@param handler EventHandler
+    function runUpdate(message, windowId, handler)
+        runTask(app:update(message, windowId), handler)
     end
 
     ---@param ctx WindowContext
     local function draw(ctx)
-        ctx.ctx:makeCurrent()
+        ctx.renderCtx:makeCurrent()
 
         gl.enable(gl.BLEND)
         gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
 
         gl.viewport(0, 0, ctx.window.width, ctx.window.height)
 
-        quadPipeline:bind()
+        ctx.quadPipeline:bind()
 
         local computedLayout = ctx.layoutTree:solve(ctx.window.width, ctx.window.height)
 
         local vertices, indices = {}, {}
         generateLayoutQuads(computedLayout, 0, 0, vertices, indices, ctx.window.width, ctx.window.height)
 
-        vertex:setData("f32", vertices)
-        index:setData("u32", indices)
+        ctx.vertex:setData("f32", vertices)
+        ctx.index:setData("u32", indices)
 
         textureManager:bind()
-        vao:bind()
+        ctx.vao:bind()
         gl.drawElements(gl.TRIANGLES, #indices, gl.UNSIGNED_INT, nil)
 
-        ctx.ctx:swapBuffers()
+        ctx.renderCtx:swapBuffers()
     end
 
     eventLoop:run(function(event, handler)
         handler:setMode("poll")
 
-        runEvent(event)
+        runEvent(event, handler)
         local ctx = windowContexts[event.window] or mainCtx
 
-        if event.name == "deleteWindow" then
+        if event.name == "aboutToWait" then
+            for window in pairs(windowContexts) do
+                handler:requestRedraw(window)
+            end
+        elseif event.name == "deleteWindow" then
             -- Ensure we only exit if the main window is closed
             -- TODO: Maybe allow users to specify this behavior?
             if event.window.id == mainWindow.id then
                 handler:exit()
             else
-                windowContexts[event.window].ctx:destroy()
+                windowContexts[event.window].renderCtx:destroy()
                 windowContexts[event.window] = nil
                 eventLoop:close(event.window)
             end
-        elseif event.name == "aboutToWait" then
-            for window in pairs(windowContexts) do
-                if windowContexts[window] then
-                    handler:requestRedraw(window)
-                end
-            end
         elseif event.name == "resize" then
-            ctx.ctx:makeCurrent()
+            ctx.renderCtx:makeCurrent()
             gl.viewport(0, 0, ctx.window.width, ctx.window.height)
         elseif event.name == "mouseMove" then
             local computedLayout = ctx.layoutTree:solve(ctx.window.width, ctx.window.height)
@@ -424,7 +462,7 @@ function Arisu.runApp(cons)
                 if el.onmousemove then
                     local relX = event.x - layout.absX
                     local relY = event.y - layout.absY
-                    runUpdate(el.onmousemove(relX, relY, layout.layout.width, layout.layout.height), ctx.window.id)
+                    runUpdate(el.onmousemove(relX, relY, layout.layout.width, layout.layout.height), ctx.window.id, handler)
                 end
             end
         elseif event.name == "mousePress" then
@@ -437,7 +475,7 @@ function Arisu.runApp(cons)
             if info then
                 local relX = event.x - info.absX
                 local relY = event.y - info.absY
-                runUpdate(info.element.onmousedown(relX, relY, info.layout.width, info.layout.height), ctx.window.id)
+                runUpdate(info.element.onmousedown(relX, relY, info.layout.width, info.layout.height), ctx.window.id, handler)
             end
         elseif event.name == "mouseRelease" then
             local computedLayout = ctx.layoutTree:solve(ctx.window.width, ctx.window.height)
@@ -446,28 +484,25 @@ function Arisu.runApp(cons)
             end)
 
             if info then
-                runUpdate(info.element.onmouseup, ctx.window.id)
+                runUpdate(info.element.onmouseup, ctx.window.id, handler)
             end
         elseif event.name == "redraw" then
-            if ctx and windowContexts[event.window] then
-                local currentTime = os.clock()
-                local deltaTime = currentTime - ctx.lastFrameTime
+            local currentTime = os.clock()
+            local deltaTime = currentTime - ctx.lastFrameTime
 
-                if deltaTime >= FRAME_TIME then
-                    draw(ctx)
-                    ctx.lastFrameTime = currentTime
-                end
+            if deltaTime >= FRAME_TIME then
+                draw(ctx)
+                ctx.lastFrameTime = currentTime
             end
         elseif event.name == "map" then
             if not windowContexts[event.window] then
                 local ctx = initWindow(event.window)
-                refreshView(ctx)
-                handler:requestRedraw(event.window)
+                refreshView(ctx, handler)
             end
         end
     end)
 
-    mainCtx.ctx:destroy()
+    mainCtx.renderCtx:destroy()
 end
 
 return Arisu

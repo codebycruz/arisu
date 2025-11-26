@@ -127,26 +127,25 @@ function WindowBuilder:build(eventLoop --[[@param eventLoop EventLoop]]) ---@ret
 
     local id = x11.createSimpleWindow(display, root, 0, 0, self.width, self.height, 0, 0, 0x000000)
     if id == x11.None then
-        io.stderr:write("Failed to create window\n")
         x11.closeDisplay(display)
-        return 1
+        error("Failed to create window")
     end
-
-    x11.mapWindow(display, id)
 
     local window = Window.new(display, id, self.width, self.height)
     window:setTitle(self.title)
     window:setIcon(self.icon)
+    eventLoop:register(window)
+
     x11.setWMProtocols(display, window, {"WM_DELETE_WINDOW"})
     x11.selectInput(display, id, bit.bor(x11.ExposureMask, x11.StructureNotifyMask, x11.ButtonPressMask, x11.ButtonReleaseMask, x11.PointerMotionMask))
-    eventLoop:register(window)
+    x11.mapWindow(display, id)
 
     return window
 end
 
 ---@alias Event
---- | { name: "deleteWindow" }
 --- | { name: "aboutToWait" }
+--- | { window: Window, name: "deleteWindow" }
 --- | { window: Window, name: "redraw" }
 --- | { window: Window, name: "resize" }
 --- | { window: Window, name: "map" }
