@@ -1,6 +1,6 @@
 ---@alias Task
 --- | { variant: "windowOpen", builder: WindowBuilder }
---- | { variant: "refreshView", id: number? }
+--- | { variant: "refreshView", window: Window? }
 --- | { variant: "setTitle", to: string }
 
 local Task = {}
@@ -10,9 +10,9 @@ function Task.openWindow(builder) ---@return Task
     return { variant = "windowOpen", builder = builder }
 end
 
----@param windowId number?
-function Task.refreshView(windowId) ---@return Task
-    return { variant = "refreshView", id = windowId }
+---@param window Window?
+function Task.refreshView(window) ---@return Task
+    return { variant = "refreshView", window = window }
 end
 
 --- Sets the title of the main window to the given string

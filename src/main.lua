@@ -4,7 +4,8 @@ local Image = require "src.image"
 local Task = require "src.task"
 local Compute = require "src.tools.compute"
 
-local window = require "src.window"
+local WindowBuilder = (require "src.window").WindowBuilder
+
 local ffi = require("ffi")
 
 ---@alias Message
@@ -43,7 +44,7 @@ local ffi = require("ffi")
 ---@field textureManager TextureManager
 ---@field fontManager FontManager
 ---@field compute Compute
----@field mainWindow number
+---@field mainWindow Window
 ---@field canvasBuffer userdata
 ---@field isDrawing boolean
 ---@field lastGPUUpdate number
@@ -135,22 +136,21 @@ function App.new(window, textureManager, fontManager)
     local compute = Compute.new(textureManager, this.canvasTexture)
     this.compute = compute
 
-    this.mainWindow = window.id
+    this.mainWindow = window
 
     return this
 end
 
----@param windowId number
-function App:view(windowId)
-    if windowId ~= self.mainWindow then
-        -- print("view for other one")
-        -- return Element.new("div")
-        --     :withStyle({
-        --         direction = "column",
-        --         width = { abs = 500 },
-        --         height = { abs = 500 },
-        --         bg = { r = 1, g = 0, b = 0, a = 1 }
-        --      })
+---@param window Window
+function App:view(window)
+    if window ~= self.mainWindow then
+        return Element.new("div")
+            :withStyle({
+                direction = "column",
+                width = { abs = 500 },
+                height = { abs = 500 },
+                bg = { r = 1, g = 0, b = 0, a = 1 }
+             })
     end
 
     local borderColor = { r = 0.8, g = 0.8, b = 0.8, a = 1 }
@@ -755,8 +755,8 @@ function App:event(event)
 end
 
 ---@param message Message
----@param windowId number
-function App:update(message, windowId)
+---@param window Window
+function App:update(message, window)
     if message.type == "StartDrawing" then
         if self.selectedTool == "fill" then
             self.compute:fill(
@@ -774,7 +774,7 @@ function App:update(message, windowId)
         return Task.refreshView()
     elseif message.type == "ToolClicked" then
         self.selectedTool = message.tool
-        return Task.refreshView()
+        return Task.refreshView(window)
     elseif message.type == "ClearClicked" then
         for i = 0, 800 * 600 * 4 - 1 do
             self.canvasBuffer[i] = 255
@@ -784,7 +784,7 @@ function App:update(message, windowId)
         self.textureManager:update(self.canvasTexture, canvasImage)
         self.lastGPUUpdate = os.clock()
     elseif message.type == "FileClicked" then
-        local builder = window.WindowBuilder.new()
+        local builder = WindowBuilder.new()
             :withTitle("File Picker")
             :withSize(600, 400)
 

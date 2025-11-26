@@ -6,8 +6,8 @@ local ffi = require "ffi"
 --- @field display XDisplay
 --- @field width number
 --- @field height number
---- @field shouldRedraw boolean
---- @field currentCursor number?
+--- @field private shouldRedraw boolean
+--- @field private currentCursor number?
 local Window = {}
 Window.__index = Window
 
@@ -154,22 +154,26 @@ end
 --- | { window: Window, name: "mousePress", x: number, y: number, button: number }
 --- | { window: Window, name: "mouseRelease", x: number, y: number, button: number }
 
+---@alias EventLoopMode "poll" | "wait"
+
 ---@class EventLoopHandler
 local EventLoopHandler = {}
 
 --- @class EventLoop
+--- @field private startMode EventLoopMode
 --- @field display XDisplay
 --- @field windows table<number, Window>
 local EventLoop = {}
 EventLoop.__index = EventLoop
 
-function EventLoop.new()
+---@param startMode EventLoopMode?
+function EventLoop.new(startMode)
     local display = x11.openDisplay(nil)
     if display == nil then
         error("Failed to open X11 display")
     end
 
-    return setmetatable({ display = display, windows = {} }, EventLoop)
+    return setmetatable({ startMode = startMode, display = display, windows = {} }, EventLoop)
 end
 
 function EventLoop:register(window --[[@param window Window]])
@@ -190,7 +194,7 @@ function EventLoop:run(callback --[[@param callback fun(event: Event, handler: E
     local wmDeleteWindow = x11.internAtom(display, "WM_DELETE_WINDOW", 0)
 
     local isActive = true
-    local currentMode = "poll"
+    local currentMode = self.startMode or "poll"
 
     local handler = {}
     do
@@ -246,6 +250,9 @@ function EventLoop:run(callback --[[@param callback fun(event: Event, handler: E
         end
     end
 
+    local redrawEvent = { name = "redraw" }
+    local aboutToWaitEvent = { name = "aboutToWait" }
+
     while isActive do
         if currentMode == "poll" then
             if x11.pending(display) > 0 then
@@ -260,11 +267,12 @@ function EventLoop:run(callback --[[@param callback fun(event: Event, handler: E
         for _, window in pairs(self.windows) do
             if window.shouldRedraw then
                 window.shouldRedraw = false
-                callback({ window = window, name = "redraw" }, handler)
+                redrawEvent.window = window
+                callback(redrawEvent, handler)
             end
         end
 
-        callback({ name = "aboutToWait" }, handler)
+        callback(aboutToWaitEvent, handler)
     end
 end
 
