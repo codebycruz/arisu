@@ -162,7 +162,7 @@ local EventLoopHandler = {}
 --- @class EventLoop
 --- @field private startMode EventLoopMode
 --- @field display XDisplay
---- @field windows table<number, Window>
+--- @field windows table<string, Window>
 local EventLoop = {}
 EventLoop.__index = EventLoop
 

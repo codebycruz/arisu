@@ -764,14 +764,23 @@ function App:update(message, window)
                 (message.y / message.elementHeight) * 600,
                 self.currentColor
             )
-        else
+        elseif self.selectedTool == "brush" then
+            self.compute:stamp(
+                (message.x / message.elementWidth) * 800,
+                (message.y / message.elementHeight) * 600,
+                10,
+                self.currentColor
+            )
+
             self.isDrawing = true
         end
+
+        return Task.refreshView(window)
     elseif message.type == "StopDrawing" then
         self.isDrawing = false
     elseif message.type == "ColorClicked" then
         self.currentColor = { r = message.r, g = message.g, b = message.b, a = 1.0 }
-        return Task.refreshView()
+        return Task.refreshView(window)
     elseif message.type == "ToolClicked" then
         self.selectedTool = message.tool
         return Task.refreshView(window)
@@ -816,7 +825,7 @@ function App:update(message, window)
                 )
             end
 
-            return Task.refreshView()
+            return Task.refreshView(window)
         end
     end
 end

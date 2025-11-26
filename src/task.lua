@@ -1,6 +1,6 @@
 ---@alias Task
 --- | { variant: "windowOpen", builder: WindowBuilder }
---- | { variant: "refreshView", window: Window? }
+--- | { variant: "refreshView", window: Window }
 --- | { variant: "setTitle", to: string }
 
 local Task = {}
@@ -10,7 +10,7 @@ function Task.openWindow(builder) ---@return Task
     return { variant = "windowOpen", builder = builder }
 end
 
----@param window Window?
+---@param window Window
 function Task.refreshView(window) ---@return Task
     return { variant = "refreshView", window = window }
 end

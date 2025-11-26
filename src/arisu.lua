@@ -146,7 +146,7 @@ local function findElementAtPosition(element, layout, x, y, parentX, parentY, ac
             for i, childLayout in ipairs(layout.children) do
                 local found = findElementAtPosition(element.children[i], childLayout, x, y, absX, absY, acceptFn)
                 if found and (not acceptFn or acceptFn(found.element)) then
-                    return { element = found.element, layout = layout, absX = absX, absY = absY }
+                    return found
                 end
             end
         end
@@ -246,8 +246,6 @@ local FRAME_TIME = 1 / TARGET_FPS
 ---@generic Message
 ---@param cons fun(window: Window, textureManager: TextureManager, fontManager: FontManager): { view: fun(self: T, window: Window): Element, update: fun(self: T, message: Message, window: Window): Task?, event: fun(self: T, event: Event): Message }
 function Arisu.runApp(cons)
-    local eventLoop = window.EventLoop.new("poll")
-
     ---@type table<Window, WindowContext>
     local windowContexts = {}
 
@@ -314,6 +312,7 @@ function Arisu.runApp(cons)
         return ctx
     end
 
+    local eventLoop = window.EventLoop.new("wait")
     local mainWindow = window.WindowBuilder.new()
         :withTitle("Arisu Application")
         :withSize(1280, 720)
@@ -351,7 +350,7 @@ function Arisu.runApp(cons)
 
         -- This is only necessary if we don't force a redraw on aboutToWait
         -- Just left here for reference.
-        -- handler:requestRedraw(ctx.window)
+        handler:requestRedraw(ctx.window)
     end
 
     ---@param task Task?
@@ -362,11 +361,6 @@ function Arisu.runApp(cons)
         end
 
         if task.variant == "refreshView" then
-            if not task.window then
-                refreshView(mainCtx, handler)
-                return
-            end
-
             refreshView(windowContexts[task.window], handler)
         elseif task.variant == "windowOpen" then
             task.builder:build(eventLoop)
@@ -409,11 +403,7 @@ function Arisu.runApp(cons)
 
     eventLoop:run(function(event, handler)
         local eventName = event.name
-        if eventName == "aboutToWait" then
-            for window in pairs(windowContexts) do
-                window.shouldRedraw = true
-            end
-        elseif eventName == "redraw" then
+        if eventName == "redraw" then
             local ctx = windowContexts[event.window]
             local currentTime = os.clock()
             local deltaTime = currentTime - ctx.lastFrameTime
@@ -463,7 +453,7 @@ function Arisu.runApp(cons)
                 if el.onmousemove then
                     local relX = event.x - layout.absX
                     local relY = event.y - layout.absY
-                    runUpdate(el.onmousemove(relX, relY, layout.layout.width, layout.layout.height), ctx.window.id, handler)
+                    runUpdate(el.onmousemove(relX, relY, layout.layout.width, layout.layout.height), ctx.window, handler)
                 end
             end
         elseif eventName == "mousePress" then
@@ -477,7 +467,7 @@ function Arisu.runApp(cons)
             if info then
                 local relX = event.x - info.absX
                 local relY = event.y - info.absY
-                runUpdate(info.element.onmousedown(relX, relY, info.layout.width, info.layout.height), ctx.window.id, handler)
+                runUpdate(info.element.onmousedown(relX, relY, info.layout.width, info.layout.height), ctx.window, handler)
             end
         elseif eventName == "mouseRelease" then
             local ctx = windowContexts[event.window]
@@ -490,7 +480,9 @@ function Arisu.runApp(cons)
                 runUpdate(info.element.onmouseup, ctx.window, handler)
             end
         elseif eventName == "map" then
-            if not windowContexts[event.window] then
+            if event.window == mainWindow then
+                refreshView(mainCtx, handler)
+            elseif not windowContexts[event.window] then
                 local ctx = initWindow(event.window)
                 refreshView(ctx, handler)
             end
