@@ -14,6 +14,13 @@ ffi.cdef[[
     // Modern OpenGL
     GLXFBConfig* glXChooseFBConfig(XDisplay* dpy, int screen, const int* attrib_list, int* nelements);
     GLXContext glXCreateContextAttribsARB(XDisplay* dpy, GLXFBConfig* config, GLXContext share_context, int direct, const int* attrib_list);
+
+    // Vsync
+    void glXSwapIntervalEXT(XDisplay* dpy, Window drawable, int interval);
+
+    // Getters
+    GLXContext glXGetCurrentContext();
+    XDisplay* glXGetCurrentDisplay();
 ]]
 
 ---@class GLXContext: userdata
@@ -69,4 +76,13 @@ return {
 
     ---@type fun(display: XDisplay, ctx: GLXContext)
     destroyContext = C.glXDestroyContext,
+
+    ---@type fun(display: XDisplay, window: number, interval: number)
+    swapIntervalEXT = C.glXSwapIntervalEXT,
+
+    ---@type fun(): GLXContext?
+    getCurrentContext = C.glXGetCurrentContext,
+
+    ---@type fun(): XDisplay?
+    getCurrentDisplay = C.glXGetCurrentDisplay,
 }

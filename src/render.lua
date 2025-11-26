@@ -28,7 +28,20 @@ function Context.new(display --[[@param display XDisplay]], window --[[@param wi
         error("Failed to create GLX context with attributes")
     end
 
-    return setmetatable({ ctx = ctx, display = display, window = window }, Context)
+    local self = setmetatable({ ctx = ctx, display = display, window = window }, Context)
+
+    -- Store previous context so as to ensure this function doesn't cause side effects
+    local prevDisplay = glx.getCurrentDisplay()
+    local prevContext = glx.getCurrentContext()
+
+    self:makeCurrent()
+    glx.swapIntervalEXT(display, window.id, 1)  -- Enable V-Sync? doesn't seem to do anything.
+
+    if prevContext and prevDisplay then
+        glx.makeCurrent(prevDisplay, window.id, prevContext)
+    end
+
+    return self
 end
 
 ---@return boolean # true on success, false on failure

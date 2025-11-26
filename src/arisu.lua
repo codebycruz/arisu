@@ -212,7 +212,7 @@ function Arisu.runApp(cons)
     local display = window.display
 
     local lastFrameTime = os.clock()
-    local targetFPS = 60
+    local targetFPS = 144
     local frameTime = 1.0 / targetFPS
 
     local ctx = render.Context.new(display, window)
@@ -286,6 +286,22 @@ function Arisu.runApp(cons)
         runTask(app:update(message, windowId))
     end
 
+    local function draw()
+        local computedLayout = layoutTree:solve(window.width, window.height)
+
+        local vertices, indices = {}, {}
+        generateLayoutQuads(computedLayout, 0, 0, vertices, indices, window.width, window.height)
+
+        vertex:setData("f32", vertices)
+        index:setData("u32", indices)
+
+        textureManager:bind()
+        vao:bind()
+        gl.drawElements(gl.TRIANGLES, #indices, gl.UNSIGNED_INT, nil)
+
+        ctx:swapBuffers()
+    end
+
     eventLoop:run(function(event, handler)
         handler:setMode("poll")
 
@@ -353,22 +369,7 @@ function Arisu.runApp(cons)
             local deltaTime = currentTime - lastFrameTime
 
             if deltaTime >= frameTime then
-                local computedLayout = layoutTree:solve(window.width, window.height)
-
-                local vertices, indices = {}, {}
-                generateLayoutQuads(computedLayout, 0, 0, vertices, indices, window.width, window.height)
-
-                vertex:setData("f32", vertices)
-                index:setData("u32", indices)
-
-                gl.clearColor(0.1, 0.1, 0.1, 1.0)
-                gl.clear(gl.COLOR_BUFFER_BIT)
-
-                textureManager:bind()
-                vao:bind()
-                gl.drawElements(gl.TRIANGLES, #indices, gl.UNSIGNED_INT, nil)
-
-                ctx:swapBuffers()
+                draw()
                 lastFrameTime = currentTime
             end
         end
