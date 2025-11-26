@@ -1,10 +1,26 @@
+local Element
+
+local function intoElement(value)
+    if getmetatable(value) == Element then
+        return value
+    elseif type(value) == "string" then
+        return Element.new("text")
+            :withUserdata(value)
+    else
+        error("Cannot convert value to Element")
+    end
+end
+
+---@alias IntoElement Element | string
+
 --- The View is a small layer above the Layout that bridges interactivity with the layout.
 ---@class Element<T>: { onclick: T?, onmousemove: (fun(x: number, y: number): T)?, onmousedown: T?, onmouseup: T? }
 ---@field visualStyle VisualStyle?
 ---@field layoutStyle LayoutStyle?
 ---@field children Element[]?
 ---@field type string
-local Element = {}
+---@field userdata any?
+Element = {}
 Element.__index = Element
 
 ---@param type string
@@ -12,8 +28,19 @@ function Element.new(type)
     return setmetatable({ type = type, children = {} }, Element)
 end
 
-function Element:withChildren(...)
-    self.children = {...}
+---@param val IntoElement
+function Element.from(val)
+    return intoElement(val)
+end
+
+---@param children IntoElement[]
+function Element:withChildren(children)
+    local elems = {}
+    for i, child in ipairs(children) do
+        elems[i] = intoElement(child)
+    end
+
+    self.children = elems
     return self
 end
 
@@ -55,41 +82,5 @@ function Element:onMouseUp(message --[[@param message T]])
     self.onmouseup = message
     return self
 end
-
-Element.Div = {}
-function Element.Div.new()
-    return Element.new("div")
-end
-
-Element.Text = {}
-function Element.Text.new(content)
-    return Element.new("text")
-        :withUserdata(content)
-end
-
--- ---@param content string
--- ---@param bitmap Bitmap
--- function Text.from(content)
-    -- local row = Div.new()
-    --     :withStyle({ direction = "row", bg = { r = 0, g = 0, b = 0, a = 0 } })
-
-    -- for i = 1, #content do
-    --     local char = content:sub(i, i)
-    --     local quad = bitmap:getCharUVs(char)
-
-    --     local charDiv = Div.new()
-    --         :withStyle({
-    --             bg = { r = 0.0, g = 0.0, b = 0.0, a = 1.0 },
-    --             bgImage = 6,
-    --             bgImageUV = quad,
-    --             width = { abs = quad.width },
-    --             height = { abs = quad.height },
-    --         })
-
-    --     table.insert(row.children, charDiv)
-    -- end
-
-    -- return row
--- end
 
 return Element

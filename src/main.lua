@@ -42,7 +42,6 @@ local ffi = require("ffi")
 ---@field brushesTexture Texture
 ---@field textureManager TextureManager
 ---@field fontManager FontManager
----@field jbmFont number
 ---@field canvasBuffer userdata
 ---@field isDrawing boolean
 ---@field lastGPUUpdate number
@@ -71,10 +70,6 @@ function App.new(window, textureManager, fontManager)
     this.lastFrameTime = 0
     this.currentColor = { r = 0.0, g = 0.0, b = 0.0, a = 1.0 }
     this.selectedTool = "brush"
-
-    local characters = " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~"
-    local jbmFont = assert(Bitmap.fromPath({ ymargin = 2, xmargin = 4, gridWidth = 18, gridHeight = 18, characters = characters, perRow = 19 }, "assets/JetBrainsMono.qoi"), "Failed to load bitmap font")
-    this.jbmFont = fontManager:upload(jbmFont)
 
     local brushImage = assert(Image.fromPath("assets/paintbrush.qoi"), "Failed to load brush image")
     this.brushTexture = textureManager:upload(brushImage)
@@ -148,14 +143,14 @@ function App:view(windowId)
         right = { width = 1, color = borderColor }
     }
 
-    return Element.Div.new()
+    return Element.new("div")
         :withStyle({
             direction = "column",
             bg = { r = 0.95, g = 0.95, b = 0.95, a = 1.0 }
         })
-        :withChildren(
+        :withChildren({
             -- Menu bar
-            Element.Div.new()
+            Element.new("div")
                 :withStyle({
                     height = { abs = 30 },
                     direction = "row",
@@ -166,239 +161,239 @@ function App:view(windowId)
                         bottom = { width = 1, color = borderColor }
                     }
                 })
-                :withChildren(
-                    Element.Text.new("File")
+                :withChildren({
+                    Element.from("File")
                         :withStyle({ width = { abs = 50 } })
                         :onMouseDown({ type = "FileClicked" }),
-                    Element.Text.new("Edit")
+                    Element.from("Edit")
                         :withStyle({ width = { abs = 50 } }),
-                    Element.Text.new("View")
+                    Element.from("View")
                         :withStyle({ width = { abs = 50 } }),
-                    Element.Text.new("Clear")
+                    Element.from("Clear")
                         :withStyle({ width = { abs = 50 } })
                         :onMouseDown({ type = "ClearClicked" })
-                ),
+                }),
             -- Top toolbar
-            Element.Div.new()
+            Element.new("div")
                 :withStyle({
                     height = { abs = 100 },
                     direction = "row",
                     align = "center",
                     padding = { bottom = 2 },
                 })
-                :withChildren(
-                    Element.Div.new()
+                :withChildren({
+                    Element.new("div")
                         :withStyle({
                             direction = "column",
                             width = { abs = 150 },
                             height = { rel = 1.0 },
                             border = { right = { width = 1, color = borderColor } }
                         })
-                        :withChildren(
-                            Element.Div.new()
+                        :withChildren({
+                            Element.new("div")
                                 :withStyle({
                                     padding = { top = 6, bottom = 6, left = 6, right = 6 },
                                     height = { rel = 0.7 },
                                     gap = 16,
                                     direction = "row"
                                 })
-                                :withChildren(
-                                    Element.Div.new()
+                                :withChildren({
+                                    Element.new("div")
                                         :withStyle({
                                             direction = "column",
                                             width = { rel = 1/3 },
                                             height = { rel = 1.0 },
                                             gap = 8,
                                         })
-                                        :withChildren(
-                                            Element.Div.new()
+                                        :withChildren({
+                                            Element.new("div")
                                                 :withStyle({
                                                     bgImage = self.pasteTexture,
                                                     height = { rel = 2/3 }
                                                 }),
-                                            Element.Text.new("Paste")
+                                            Element.from("Paste")
                                                 :withStyle({ height = { rel = 1/3 } })
-                                        ),
-                                    Element.Div.new()
+                                        }),
+                                    Element.new("div")
                                         :withStyle({
                                             direction = "column",
                                             width = { rel = 1/2 },
                                             height = { rel = 1 },
                                             gap = 2
                                         })
-                                        :withChildren(
-                                            Element.Div.new()
+                                        :withChildren({
+                                            Element.new("div")
                                                 :withStyle({
                                                     direction = "row",
                                                     gap = 5,
                                                     width = { rel = 1/2 },
                                                     height = { rel = 1/3 }
                                                 })
-                                                :withChildren(
-                                                    Element.Div.new()
+                                                :withChildren({
+                                                    Element.new("div")
                                                         :withStyle({
                                                             bgImage = self.cutTexture,
                                                             width = { abs = 15 },
                                                             height = { abs = 15 },
                                                             margin = { right = 2 }
                                                         }),
-                                                    Element.Text.new("Cut")
+                                                    Element.from("Cut")
                                                         :withStyle({ height = { rel = 1.0 } })
-                                                ),
-                                            Element.Div.new()
+                                                }),
+                                            Element.new("div")
                                                 :withStyle({
                                                     direction = "row",
                                                     gap = 5,
                                                     width = { rel = 1/2 },
                                                     height = { rel = 1/3 }
                                                 })
-                                                :withChildren(
-                                                    Element.Div.new()
+                                                :withChildren({
+                                                    Element.new("div")
                                                         :withStyle({
                                                             bgImage = self.copyTexture,
                                                             width = { abs = 15 },
                                                             height = { abs = 15 },
                                                             margin = { right = 2 }
                                                         }),
-                                                    Element.Text.new("Copy")
+                                                    Element.from("Copy")
                                                         :withStyle({ height = { rel = 1.0 } })
-                                                )
-                                        )
-                                ),
-                            Element.Text.new("Clipboard")
+                                                })
+                                        }),
+                                }),
+                            Element.from("Clipboard")
                                 :withStyle({
                                     align = "center",
                                     justify = "center",
                                     height = { rel = 0.3 },
                                 })
-                        ),
-                    Element.Div.new()
+                        }),
+                    Element.new("div")
                         :withStyle({
                             direction = "column",
                             width = { abs = 180 },
                             height = { rel = 1.0 },
                             border = { right = { width = 1, color = borderColor } }
                         })
-                        :withChildren(
-                            Element.Div.new()
+                        :withChildren({
+                            Element.new("div")
                                 :withStyle({
                                     padding = { top = 3, bottom = 3, left = 3, right = 3 },
                                     height = { rel = 0.7 },
                                     gap = 16,
                                     direction = "row"
                                 })
-                                :withChildren(
-                                    Element.Div.new()
+                                :withChildren({
+                                    Element.new("div")
                                         :withStyle({
                                             direction = "column",
                                             width = { rel = 1/3 },
                                             height = { rel = 1.0 },
                                             gap = 8,
                                         })
-                                        :withChildren(
-                                            Element.Div.new()
+                                        :withChildren({
+                                            Element.new("div")
                                                 :withStyle({
                                                     border = squareBorder,
                                                     bgImage = self.selectTexture,
                                                     height = { rel = 2/3 }
                                                 }),
-                                            Element.Text.new("Select")
+                                            Element.from("Select")
                                                 :withStyle({ height = { rel = 1/3 } })
-                                        ),
-                                    Element.Div.new()
+                                                }),
+                                    Element.new("div")
                                         :withStyle({
                                             direction = "column",
                                             width = { rel = 1/2 },
                                             height = { rel = 1.0 },
                                             gap = 2
                                         })
-                                        :withChildren(
-                                            Element.Div.new()
+                                        :withChildren({
+                                            Element.new("div")
                                                 :withStyle({
                                                     direction = "row",
                                                     gap = 5,
                                                     width = { rel = 1/2 },
                                                     height = { rel = 1/3 }
                                                 })
-                                                :withChildren(
-                                                    Element.Div.new()
+                                                :withChildren({
+                                                    Element.new("div")
                                                         :withStyle({
                                                             bgImage = self.cropTexture,
                                                             width = { abs = 15 },
                                                             height = { abs = 15 },
                                                             margin = { right = 2 }
                                                         }),
-                                                    Element.Text.new("Crop")
+                                                    Element.from("Crop")
                                                         :withStyle({ height = { rel = 1.0 } })
-                                                ),
-                                            Element.Div.new()
+                                                }),
+                                            Element.new("div")
                                                 :withStyle({
                                                     direction = "row",
                                                     gap = 5,
                                                     width = { rel = 1/2 },
                                                     height = { rel = 1/3 }
                                                 })
-                                                :withChildren(
-                                                    Element.Div.new()
+                                                :withChildren({
+                                                    Element.new("div")
                                                         :withStyle({
                                                             bgImage = self.resizeTexture,
                                                             width = { abs = 15 },
                                                             height = { abs = 15 },
                                                             margin = { right = 2 }
                                                         }),
-                                                    Element.Text.new("Resize")
+                                                    Element.from("Resize")
                                                         :withStyle({ height = { rel = 1.0 } })
-                                                ),
-                                            Element.Div.new()
+                                                }),
+                                            Element.new("div")
                                                 :withStyle({
                                                     direction = "row",
                                                     gap = 5,
                                                     width = { rel = 1/2 },
                                                     height = { rel = 1/3 }
                                                 })
-                                                :withChildren(
-                                                    Element.Div.new()
+                                                :withChildren({
+                                                    Element.new("div")
                                                         :withStyle({
                                                             bgImage = self.rotateTexture,
                                                             width = { abs = 15 },
                                                             height = { abs = 15 },
                                                             margin = { right = 2 }
                                                         }),
-                                                    Element.Text.new("Rotate")
+                                                    Element.from("Rotate")
                                                         :withStyle({ height = { rel = 1.0 } })
-                                                )
-                                        )
-                                ),
-                            Element.Text.new("Image")
+                                                })
+                                        })
+                                }),
+                            Element.from("Image")
                                 :withStyle({
                                     align = "center",
                                     justify = "center",
                                     height = { rel = 0.3 },
                                 })
-                        ),
-                    Element.Div.new()
+                        }),
+                    Element.new("div")
                         :withStyle({
                             direction = "column",
                             width = { abs = 120 },
                             height = { rel = 1.0 },
                             border = { right = { width = 1, color = borderColor } }
                         })
-                        :withChildren(
-                            Element.Div.new()
+                        :withChildren({
+                            Element.new("div")
                                 :withStyle({
                                     padding = { top = 3, bottom = 3, left = 3, right = 3 },
                                     height = { rel = 0.7 },
                                     direction = "column",
                                 })
-                                :withChildren(
-                                    Element.Div.new()
+                                :withChildren({
+                                    Element.new("div")
                                         :withStyle({
                                             direction = "row",
                                             height = { rel = 0.5 },
                                             padding = { bottom = 1 }
                                         })
-                                        :withChildren(
-                                            Element.Div.new()
+                                        :withChildren({
+                                            Element.new("div")
                                                 :withStyle({
                                                     width = { abs = 35 },
                                                     height = { abs = 35 },
@@ -407,7 +402,7 @@ function App:view(windowId)
                                                     margin = { right = 1 }
                                                 })
                                                 :onMouseDown({ type = "ToolClicked", tool = "brush" }),
-                                            Element.Div.new()
+                                            Element.new("div")
                                                 :withStyle({
                                                     width = { abs = 35 },
                                                     height = { abs = 35 },
@@ -416,7 +411,7 @@ function App:view(windowId)
                                                     margin = { right = 1 }
                                                 })
                                                 :onMouseDown({ type = "ToolClicked", tool = "eraser" }),
-                                            Element.Div.new()
+                                            Element.new("div")
                                                 :withStyle({
                                                     width = { abs = 35 },
                                                     height = { abs = 35 },
@@ -424,15 +419,15 @@ function App:view(windowId)
                                                     bgImage = self.bucketTexture,
                                                 })
                                                 :onMouseDown({ type = "ToolClicked", tool = "fill" })
-                                        ),
-                                    Element.Div.new()
+                                        }),
+                                    Element.new("div")
                                         :withStyle({
                                             direction = "row",
                                             height = { rel = 0.5 },
                                             gap = 3
                                         })
-                                        :withChildren(
-                                            Element.Div.new()
+                                        :withChildren({
+                                            Element.new("div")
                                                 :withStyle({
                                                     width = { abs = 35 },
                                                     height = { abs = 35 },
@@ -440,7 +435,7 @@ function App:view(windowId)
                                                     bgImage = self.pencilTexture,
                                                 })
                                                 :onMouseDown({ type = "ToolClicked", tool = "pencil" }),
-                                            Element.Div.new()
+                                            Element.new("div")
                                                 :withStyle({
                                                     width = { abs = 35 },
                                                     height = { abs = 35 },
@@ -448,7 +443,7 @@ function App:view(windowId)
                                                     bgImage = self.textTexture,
                                                 })
                                                 :onMouseDown({ type = "ToolClicked", tool = "text" }),
-                                            Element.Div.new()
+                                            Element.new("div")
                                                 :withStyle({
                                                     width = { abs = 35 },
                                                     height = { abs = 35 },
@@ -456,55 +451,55 @@ function App:view(windowId)
                                                     bgImage = self.magnifierTexture
                                                 })
                                                 :onMouseDown({ type = "ToolClicked", tool = "circle" })
-                                        )
-                                ),
-                            Element.Text.new("Tools")
+                                        })
+                                }),
+                            Element.from("Tools")
                                 :withStyle({
                                     align = "center",
                                     justify = "center",
                                     height = { rel = 0.3 },
                                 })
-                        ),
-                    Element.Div.new()
+                        }),
+                    Element.new("div")
                         :withStyle({
                             direction = "column",
                             width = { abs = 100 },
                             height = { rel = 1.0 },
                             border = { right = { width = 1, color = borderColor } }
                         })
-                        :withChildren(
-                            Element.Div.new()
+                        :withChildren({
+                            Element.new("div")
                                 :withStyle({
                                     align = "center",
                                     justify = "center",
                                     padding = { top = 3, bottom = 3, left = 3, right = 3 },
                                     height = { rel = 0.7 }
                                 })
-                                :withChildren(
-                                    Element.Div.new()
+                                :withChildren({
+                                    Element.new("div")
                                         :withStyle({
                                             width = { abs = 50 },
                                             height = { abs = 50 },
                                             bgImage = self.brushesTexture,
                                         })
-                                ),
-                            Element.Text.new("Brushes")
+                                }),
+                            Element.from("Brushes")
                                 :withStyle({
                                     align = "center",
                                     justify = "center",
                                     height = { rel = 0.3 },
                                 })
-                        ),
+                        }),
 
-                    Element.Div.new()
+                    Element.new("div")
                         :withStyle({
                             direction = "column",
                             width = { abs = 300 },
                             height = { rel = 1.0 },
                             border = { right = { width = 1, color = borderColor } }
                         })
-                        :withChildren(
-                            Element.Div.new()
+                        :withChildren({
+                            Element.new("div")
                                 :withStyle({
                                     padding = { top = 3, bottom = 3, left = 3, right = 3 },
                                     height = { rel = 0.7 },
@@ -512,8 +507,8 @@ function App:view(windowId)
                                     align = "center",
                                     gap = 5
                                 })
-                                :withChildren(
-                                    Element.Div.new()
+                                :withChildren({
+                                    Element.new("div")
                                         :withStyle({
                                             width = { abs = 40 },
                                             height = { abs = 40 },
@@ -521,20 +516,20 @@ function App:view(windowId)
                                             border = squareBorder,
                                             margin = { right = 5 }
                                         }),
-                                    Element.Div.new()
+                                    Element.new("div")
                                         :withStyle({
                                             direction = "column",
                                             width = { rel = 2/3 },
                                             justify = "center",
                                         })
-                                        :withChildren(
-                                            Element.Div.new()
+                                        :withChildren({
+                                            Element.new("div")
                                                 :withStyle({
                                                     direction = "row",
                                                     height = { rel = 0.5 }
                                                 })
-                                                :withChildren(
-                                                    Element.Div.new()
+                                                :withChildren({
+                                                    Element.new("div")
                                                         :withStyle({
                                                             width = { abs = 30 },
                                                             height = { abs = 30 },
@@ -543,7 +538,7 @@ function App:view(windowId)
                                                             margin = { all = 1 }
                                                         })
                                                         :onMouseDown({ type = "ColorClicked", r = 0.0, g = 0.0, b = 0.0 }),
-                                                    Element.Div.new()
+                                                    Element.new("div")
                                                         :withStyle({
                                                             width = { abs = 30 },
                                                             height = { abs = 30 },
@@ -552,7 +547,7 @@ function App:view(windowId)
                                                             margin = { all = 1 }
                                                         })
                                                         :onMouseDown({ type = "ColorClicked", r = 1.0, g = 0.0, b = 0.0 }),
-                                                    Element.Div.new()
+                                                    Element.new("div")
                                                         :withStyle({
                                                             width = { abs = 30 },
                                                             height = { abs = 30 },
@@ -561,7 +556,7 @@ function App:view(windowId)
                                                             margin = { all = 1 }
                                                         })
                                                         :onMouseDown({ type = "ColorClicked", r = 0.0, g = 1.0, b = 0.0 }),
-                                                    Element.Div.new()
+                                                    Element.new("div")
                                                         :withStyle({
                                                             width = { abs = 30 },
                                                             height = { abs = 30 },
@@ -570,7 +565,7 @@ function App:view(windowId)
                                                             margin = { all = 1 }
                                                         })
                                                         :onMouseDown({ type = "ColorClicked", r = 0.0, g = 0.0, b = 1.0 }),
-                                                    Element.Div.new()
+                                                    Element.new("div")
                                                         :withStyle({
                                                             width = { abs = 30 },
                                                             height = { abs = 30 },
@@ -579,7 +574,7 @@ function App:view(windowId)
                                                             margin = { all = 1 }
                                                         })
                                                         :onMouseDown({ type = "ColorClicked", r = 1.0, g = 1.0, b = 0.0 }),
-                                                    Element.Div.new()
+                                                    Element.new("div")
                                                         :withStyle({
                                                             width = { abs = 30 },
                                                             height = { abs = 30 },
@@ -588,7 +583,7 @@ function App:view(windowId)
                                                             margin = { all = 1 }
                                                         })
                                                         :onMouseDown({ type = "ColorClicked", r = 1.0, g = 0.0, b = 1.0 }),
-                                                    Element.Div.new()
+                                                    Element.new("div")
                                                         :withStyle({
                                                             width = { abs = 30 },
                                                             height = { abs = 30 },
@@ -597,14 +592,14 @@ function App:view(windowId)
                                                             margin = { all = 1 }
                                                         })
                                                         :onMouseDown({ type = "ColorClicked", r = 0.0, g = 1.0, b = 1.0 })
-                                                ),
-                                            Element.Div.new()
+                                                }),
+                                            Element.new("div")
                                                 :withStyle({
                                                     direction = "row",
                                                     height = { rel = 0.5 }
                                                 })
-                                                :withChildren(
-                                                    Element.Div.new()
+                                                :withChildren({
+                                                    Element.new("div")
                                                         :withStyle({
                                                             width = { abs = 30 },
                                                             height = { abs = 30 },
@@ -613,7 +608,7 @@ function App:view(windowId)
                                                             margin = { all = 1 }
                                                         })
                                                         :onMouseDown({ type = "ColorClicked", r = 0.5, g = 0.5, b = 0.5 }),
-                                                    Element.Div.new()
+                                                    Element.new("div")
                                                         :withStyle({
                                                             width = { abs = 30 },
                                                             height = { abs = 30 },
@@ -622,7 +617,7 @@ function App:view(windowId)
                                                             margin = { all = 1 }
                                                         })
                                                         :onMouseDown({ type = "ColorClicked", r = 0.5, g = 0.0, b = 0.0 }),
-                                                    Element.Div.new()
+                                                    Element.new("div")
                                                         :withStyle({
                                                             width = { abs = 30 },
                                                             height = { abs = 30 },
@@ -631,7 +626,7 @@ function App:view(windowId)
                                                             margin = { all = 1 }
                                                         })
                                                         :onMouseDown({ type = "ColorClicked", r = 0.0, g = 0.5, b = 0.0 }),
-                                                    Element.Div.new()
+                                                    Element.new("div")
                                                         :withStyle({
                                                             width = { abs = 30 },
                                                             height = { abs = 30 },
@@ -640,7 +635,7 @@ function App:view(windowId)
                                                             margin = { all = 1 }
                                                         })
                                                         :onMouseDown({ type = "ColorClicked", r = 0.0, g = 0.0, b = 0.5 }),
-                                                    Element.Div.new()
+                                                    Element.new("div")
                                                         :withStyle({
                                                             width = { abs = 30 },
                                                             height = { abs = 30 },
@@ -649,7 +644,7 @@ function App:view(windowId)
                                                             margin = { all = 1 }
                                                         })
                                                         :onMouseDown({ type = "ColorClicked", r = 0.5, g = 0.5, b = 0.0 }),
-                                                    Element.Div.new()
+                                                    Element.new("div")
                                                         :withStyle({
                                                             width = { abs = 30 },
                                                             height = { abs = 30 },
@@ -658,7 +653,7 @@ function App:view(windowId)
                                                             margin = { all = 1 }
                                                         })
                                                         :onMouseDown({ type = "ColorClicked", r = 0.5, g = 0.0, b = 0.5 }),
-                                                    Element.Div.new()
+                                                    Element.new("div")
                                                         :withStyle({
                                                             width = { abs = 30 },
                                                             height = { abs = 30 },
@@ -667,34 +662,34 @@ function App:view(windowId)
                                                             margin = { all = 1 }
                                                         })
                                                         :onMouseDown({ type = "ColorClicked", r = 0.0, g = 0.5, b = 0.5 })
-                                                )
-                                        )
-                                ),
-                            Element.Text.new("Colors")
+                                                })
+                                        })
+                                }),
+                            Element.from("Colors")
                                 :withStyle({
                                     align = "center",
                                     justify = "center",
                                     height = { rel = 0.3 },
                                 })
-                        )
-                ),
+                        })
+                }),
             -- Mid section (canvas)
-            Element.Div.new()
+            Element.new("div")
                 :withStyle({
                     height = "auto",
                     align = "center",
                     justify = "center",
                     bg = { r = 0.7, g = 0.7, b = 0.8, a = 1.0 },
                 })
-                :withChildren(
-                    Element.Div.new()
+                :withChildren({
+                    Element.new("div")
                         :withStyle({
                             bg = { r = 1, g = 1, b = 1, a = 1 },
                             width = { rel = 0.95 },
                             height = { rel = 0.95 },
                         })
-                        :withChildren(
-                            Element.Div.new()
+                        :withChildren({
+                            Element.new("div")
                                 :withStyle({
                                     bgImage = self.canvasTexture,
                                     width = { rel = 1.0 },
@@ -705,21 +700,21 @@ function App:view(windowId)
                                 :onMouseMove(function(x, y, elementWidth, elementHeight)
                                     return { type = "Hovered", x = x, y = y, elementWidth = elementWidth, elementHeight = elementHeight }
                                 end)
-                        )
-                ),
-            Element.Div.new()
+                        })
+                }),
+            Element.new("div")
                 :withStyle({
                     height = { abs = 30 },
                     width = "auto"
                 })
-                :withChildren(
-                    Element.Text.new(string.format("arisu v0.1", self.fps))
+                :withChildren({
+                    Element.from(string.format("arisu v0.1", self.fps))
                         :withStyle({
                             align = "center",
                             padding = { left = 10 }
                         })
-                )
-        )
+                })
+        })
 end
 
 ---@param event Event

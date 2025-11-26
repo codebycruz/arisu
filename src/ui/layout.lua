@@ -305,12 +305,12 @@ function Layout:solve(parentWidth, parentHeight)
     local totalMainSize = 0
     local visibleChildCount = 0
     local autoCount = 0
-    
+
     -- First pass: scan for non-auto sizes and count auto elements
     for i = 1, #self.children do
         local child = self.children[i]
         local childMainDimension = isRow and child.width or child.height
-        
+
         if childMainDimension == "auto" then
             autoCount = autoCount + 1
         else
@@ -327,35 +327,35 @@ function Layout:solve(parentWidth, parentHeight)
             elseif child.height and child.height.abs then
                 tempHeight = child.height.abs
             end
-            
+
             local childSize = isRow and tempWidth or tempHeight
             totalMainSize = totalMainSize + childSize
             visibleChildCount = visibleChildCount + 1
         end
     end
-    
+
     -- Calculate remaining space for auto children
     local totalGaps = math.max(0, (#self.children) - 1) * (self.gap or 0)
     local remainingSpace = containerMainSize - totalMainSize - totalGaps
     local autoSpace = autoCount > 0 and (remainingSpace / autoCount) or 0
-    
+
     -- Second pass: solve all children with known auto size
     for i = 1, #self.children do
         local child = self.children[i]
         local childMainDimension = isRow and child.width or child.height
-        
+
         if childMainDimension == "auto" then
             local tempChild = setmetatable({}, { __index = child })
             for k, v in pairs(child) do
                 tempChild[k] = v
             end
-            
+
             if isRow then
                 tempChild.width = { abs = autoSpace }
             else
                 tempChild.height = { abs = autoSpace }
             end
-            
+
             local childResult = tempChild:solve(contentWidth, contentHeight)
             table.insert(childResults, childResult)
         else

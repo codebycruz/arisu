@@ -181,28 +181,53 @@ local function findElementsAtPosition(element, layout, x, y, parentX, parentY, r
     return true
 end
 
-local function getTopElementWithCursor(elements)
-    local topElement = nil
-    local topZ = -math.huge
+---@param element Element
+---@param fontManager FontManager
+local function convertTextElements(element, fontManager)
+    if element.type == "text" then
+        ---@type string
+        local value = element.userdata
 
-    for element, data in pairs(elements) do
-        if element.visualStyle and element.visualStyle.cursor then
-            local z = data.layout.zIndex or 0
-            if z > topZ then
-                topZ = z
-                topElement = element
-            end
+        local font = element.visualStyle.font or fontManager:getDefault()
+        local fontBitmap = fontManager:getBitmap(font)
+        local uvs = fontBitmap:getStringUVs(value)
+
+        local children = {}
+        for i = 1, #uvs do
+            local quad = uvs[i]
+
+            children[i] = Element.new("div")
+                :withStyle({
+                    bg = { r = 0.0, g = 0.0, b = 0.0, a = 1.0 },
+                    bgImage = font,
+                    bgImageUV = quad,
+                    width = { abs = quad.width },
+                    height = { abs = quad.height },
+                })
         end
+
+        return Element.new("div")
+            :withStyle({ direction = "row", bg = { r = 0, g = 0, b = 0, a = 0 } })
+            :withChildren(children)
     end
 
-    return topElement
+    if element.children then
+        local newChildren = {}
+        for _, child in ipairs(element.children) do
+            table.insert(newChildren, convertTextElements(child, fontManager))
+        end
+
+        element.children = newChildren
+    end
+
+    return element
 end
 
 local Arisu = {}
 
 ---@generic T
 ---@generic Message
----@param cons fun(window: Window, textureManager: TextureManager, fontManager: FontManager): { view: fun(self: T, windowId: number), update: fun(self: T, message: Message, windowId: number): Task?, event: fun(self: T, event: Event): Message }
+---@param cons fun(window: Window, textureManager: TextureManager, fontManager: FontManager): { view: fun(self: T, windowId: number): Element, update: fun(self: T, message: Message, windowId: number): Task?, event: fun(self: T, event: Event): Message }
 function Arisu.runApp(cons)
     local eventLoop = window.EventLoop.new()
     local window = window.WindowBuilder.new()
@@ -258,6 +283,7 @@ function Arisu.runApp(cons)
     app.event = app.event or function(_) end
 
     local ui = app:view(window.id)
+    ui = convertTextElements(ui, fontManager)
     local layoutTree = Layout.fromElement(ui)
 
     local runUpdate
