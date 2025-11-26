@@ -236,15 +236,19 @@ return {
     MapNotify = 19,
     ConfigureNotify = 22,
     DestroyNotify = 17,
+    CreateNotify = 16,
+
     False = 0,
     True = 1,
-    ExposureMask = 0x00008000,
-    KeyPressMask = 0x00000001,
-    KeyReleaseMask = 0x00000002,
-    ButtonPressMask = 0x00000004,
-    ButtonReleaseMask = 0x00000008,
-    PointerMotionMask = 0x00000040,
-    StructureNotifyMask = 0x00020000,
+
+    KeyPressMask           = 0x00000001,
+    KeyReleaseMask         = 0x00000002,
+    ButtonPressMask        = 0x00000004,
+    ButtonReleaseMask      = 0x00000008,
+    PointerMotionMask      = 0x00000040,
+    ExposureMask           = 0x00008000,
+    StructureNotifyMask    = 0x00020000,
+    SubstructureNotifyMask = 0x00080000,
 
     --- @type fun(): XEvent
     newEvent = function() return ffi.new("XEvent") end,

@@ -77,6 +77,8 @@ function Compute:stamp(x, y, radius, color)
     local groupsX = math.ceil(diameter / WORK_GROUP_SIZE)
     local groupsY = math.ceil(diameter / WORK_GROUP_SIZE)
     self.pipeline:dispatchCompute(groupsX, groupsY, 1)
+    gl.memoryBarrier(gl.SHADER_IMAGE_ACCESS_BARRIER_BIT)
+    gl.finish()
 end
 
 ---@param x number
@@ -96,6 +98,8 @@ function Compute:erase(x, y, radius)
     local groupsX = math.ceil(diameter / WORK_GROUP_SIZE)
     local groupsY = math.ceil(diameter / WORK_GROUP_SIZE)
     self.pipeline:dispatchCompute(groupsX, groupsY, 1)
+    gl.memoryBarrier(gl.SHADER_IMAGE_ACCESS_BARRIER_BIT)
+    gl.finish()
 end
 
 ---@param x number

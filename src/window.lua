@@ -137,7 +137,14 @@ function WindowBuilder:build(eventLoop --[[@param eventLoop EventLoop]]) ---@ret
     eventLoop:register(window)
 
     x11.setWMProtocols(display, window, {"WM_DELETE_WINDOW"})
-    x11.selectInput(display, id, bit.bor(x11.ExposureMask, x11.StructureNotifyMask, x11.ButtonPressMask, x11.ButtonReleaseMask, x11.PointerMotionMask))
+    x11.selectInput(display, id, bit.bor(
+        x11.ExposureMask,
+        x11.StructureNotifyMask,
+        x11.SubstructureNotifyMask,
+        x11.ButtonPressMask,
+        x11.ButtonReleaseMask,
+        x11.PointerMotionMask
+    ))
     x11.mapWindow(display, id)
 
     return window
@@ -145,10 +152,11 @@ end
 
 ---@alias Event
 --- | { name: "aboutToWait" }
---- | { window: Window, name: "deleteWindow" }
+--- | { window: Window, name: "windowClose" }
 --- | { window: Window, name: "redraw" }
 --- | { window: Window, name: "resize" }
 --- | { window: Window, name: "map" }
+--- | { window: Window, name: "create" }
 --- | { window: Window, name: "unmap" }
 --- | { window: Window, name: "mouseMove", x: number, y: number }
 --- | { window: Window, name: "mousePress", x: number, y: number, button: number }
@@ -211,19 +219,26 @@ function EventLoop:run(callback --[[@param callback fun(event: Event, handler: E
         end
     end
 
-    local function processEvent()
-        local windowIdHash = tostring(event.xany.window)
-        local window = self.windows[windowIdHash]
+    ---@type table<number, fun(window: Window)>
+    local Handlers = {
+        [x11.MotionNotify] = function(window)
+            callback({ window = window, name = "mouseMove", x = event.xmotion.x, y = event.xmotion.y }, handler)
+        end,
 
-        if event.type == x11.ClientMessage then
+        [x11.ClientMessage] = function(window)
             if event.xclient.data.l[0] == wmDeleteWindow then
-                callback({ window = window, name = "deleteWindow" }, handler)
+                callback({ window = window, name = "windowClose" }, handler)
             end
-        elseif event.type == x11.Expose then
+        end,
+
+        [x11.Expose] = function(window)
             callback({ window = window, name = "redraw" }, handler)
-        elseif event.type == x11.DestroyNotify then
-            self.windows[windowIdHash] = nil
-        elseif event.type == x11.ConfigureNotify then
+        end,
+
+        [x11.DestroyNotify] = function(window)
+        end,
+
+        [x11.ConfigureNotify] = function(window)
             local newWidth = event.xconfigure.width
             local newHeight = event.xconfigure.height
 
@@ -234,20 +249,37 @@ function EventLoop:run(callback --[[@param callback fun(event: Event, handler: E
             else -- Move event?
                 -- Ignored for now
             end
+        end,
 
-        elseif event.type == x11.MapNotify then
+        [x11.MapNotify] = function(window)
             callback({ window = window, name = "map" }, handler)
-        elseif event.type == x11.UnmapNotify then
+        end,
+
+        [x11.UnmapNotify] = function(window)
             callback({ window = window, name = "unmap" }, handler)
-        elseif event.type == x11.MotionNotify then
-            callback({ window = window, name = "mouseMove", x = event.xmotion.x, y = event.xmotion.y }, handler)
-        elseif event.type == x11.ButtonPress then
+        end,
+
+        [x11.CreateNotify] = function(window)
+            callback({ window = window, name = "create" }, handler)
+        end,
+
+        [x11.ButtonPress] = function(window)
             callback({ window = window, name = "mousePress", x = event.xbutton.x, y = event.xbutton.y, button = event.xbutton.button }, handler)
-        elseif event.type == x11.ButtonRelease then
+        end,
+
+        [x11.ButtonRelease] = function(window)
             callback({ window = window, name = "mouseRelease", x = event.xbutton.x, y = event.xbutton.y, button = event.xbutton.button }, handler)
-        else
-            print("unhandled event type:", event.type)
-        end
+        end,
+    }
+
+    local function processEvent()
+        local windowIdHash = tostring(event.xany.window)
+        local window = self.windows[windowIdHash]
+
+        local evtTypeHandler = Handlers[event.type]
+        assert(evtTypeHandler, "Unhandled X11 event type: " .. tostring(event.type))
+
+        evtTypeHandler(window)
     end
 
     local redrawEvent = { name = "redraw" }

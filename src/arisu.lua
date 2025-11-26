@@ -303,7 +303,7 @@ function Arisu.runApp(cons)
             vertex = vertex,
             index = index,
             window = window,
-            lastFrameTime = os.clock(),
+            lastFrameTime = -math.huge,
             quadPipeline = quadPipeline,
             renderCtx = renderCtx
         }
@@ -349,7 +349,6 @@ function Arisu.runApp(cons)
         ctx.layoutTree = Layout.fromElement(ctx.ui)
 
         -- This is only necessary if we don't force a redraw on aboutToWait
-        -- Just left here for reference.
         handler:requestRedraw(ctx.window)
     end
 
@@ -366,6 +365,14 @@ function Arisu.runApp(cons)
             task.builder:build(eventLoop)
         elseif task.variant == "setTitle" then
             mainWindow:setTitle(task.to)
+        elseif task.variant == "waitOnGPU" then
+            local ctx = windowContexts[task.window]
+            ctx.renderCtx:makeCurrent()
+            gl.finish()
+        elseif task.variant == "chain" then
+            for _, subtask in ipairs(task.tasks) do
+                runTask(subtask, handler)
+            end
         end
     end
 
@@ -412,7 +419,7 @@ function Arisu.runApp(cons)
                 draw(ctx)
                 ctx.lastFrameTime = currentTime
             end
-        elseif eventName == "deleteWindow" then
+        elseif eventName == "windowClose" then
             -- Ensure we only exit if the main window is closed
             -- TODO: Maybe allow users to specify this behavior?
             if event.window.id == mainWindow.id then
@@ -480,12 +487,11 @@ function Arisu.runApp(cons)
                 runUpdate(info.element.onmouseup, ctx.window, handler)
             end
         elseif eventName == "map" then
-            if event.window == mainWindow then
-                refreshView(mainCtx, handler)
-            elseif not windowContexts[event.window] then
-                local ctx = initWindow(event.window)
-                refreshView(ctx, handler)
+            if not windowContexts[event.window] then
+                initWindow(event.window)
             end
+
+            refreshView(windowContexts[event.window], handler)
         end
     end)
 
