@@ -21,6 +21,11 @@ ffi.cdef[[
     // Getters
     GLXContext glXGetCurrentContext();
     XDisplay* glXGetCurrentDisplay();
+    Window glXGetCurrentDrawable();
+    void glXQueryDrawable(XDisplay* dpy, Window draw, int attribute, unsigned int* value);
+
+    // Misc
+    const char* glXQueryExtensionsString(XDisplay* dpy, int screen);
 ]]
 
 ---@class GLXContext: userdata
@@ -41,6 +46,8 @@ return {
 
     CONTEXT_MAJOR_VERSION_ARB = 0x2091,
     CONTEXT_MINOR_VERSION_ARB = 0x2092,
+
+    SWAP_INTERVAL_EXT = 0x20F1,
 
     ---@param display XDisplay
     ---@param screen number
@@ -85,4 +92,24 @@ return {
 
     ---@type fun(): XDisplay?
     getCurrentDisplay = C.glXGetCurrentDisplay,
+
+    ---@type fun(): number
+    getCurrentDrawable = C.glXGetCurrentDrawable,
+
+    ---@type fun(display: XDisplay, draw: number, attribute: number): number
+    queryDrawable = function(display, draw, attribute)
+        local value = ffi.new("unsigned int[1]")
+        C.glXQueryDrawable(display, draw, attribute, value)
+        return value[0]
+    end,
+
+    ---@type fun(display: XDisplay, screen: number): string
+    queryExtensionsString = function(display, screen)
+        local extStr = C.glXQueryExtensionsString(display, screen)
+        if extStr == nil then
+            return ""
+        end
+
+        return ffi.string(extStr)
+    end,
 }

@@ -775,7 +775,7 @@ function App:update(message, window)
             self.isDrawing = true
         end
 
-        return Task.refreshView(window)
+        return Task.redraw(window)
     elseif message.type == "StopDrawing" then
         self.isDrawing = false
     elseif message.type == "ColorClicked" then
@@ -825,7 +825,7 @@ function App:update(message, window)
                 )
             end
 
-            return Task.refreshView(window)
+            return Task.redraw(window)
         end
     end
 end

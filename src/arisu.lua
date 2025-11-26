@@ -241,6 +241,8 @@ local FRAME_TIME = 1 / TARGET_FPS
 ---@field quadPipeline Pipeline
 ---@field ui Element
 ---@field layoutTree Layout
+---@field computedLayout ComputedLayout
+---@field nIndices number
 
 ---@generic T
 ---@generic Message
@@ -270,7 +272,7 @@ function Arisu.runApp(cons)
         end
 
         renderCtx:makeCurrent()
-        renderCtx:setPresentMode("immediate")
+        renderCtx:setPresentMode("vsync")
 
         local vertexDescriptor = BufferDescriptor.new()
             :withAttribute({ type = "f32", size = 3, offset = 0 })  -- position (vec3)
@@ -330,6 +332,13 @@ function Arisu.runApp(cons)
     mainCtx.ui = app:view(mainWindow)
     mainCtx.ui = convertTextElements(mainCtx.ui, fontManager)
     mainCtx.layoutTree = Layout.fromElement(mainCtx.ui)
+    mainCtx.computedLayout = mainCtx.layoutTree:solve(mainWindow.width, mainWindow.height)
+
+    local vertices, indices = {}, {}
+    generateLayoutQuads(mainCtx.computedLayout, 0, 0, vertices, indices, mainCtx.window.width, mainCtx.window.height)
+    mainCtx.vertex:setData("f32", vertices)
+    mainCtx.index:setData("u32", indices)
+    mainCtx.nIndices = #indices
 
     local runUpdate
 
@@ -348,6 +357,13 @@ function Arisu.runApp(cons)
         ctx.ui = app:view(ctx.window)
         ctx.ui = convertTextElements(ctx.ui, fontManager)
         ctx.layoutTree = Layout.fromElement(ctx.ui)
+        ctx.computedLayout = ctx.layoutTree:solve(ctx.window.width, ctx.window.height)
+
+        local vertices, indices = {}, {}
+        generateLayoutQuads(ctx.computedLayout, 0, 0, vertices, indices, ctx.window.width, ctx.window.height)
+        ctx.vertex:setData("f32", vertices)
+        ctx.index:setData("u32", indices)
+        ctx.nIndices = #indices
 
         -- This is only necessary if we don't force a redraw on aboutToWait
         handler:requestRedraw(ctx.window)
@@ -362,6 +378,8 @@ function Arisu.runApp(cons)
 
         if task.variant == "refreshView" then
             refreshView(windowContexts[task.window], handler)
+        elseif task.variant == "redraw" then
+            handler:requestRedraw(task.window)
         elseif task.variant == "windowOpen" then
             task.builder:build(eventLoop)
         elseif task.variant == "setTitle" then
@@ -394,25 +412,18 @@ function Arisu.runApp(cons)
 
         ctx.quadPipeline:bind()
 
-        local computedLayout = ctx.layoutTree:solve(ctx.window.width, ctx.window.height)
-
-        local vertices, indices = {}, {}
-        generateLayoutQuads(computedLayout, 0, 0, vertices, indices, ctx.window.width, ctx.window.height)
-
-        ctx.vertex:setData("f32", vertices)
-        ctx.index:setData("u32", indices)
-
         textureManager:bind()
         ctx.vao:bind()
-        gl.drawElements(gl.TRIANGLES, #indices, gl.UNSIGNED_INT, nil)
+        gl.drawElements(gl.TRIANGLES, ctx.nIndices, gl.UNSIGNED_INT, nil)
 
-        ctx.renderCtx:swapBuffers()
+        ctx.renderCtx:present()
     end
 
     eventLoop:run(function(event, handler)
         local eventName = event.name
         if eventName == "redraw" then
             local ctx = windowContexts[event.window]
+
             -- local currentTime = os.clock()
             -- local deltaTime = currentTime - ctx.lastFrameTime
 
@@ -437,11 +448,10 @@ function Arisu.runApp(cons)
             gl.viewport(0, 0, ctx.window.width, ctx.window.height)
         elseif eventName == "mouseMove" then
             local ctx = windowContexts[event.window]
-            local computedLayout = ctx.layoutTree:solve(ctx.window.width, ctx.window.height)
 
             ---@type table<Element, {layout: ComputedLayout, absX: number, absY: number}>
             local hoveredElements = {}
-            findElementsAtPosition(ctx.ui, computedLayout, event.x, event.y, 0, 0, hoveredElements)
+            findElementsAtPosition(ctx.ui, ctx.computedLayout, event.x, event.y, 0, 0, hoveredElements)
 
             local anyWithMouseDown = false
             for el, _ in pairs(hoveredElements) do
@@ -466,9 +476,7 @@ function Arisu.runApp(cons)
             end
         elseif eventName == "mousePress" then
             local ctx = windowContexts[event.window]
-            local layout = ctx.layoutTree:solve(ctx.window.width, ctx.window.height)
-
-            local info = findElementAtPosition(ctx.ui, layout, event.x, event.y, 0, 0, function(el)
+            local info = findElementAtPosition(ctx.ui, ctx.computedLayout, event.x, event.y, 0, 0, function(el)
                 return el.onmousedown ~= nil
             end)
 
@@ -479,8 +487,7 @@ function Arisu.runApp(cons)
             end
         elseif eventName == "mouseRelease" then
             local ctx = windowContexts[event.window]
-            local computedLayout = ctx.layoutTree:solve(ctx.window.width, ctx.window.height)
-            local info = findElementAtPosition(ctx.ui, computedLayout, event.x, event.y, 0, 0, function(el)
+            local info = findElementAtPosition(ctx.ui, ctx.computedLayout, event.x, event.y, 0, 0, function(el)
                 return el.onmouseup ~= nil
             end)
 

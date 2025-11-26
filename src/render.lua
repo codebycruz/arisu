@@ -1,10 +1,12 @@
 local glx = require "src.bindings.glx"
 local x11 = require "src.bindings.x11"
+local gl = require "src.bindings.gl"
 
 --- @class Context
 --- @field display XDisplay
 --- @field window Window
 --- @field ctx userdata
+--- @field fence Fence?
 local Context = {}
 Context.__index = Context
 
@@ -51,6 +53,17 @@ end
 
 function Context:swapBuffers()
     glx.swapBuffers(self.display, self.window.id)
+end
+
+function Context:present()
+    if self.fence then
+        gl.clientWaitSync(self.fence, gl.SYNC_FLUSH_COMMANDS_BIT, 1e9)
+        gl.deleteSync(self.fence)
+        self.fence = nil
+    end
+
+    self:swapBuffers()
+    self.fence = gl.fenceSync(gl.SYNC_GPU_COMMANDS_COMPLETE, 0)
 end
 
 function Context:destroy()

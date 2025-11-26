@@ -80,6 +80,7 @@ ffi.cdef[[
     void glDisable(GLenum cap);
     void glBlendFunc(GLenum sfactor, GLenum dfactor);
     void glFinish();
+    void glFlush();
 
     // Fences
     GLsync glFenceSync(GLenum condition, unsigned int flags);
@@ -148,6 +149,9 @@ return {
 
     READ_WRITE = 0x88BA,
     SHADER_IMAGE_ACCESS_BARRIER_BIT = 0x00000020,
+
+    SYNC_GPU_COMMANDS_COMPLETE = 0x9117,
+    SYNC_FLUSH_COMMANDS_BIT = 0x00000001,
 
     --- @param type ShaderType
     --- @param src string
@@ -305,6 +309,9 @@ return {
 
     ---@type fun()
     finish = C.glFinish,
+
+    ---@type fun()
+    flush = C.glFlush,
 
     ---@type fun(srcName: number, srcTarget: number, srcLevel: number, srcX: number, srcY: number, srcZ: number, dstName: number, dstTarget: number, dstLevel: number, dstX: number, dstY: number, dstZ: number, width: number, height: number, depth: number)
     copyImageSubData = C.glCopyImageSubData,
