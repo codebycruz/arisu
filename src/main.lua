@@ -8,7 +8,6 @@ local window = require "src.window"
 local ffi = require("ffi")
 
 ---@alias Message
---- | { type: "BrushClicked" }
 --- | { type: "EraserClicked" }
 --- | { type: "ColorClicked", r: number, g: number, b: number }
 --- | { type: "ToolClicked", tool: string }
@@ -50,7 +49,7 @@ local ffi = require("ffi")
 ---@field gpuUpdateInterval number
 ---@field fps number
 ---@field lastFrameTime number
----@field currentColor {r: number, g: number, b: number}
+---@field currentColor {r: number, g: number, b: number, a: number}
 ---@field selectedTool string
 local App = {}
 App.__index = App
@@ -169,14 +168,14 @@ function App:view(windowId)
                 :withChildren({
                     Element.from("File")
                         :withStyle({ width = { abs = 50 } })
-                        :onMouseDown({ type = "FileClicked" }),
+                        :onClick({ type = "FileClicked" }),
                     Element.from("Edit")
                         :withStyle({ width = { abs = 50 } }),
                     Element.from("View")
                         :withStyle({ width = { abs = 50 } }),
                     Element.from("Clear")
                         :withStyle({ width = { abs = 50 } })
-                        :onMouseDown({ type = "ClearClicked" })
+                        :onClick({ type = "ClearClicked" })
                 }),
             -- Top toolbar
             Element.new("div")
@@ -406,7 +405,7 @@ function App:view(windowId)
                                                     bgImage = self.brushTexture,
                                                     margin = { right = 1 }
                                                 })
-                                                :onMouseDown({ type = "ToolClicked", tool = "brush" }),
+                                                :onClick({ type = "ToolClicked", tool = "brush" }),
                                             Element.new("div")
                                                 :withStyle({
                                                     width = { abs = 35 },
@@ -415,7 +414,7 @@ function App:view(windowId)
                                                     bgImage = self.eraserTexture,
                                                     margin = { right = 1 }
                                                 })
-                                                :onMouseDown({ type = "ToolClicked", tool = "eraser" }),
+                                                :onClick({ type = "ToolClicked", tool = "eraser" }),
                                             Element.new("div")
                                                 :withStyle({
                                                     width = { abs = 35 },
@@ -423,7 +422,7 @@ function App:view(windowId)
                                                     bg = self.selectedTool == "fill" and { r = 0.7, g = 0.7, b = 1.0, a = 1.0 } or { r = 0.9, g = 0.9, b = 0.9, a = 1.0 },
                                                     bgImage = self.bucketTexture,
                                                 })
-                                                :onMouseDown({ type = "ToolClicked", tool = "fill" })
+                                                :onClick({ type = "ToolClicked", tool = "fill" })
                                         }),
                                     Element.new("div")
                                         :withStyle({
@@ -439,7 +438,7 @@ function App:view(windowId)
                                                     bg = self.selectedTool == "pencil" and { r = 0.7, g = 0.7, b = 1.0, a = 1.0 } or { r = 0.9, g = 0.9, b = 0.9, a = 1.0 },
                                                     bgImage = self.pencilTexture,
                                                 })
-                                                :onMouseDown({ type = "ToolClicked", tool = "pencil" }),
+                                                :onClick({ type = "ToolClicked", tool = "pencil" }),
                                             Element.new("div")
                                                 :withStyle({
                                                     width = { abs = 35 },
@@ -447,7 +446,7 @@ function App:view(windowId)
                                                     bg = self.selectedTool == "text" and { r = 0.7, g = 0.7, b = 1.0, a = 1.0 } or { r = 0.9, g = 0.9, b = 0.9, a = 1.0 },
                                                     bgImage = self.textTexture,
                                                 })
-                                                :onMouseDown({ type = "ToolClicked", tool = "text" }),
+                                                :onClick({ type = "ToolClicked", tool = "text" }),
                                             Element.new("div")
                                                 :withStyle({
                                                     width = { abs = 35 },
@@ -455,7 +454,7 @@ function App:view(windowId)
                                                     bg = self.selectedTool == "zoom" and { r = 0.7, g = 0.7, b = 1.0, a = 1.0 } or { r = 0.9, g = 0.9, b = 0.9, a = 1.0 },
                                                     bgImage = self.magnifierTexture
                                                 })
-                                                :onMouseDown({ type = "ToolClicked", tool = "circle" })
+                                                :onClick({ type = "ToolClicked", tool = "circle" })
                                         })
                                 }),
                             Element.from("Tools")
@@ -542,7 +541,7 @@ function App:view(windowId)
                                                             border = squareBorder,
                                                             margin = { all = 1 }
                                                         })
-                                                        :onMouseDown({ type = "ColorClicked", r = 0.0, g = 0.0, b = 0.0 }),
+                                                        :onClick({ type = "ColorClicked", r = 0.0, g = 0.0, b = 0.0 }),
                                                     Element.new("div")
                                                         :withStyle({
                                                             width = { abs = 30 },
@@ -551,7 +550,7 @@ function App:view(windowId)
                                                             border = squareBorder,
                                                             margin = { all = 1 }
                                                         })
-                                                        :onMouseDown({ type = "ColorClicked", r = 1.0, g = 0.0, b = 0.0 }),
+                                                        :onClick({ type = "ColorClicked", r = 1.0, g = 0.0, b = 0.0 }),
                                                     Element.new("div")
                                                         :withStyle({
                                                             width = { abs = 30 },
@@ -560,7 +559,7 @@ function App:view(windowId)
                                                             border = squareBorder,
                                                             margin = { all = 1 }
                                                         })
-                                                        :onMouseDown({ type = "ColorClicked", r = 0.0, g = 1.0, b = 0.0 }),
+                                                        :onClick({ type = "ColorClicked", r = 0.0, g = 1.0, b = 0.0 }),
                                                     Element.new("div")
                                                         :withStyle({
                                                             width = { abs = 30 },
@@ -569,7 +568,7 @@ function App:view(windowId)
                                                             border = squareBorder,
                                                             margin = { all = 1 }
                                                         })
-                                                        :onMouseDown({ type = "ColorClicked", r = 0.0, g = 0.0, b = 1.0 }),
+                                                        :onClick({ type = "ColorClicked", r = 0.0, g = 0.0, b = 1.0 }),
                                                     Element.new("div")
                                                         :withStyle({
                                                             width = { abs = 30 },
@@ -578,7 +577,7 @@ function App:view(windowId)
                                                             border = squareBorder,
                                                             margin = { all = 1 }
                                                         })
-                                                        :onMouseDown({ type = "ColorClicked", r = 1.0, g = 1.0, b = 0.0 }),
+                                                        :onClick({ type = "ColorClicked", r = 1.0, g = 1.0, b = 0.0 }),
                                                     Element.new("div")
                                                         :withStyle({
                                                             width = { abs = 30 },
@@ -587,7 +586,7 @@ function App:view(windowId)
                                                             border = squareBorder,
                                                             margin = { all = 1 }
                                                         })
-                                                        :onMouseDown({ type = "ColorClicked", r = 1.0, g = 0.0, b = 1.0 }),
+                                                        :onClick({ type = "ColorClicked", r = 1.0, g = 0.0, b = 1.0 }),
                                                     Element.new("div")
                                                         :withStyle({
                                                             width = { abs = 30 },
@@ -596,7 +595,7 @@ function App:view(windowId)
                                                             border = squareBorder,
                                                             margin = { all = 1 }
                                                         })
-                                                        :onMouseDown({ type = "ColorClicked", r = 0.0, g = 1.0, b = 1.0 })
+                                                        :onClick({ type = "ColorClicked", r = 0.0, g = 1.0, b = 1.0 })
                                                 }),
                                             Element.new("div")
                                                 :withStyle({
@@ -612,7 +611,7 @@ function App:view(windowId)
                                                             border = squareBorder,
                                                             margin = { all = 1 }
                                                         })
-                                                        :onMouseDown({ type = "ColorClicked", r = 0.5, g = 0.5, b = 0.5 }),
+                                                        :onClick({ type = "ColorClicked", r = 0.5, g = 0.5, b = 0.5 }),
                                                     Element.new("div")
                                                         :withStyle({
                                                             width = { abs = 30 },
@@ -621,7 +620,7 @@ function App:view(windowId)
                                                             border = squareBorder,
                                                             margin = { all = 1 }
                                                         })
-                                                        :onMouseDown({ type = "ColorClicked", r = 0.5, g = 0.0, b = 0.0 }),
+                                                        :onClick({ type = "ColorClicked", r = 0.5, g = 0.0, b = 0.0 }),
                                                     Element.new("div")
                                                         :withStyle({
                                                             width = { abs = 30 },
@@ -630,7 +629,7 @@ function App:view(windowId)
                                                             border = squareBorder,
                                                             margin = { all = 1 }
                                                         })
-                                                        :onMouseDown({ type = "ColorClicked", r = 0.0, g = 0.5, b = 0.0 }),
+                                                        :onClick({ type = "ColorClicked", r = 0.0, g = 0.5, b = 0.0 }),
                                                     Element.new("div")
                                                         :withStyle({
                                                             width = { abs = 30 },
@@ -639,7 +638,7 @@ function App:view(windowId)
                                                             border = squareBorder,
                                                             margin = { all = 1 }
                                                         })
-                                                        :onMouseDown({ type = "ColorClicked", r = 0.0, g = 0.0, b = 0.5 }),
+                                                        :onClick({ type = "ColorClicked", r = 0.0, g = 0.0, b = 0.5 }),
                                                     Element.new("div")
                                                         :withStyle({
                                                             width = { abs = 30 },
@@ -648,7 +647,7 @@ function App:view(windowId)
                                                             border = squareBorder,
                                                             margin = { all = 1 }
                                                         })
-                                                        :onMouseDown({ type = "ColorClicked", r = 0.5, g = 0.5, b = 0.0 }),
+                                                        :onClick({ type = "ColorClicked", r = 0.5, g = 0.5, b = 0.0 }),
                                                     Element.new("div")
                                                         :withStyle({
                                                             width = { abs = 30 },
@@ -657,7 +656,7 @@ function App:view(windowId)
                                                             border = squareBorder,
                                                             margin = { all = 1 }
                                                         })
-                                                        :onMouseDown({ type = "ColorClicked", r = 0.5, g = 0.0, b = 0.5 }),
+                                                        :onClick({ type = "ColorClicked", r = 0.5, g = 0.0, b = 0.5 }),
                                                     Element.new("div")
                                                         :withStyle({
                                                             width = { abs = 30 },
@@ -666,7 +665,7 @@ function App:view(windowId)
                                                             border = squareBorder,
                                                             margin = { all = 1 }
                                                         })
-                                                        :onMouseDown({ type = "ColorClicked", r = 0.0, g = 0.5, b = 0.5 })
+                                                        :onClick({ type = "ColorClicked", r = 0.0, g = 0.5, b = 0.5 })
                                                 })
                                         })
                                 }),
@@ -700,7 +699,9 @@ function App:view(windowId)
                                     width = { rel = 1.0 },
                                     height = { rel = 1.0 },
                                 })
-                                :onMouseDown({ type = "StartDrawing" })
+                                :onMouseDown(function(x, y, elementWidth, elementHeight)
+                                    return { type = "StartDrawing", x = x, y = y, elementWidth = elementWidth, elementHeight = elementHeight }
+                                end)
                                 :onMouseUp({ type = "StopDrawing" })
                                 :onMouseMove(function(x, y, elementWidth, elementHeight)
                                     return { type = "Hovered", x = x, y = y, elementWidth = elementWidth, elementHeight = elementHeight }
@@ -742,9 +743,16 @@ end
 ---@param message Message
 ---@param windowId number
 function App:update(message, windowId)
-    if message.type == "BrushClicked" then
-    elseif message.type == "StartDrawing" then
-        self.isDrawing = true
+    if message.type == "StartDrawing" then
+        if self.selectedTool == "fill" then
+            self.compute:fill(
+                (message.x / message.elementWidth) * 800,
+                (message.y / message.elementHeight) * 600,
+                self.currentColor
+            )
+        else
+            self.isDrawing = true
+        end
     elseif message.type == "StopDrawing" then
         self.isDrawing = false
     elseif message.type == "ColorClicked" then
@@ -769,13 +777,16 @@ function App:update(message, windowId)
         return Task.openWindow(builder)
     elseif message.type == "Hovered" then
         if self.isDrawing then
+            -- TODO: Un-hard code canvas size (800, 600)
+            -- Currently it's fine since the canvas won't change size.
+            -- Probably want to refactor textureManager to return the info struct instead of just the id.
             if self.selectedTool == "eraser" then
                 self.compute:erase(
                     (message.x / message.elementWidth) * 800,
                     (message.y / message.elementHeight) * 600,
                     10
                 )
-            else
+            elseif self.selectedTool == "brush" then
                 self.compute:stamp(
                     (message.x / message.elementWidth) * 800,
                     (message.y / message.elementHeight) * 600,

@@ -132,6 +132,9 @@ local function generateLayoutQuads(layout, parentX, parentY, vertices, indices, 
     end
 end
 
+---@param element Element
+---@param acceptFn? fun(element: Element): boolean
+---@return { element: Element, layout: ComputedLayout, absX: number, absY: number }?
 local function findElementAtPosition(element, layout, x, y, parentX, parentY, acceptFn)
     local absX = (parentX or 0) + (layout.x or 0)
     local absY = (parentY or 0) + (layout.y or 0)
@@ -142,14 +145,14 @@ local function findElementAtPosition(element, layout, x, y, parentX, parentY, ac
         if layout.children and element.children then
             for i, childLayout in ipairs(layout.children) do
                 local found = findElementAtPosition(element.children[i], childLayout, x, y, absX, absY, acceptFn)
-                if found and (not acceptFn or acceptFn(found)) then
-                    return found
+                if found and (not acceptFn or acceptFn(found.element)) then
+                    return { element = found.element, layout = layout, absX = absX, absY = absY }
                 end
             end
         end
 
         if not acceptFn or acceptFn(element) then
-            return element
+            return { element = element, layout = layout, absX = absX, absY = absY }
         end
     end
 
@@ -358,7 +361,7 @@ function Arisu.runApp(cons)
         elseif event.name == "mouseMove" then
             local computedLayout = layoutTree:solve(window.width, window.height)
 
-            ---@type table<Element<any>, {absX: number, absY: number}>
+            ---@type table<Element, {layout: ComputedLayout, absX: number, absY: number}>
             local hoveredElements = {}
             findElementsAtPosition(ui, computedLayout, event.x, event.y, 0, 0, hoveredElements)
 
@@ -378,27 +381,31 @@ function Arisu.runApp(cons)
 
             for el, layout in pairs(hoveredElements) do
                 if el.onmousemove then
-                    runUpdate(el.onmousemove(event.x - layout.absX, event.y - layout.absY, layout.layout.width, layout.layout.height), window.id)
+                    local relX = event.x - layout.absX
+                    local relY = event.y - layout.absY
+                    runUpdate(el.onmousemove(relX, relY, layout.layout.width, layout.layout.height), window.id)
                 end
             end
         elseif event.name == "mousePress" then
-            local computedLayout = layoutTree:solve(window.width, window.height)
+            local layout = layoutTree:solve(window.width, window.height)
 
-            local mouseDownElement = findElementAtPosition(ui, computedLayout, event.x, event.y, 0, 0, function(el)
+            local info = findElementAtPosition(ui, layout, event.x, event.y, 0, 0, function(el)
                 return el.onmousedown ~= nil
             end)
 
-            if mouseDownElement then
-                runUpdate(mouseDownElement.onmousedown, window.id)
+            if info then
+                local relX = event.x - info.absX
+                local relY = event.y - info.absY
+                runUpdate(info.element.onmousedown(relX, relY, info.layout.width, info.layout.height), window.id)
             end
         elseif event.name == "mouseRelease" then
             local computedLayout = layoutTree:solve(window.width, window.height)
-            local mouseUpElement = findElementAtPosition(ui, computedLayout, event.x, event.y, 0, 0, function(el)
+            local info = findElementAtPosition(ui, computedLayout, event.x, event.y, 0, 0, function(el)
                 return el.onmouseup ~= nil
             end)
 
-            if mouseUpElement then
-                runUpdate(mouseUpElement.onmouseup, window.id)
+            if info then
+                runUpdate(info.element.onmouseup, window.id)
             end
         elseif event.name == "redraw" then
             local currentTime = os.clock()

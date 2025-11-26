@@ -72,8 +72,14 @@ function Element:onMouseMove(message --[[@param message T]])
 end
 
 ---@generic T
-function Element:onMouseDown(message --[[@param message T]])
-    self.onmousedown = message
+function Element:onClick(message --[[@param message T]])
+    self.onmousedown = function() return message end
+    return self
+end
+
+---@generic T
+function Element:onMouseDown(cons --[[@param cons fun(): T]])
+    self.onmousedown = cons
     return self
 end
 

@@ -45,6 +45,7 @@ end
 
 local TOOL_BRUSH = 0
 local TOOL_ERASER = 1
+local TOOL_FILL = 2
 
 local WORK_GROUP_SIZE = 16
 
@@ -81,13 +82,47 @@ function Compute:erase(x, y, radius)
     self.layer:set(self.canvas)
     self.tool:set(TOOL_ERASER)
 
-    -- Bind the canvas as an image for writing
     gl.bindImageTexture(0, self.textureManager.textureHandle, 0, 1, 0, gl.READ_WRITE, gl.RGBA8)
 
     local diameter = radius * 2
     local groupsX = math.ceil(diameter / WORK_GROUP_SIZE)
     local groupsY = math.ceil(diameter / WORK_GROUP_SIZE)
     self.pipeline:dispatchCompute(groupsX, groupsY, 1)
+end
+
+---@param x number
+---@param y number
+---@param color { r: number, g: number, b: number, a: number
+function Compute:fill(x, y, color)
+    self.pipeline:bind()
+
+    self.center:set({ x, y })
+    self.layer:set(self.canvas)
+    self.tool:set(TOOL_FILL)
+
+    gl.bindImageTexture(0, self.textureManager.textureHandle, 0, 1, 0, gl.READ_WRITE, gl.RGBA8)
+
+    local canvasInfo = self.textureManager.textures[self.canvas]
+
+    local canvasWidth = canvasInfo.width
+    local canvasHeight = canvasInfo.height
+
+    -- This one needs to run iteratively.
+    for i = 1, 20 do
+        self.pipeline:dispatchCompute(
+            canvasWidth / WORK_GROUP_SIZE,
+            canvasHeight / WORK_GROUP_SIZE,
+            1
+        )
+
+        -- Ensure GPU writes run iteratively
+        gl.memoryBarrier(gl.SHADER_IMAGE_ACCESS_BARRIER_BIT)
+
+        -- Force cpu to wait for gpu every 10 iterations
+        if i % 10 == 0 then
+            gl.finish()
+        end
+    end
 end
 
 return Compute

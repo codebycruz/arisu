@@ -77,6 +77,7 @@ ffi.cdef[[
     void glEnable(GLenum cap);
     void glDisable(GLenum cap);
     void glBlendFunc(GLenum sfactor, GLenum dfactor);
+    void glFinish();
 ]]
 
 local C = ffi.load("GL")
@@ -137,6 +138,7 @@ return {
     ONE_MINUS_SRC_ALPHA = 0x0303,
 
     READ_WRITE = 0x88BA,
+    SHADER_IMAGE_ACCESS_BARRIER_BIT = 0x00000020,
 
     --- @param type ShaderType
     --- @param src string
@@ -291,4 +293,7 @@ return {
 
     ---@type fun(unit: number, texture: number, level: number, layered: number, layer: number, access: number, format: number)
     bindImageTexture = C.glBindImageTexture,
+
+    ---@type fun()
+    finish = C.glFinish,
 }

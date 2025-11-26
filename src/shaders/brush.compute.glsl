@@ -11,6 +11,7 @@ layout(location = 3) uniform vec4 color;
 
 // 0 - Brush
 // 1 - Eraser
+// 2 - Fill
 layout(location = 4) uniform int tool;
 
 void main() {
@@ -24,5 +25,5 @@ void main() {
         imageStore(imgOutput, ivec3(pixelCoords, layer), color);
     } else if (tool == 1) {
         imageStore(imgOutput, ivec3(pixelCoords, layer), vec4(0.0, 0.0, 0.0, 0.0));
-    }
+    } else if (tool == 2) {}
 }
