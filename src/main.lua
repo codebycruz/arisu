@@ -41,7 +41,8 @@ local ffi = require("ffi")
 ---@field rotateTexture Texture
 ---@field brushesTexture Texture
 ---@field textureManager TextureManager
----@field jbmFont Bitmap
+---@field fontManager FontManager
+---@field jbmFont number
 ---@field canvasBuffer userdata
 ---@field isDrawing boolean
 ---@field lastGPUUpdate number
@@ -52,6 +53,90 @@ local ffi = require("ffi")
 ---@field selectedTool string
 local App = {}
 App.__index = App
+
+---@param window Window
+---@param textureManager TextureManager
+---@param fontManager FontManager
+function App.new(window, textureManager, fontManager)
+    -- local arisuImage = assert(Image.fromPath("assets/airman.qoi"), "Failed to load window icon")
+    -- window:setIcon(arisuImage)
+
+    local this = setmetatable({}, App)
+    this.isDrawing = false
+    this.textureManager = textureManager
+    this.fontManager = fontManager
+    this.lastGPUUpdate = 0
+    this.gpuUpdateInterval = 1.0 / 30
+    this.fps = 60
+    this.lastFrameTime = 0
+    this.currentColor = { r = 0.0, g = 0.0, b = 0.0, a = 1.0 }
+    this.selectedTool = "brush"
+
+    local characters = " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~"
+    local jbmFont = assert(Bitmap.fromPath({ ymargin = 2, xmargin = 4, gridWidth = 18, gridHeight = 18, characters = characters, perRow = 19 }, "assets/JetBrainsMono.qoi"), "Failed to load bitmap font")
+    this.jbmFont = fontManager:upload(jbmFont)
+
+    local brushImage = assert(Image.fromPath("assets/paintbrush.qoi"), "Failed to load brush image")
+    this.brushTexture = textureManager:upload(brushImage)
+
+    local bucketImage = assert(Image.fromPath("assets/paintcan.qoi"), "Failed to load bucket image")
+    this.bucketTexture = textureManager:upload(bucketImage)
+
+    local paletteImage = assert(Image.fromPath("assets/palette.qoi"), "Failed to load palette image")
+    this.paletteTexture = textureManager:upload(paletteImage)
+
+    local pencilImage = assert(Image.fromPath("assets/pencil.qoi"), "Failed to load pencil image")
+    this.pencilTexture = textureManager:upload(pencilImage)
+
+    local textImage = assert(Image.fromPath("assets/text.qoi"), "Failed to load text image")
+    this.textTexture = textureManager:upload(textImage)
+
+    local eraserImage = assert(Image.fromPath("assets/eraser.qoi"), "Failed to load eraser image")
+    this.eraserTexture = textureManager:upload(eraserImage)
+
+    local magnifierImage = assert(Image.fromPath("assets/magnifier.qoi"), "Failed to load magnifier image")
+    this.magnifierTexture = textureManager:upload(magnifierImage)
+
+    local pasteImage = assert(Image.fromPath("assets/paste.qoi"), "Failed to load paste image")
+    this.pasteTexture = textureManager:upload(pasteImage)
+
+    local selectImage = assert(Image.fromPath("assets/select.qoi"), "Failed to load select image")
+    this.selectTexture = textureManager:upload(selectImage)
+
+    local soundImage = assert(Image.fromPath("assets/sound.qoi"), "Failed to load sound image")
+    this.soundTexture = textureManager:upload(soundImage)
+
+    local soundMuteImage = assert(Image.fromPath("assets/sound_mute.qoi"), "Failed to load sound mute image")
+    this.soundMuteTexture = textureManager:upload(soundMuteImage)
+
+    local copyImage = assert(Image.fromPath("assets/copy.qoi"), "Failed to load copy image")
+    this.copyTexture = textureManager:upload(copyImage)
+
+    local cutImage = assert(Image.fromPath("assets/cut.qoi"), "Failed to load cut image")
+    this.cutTexture = textureManager:upload(cutImage)
+
+    local cropImage = assert(Image.fromPath("assets/crop.qoi"), "Failed to load crop image")
+    this.cropTexture = textureManager:upload(cropImage)
+
+    local resizeImage = assert(Image.fromPath("assets/resize.qoi"), "Failed to load resize image")
+    this.resizeTexture = textureManager:upload(resizeImage)
+
+    local rotateImage = assert(Image.fromPath("assets/rotate.qoi"), "Failed to load rotate image")
+    this.rotateTexture = textureManager:upload(rotateImage)
+
+    local brushesImage = assert(Image.fromPath("assets/brushes.qoi"), "Failed to load brushes image")
+    this.brushesTexture = textureManager:upload(brushesImage)
+
+    this.canvasBuffer = ffi.new("uint8_t[?]", 800 * 600 * 4)
+    for i = 0, 800 * 600 * 4 - 1 do
+        this.canvasBuffer[i] = 255
+    end
+
+    local canvasImage = Image.new(800, 600, 4, this.canvasBuffer, "")
+    this.canvasTexture = textureManager:upload(canvasImage)
+
+    return this
+end
 
 ---@param windowId number
 function App:view(windowId)
@@ -82,14 +167,14 @@ function App:view(windowId)
                     }
                 })
                 :withChildren(
-                    Element.Text.from("File", self.jbmFont)
+                    Element.Text.new("File")
                         :withStyle({ width = { abs = 50 } })
                         :onMouseDown({ type = "FileClicked" }),
-                    Element.Text.from("Edit", self.jbmFont)
+                    Element.Text.new("Edit")
                         :withStyle({ width = { abs = 50 } }),
-                    Element.Text.from("View", self.jbmFont)
+                    Element.Text.new("View")
                         :withStyle({ width = { abs = 50 } }),
-                    Element.Text.from("Clear", self.jbmFont)
+                    Element.Text.new("Clear")
                         :withStyle({ width = { abs = 50 } })
                         :onMouseDown({ type = "ClearClicked" })
                 ),
@@ -131,7 +216,7 @@ function App:view(windowId)
                                                     bgImage = self.pasteTexture,
                                                     height = { rel = 2/3 }
                                                 }),
-                                            Element.Text.from("Paste", self.jbmFont)
+                                            Element.Text.new("Paste")
                                                 :withStyle({ height = { rel = 1/3 } })
                                         ),
                                     Element.Div.new()
@@ -157,7 +242,7 @@ function App:view(windowId)
                                                             height = { abs = 15 },
                                                             margin = { right = 2 }
                                                         }),
-                                                    Element.Text.from("Cut", self.jbmFont)
+                                                    Element.Text.new("Cut")
                                                         :withStyle({ height = { rel = 1.0 } })
                                                 ),
                                             Element.Div.new()
@@ -175,12 +260,12 @@ function App:view(windowId)
                                                             height = { abs = 15 },
                                                             margin = { right = 2 }
                                                         }),
-                                                    Element.Text.from("Copy", self.jbmFont)
+                                                    Element.Text.new("Copy")
                                                         :withStyle({ height = { rel = 1.0 } })
                                                 )
                                         )
                                 ),
-                            Element.Text.from("Clipboard", self.jbmFont)
+                            Element.Text.new("Clipboard")
                                 :withStyle({
                                     align = "center",
                                     justify = "center",
@@ -217,7 +302,7 @@ function App:view(windowId)
                                                     bgImage = self.selectTexture,
                                                     height = { rel = 2/3 }
                                                 }),
-                                            Element.Text.from("Select", self.jbmFont)
+                                            Element.Text.new("Select")
                                                 :withStyle({ height = { rel = 1/3 } })
                                         ),
                                     Element.Div.new()
@@ -243,7 +328,7 @@ function App:view(windowId)
                                                             height = { abs = 15 },
                                                             margin = { right = 2 }
                                                         }),
-                                                    Element.Text.from("Crop", self.jbmFont)
+                                                    Element.Text.new("Crop")
                                                         :withStyle({ height = { rel = 1.0 } })
                                                 ),
                                             Element.Div.new()
@@ -261,7 +346,7 @@ function App:view(windowId)
                                                             height = { abs = 15 },
                                                             margin = { right = 2 }
                                                         }),
-                                                    Element.Text.from("Resize", self.jbmFont)
+                                                    Element.Text.new("Resize")
                                                         :withStyle({ height = { rel = 1.0 } })
                                                 ),
                                             Element.Div.new()
@@ -279,12 +364,12 @@ function App:view(windowId)
                                                             height = { abs = 15 },
                                                             margin = { right = 2 }
                                                         }),
-                                                    Element.Text.from("Rotate", self.jbmFont)
+                                                    Element.Text.new("Rotate")
                                                         :withStyle({ height = { rel = 1.0 } })
                                                 )
                                         )
                                 ),
-                            Element.Text.from("Image", self.jbmFont)
+                            Element.Text.new("Image")
                                 :withStyle({
                                     align = "center",
                                     justify = "center",
@@ -373,7 +458,7 @@ function App:view(windowId)
                                                 :onMouseDown({ type = "ToolClicked", tool = "circle" })
                                         )
                                 ),
-                            Element.Text.from("Tools", self.jbmFont)
+                            Element.Text.new("Tools")
                                 :withStyle({
                                     align = "center",
                                     justify = "center",
@@ -403,7 +488,7 @@ function App:view(windowId)
                                             bgImage = self.brushesTexture,
                                         })
                                 ),
-                            Element.Text.from("Brushes", self.jbmFont)
+                            Element.Text.new("Brushes")
                                 :withStyle({
                                     align = "center",
                                     justify = "center",
@@ -585,7 +670,7 @@ function App:view(windowId)
                                                 )
                                         )
                                 ),
-                            Element.Text.from("Colors", self.jbmFont)
+                            Element.Text.new("Colors")
                                 :withStyle({
                                     align = "center",
                                     justify = "center",
@@ -628,7 +713,7 @@ function App:view(windowId)
                     width = "auto"
                 })
                 :withChildren(
-                    Element.Text.from(string.format("arisu v0.1", self.fps), self.jbmFont)
+                    Element.Text.new(string.format("arisu v0.1", self.fps))
                         :withStyle({
                             align = "center",
                             padding = { left = 10 }
@@ -727,86 +812,4 @@ function App:update(message, windowId)
     end
 end
 
-Arisu.runApp(function(textureManager)
-    local this = setmetatable({}, App)
-    this.isDrawing = false
-    this.textureManager = textureManager
-    this.lastGPUUpdate = 0
-    this.gpuUpdateInterval = 1.0 / 30
-    this.fps = 60
-    this.lastFrameTime = 0
-    this.currentColor = { r = 0.0, g = 0.0, b = 0.0, a = 1.0 }
-    this.selectedTool = "brush"
-
-    local patternImage = assert(Image.fromPath("assets/gradient.qoi"), "Failed to load pattern image")
-    this.patternTexture = textureManager:upload(patternImage)
-
-    local qoiImage = assert(Image.fromPath("assets/airman.qoi"), "Failed to load QOI image")
-    this.qoiTexture = textureManager:upload(qoiImage)
-
-    local characters = " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~"
-    local jbmFont = assert(Bitmap.fromPath({ ymargin = 2, xmargin = 4, gridWidth = 18, gridHeight = 18, characters = characters, perRow = 19 }, "assets/JetBrainsMono.qoi"), "Failed to load bitmap font")
-    textureManager:upload(jbmFont.image)
-    this.jbmFont = jbmFont
-
-    local brushImage = assert(Image.fromPath("assets/paintbrush.qoi"), "Failed to load brush image")
-    this.brushTexture = textureManager:upload(brushImage)
-
-    local bucketImage = assert(Image.fromPath("assets/paintcan.qoi"), "Failed to load bucket image")
-    this.bucketTexture = textureManager:upload(bucketImage)
-
-    local paletteImage = assert(Image.fromPath("assets/palette.qoi"), "Failed to load palette image")
-    this.paletteTexture = textureManager:upload(paletteImage)
-
-    local pencilImage = assert(Image.fromPath("assets/pencil.qoi"), "Failed to load pencil image")
-    this.pencilTexture = textureManager:upload(pencilImage)
-
-    local textImage = assert(Image.fromPath("assets/text.qoi"), "Failed to load text image")
-    this.textTexture = textureManager:upload(textImage)
-
-    local eraserImage = assert(Image.fromPath("assets/eraser.qoi"), "Failed to load eraser image")
-    this.eraserTexture = textureManager:upload(eraserImage)
-
-    local magnifierImage = assert(Image.fromPath("assets/magnifier.qoi"), "Failed to load magnifier image")
-    this.magnifierTexture = textureManager:upload(magnifierImage)
-
-    local pasteImage = assert(Image.fromPath("assets/paste.qoi"), "Failed to load paste image")
-    this.pasteTexture = textureManager:upload(pasteImage)
-
-    local selectImage = assert(Image.fromPath("assets/select.qoi"), "Failed to load select image")
-    this.selectTexture = textureManager:upload(selectImage)
-
-    local soundImage = assert(Image.fromPath("assets/sound.qoi"), "Failed to load sound image")
-    this.soundTexture = textureManager:upload(soundImage)
-
-    local soundMuteImage = assert(Image.fromPath("assets/sound_mute.qoi"), "Failed to load sound mute image")
-    this.soundMuteTexture = textureManager:upload(soundMuteImage)
-
-    local copyImage = assert(Image.fromPath("assets/copy.qoi"), "Failed to load copy image")
-    this.copyTexture = textureManager:upload(copyImage)
-
-    local cutImage = assert(Image.fromPath("assets/cut.qoi"), "Failed to load cut image")
-    this.cutTexture = textureManager:upload(cutImage)
-
-    local cropImage = assert(Image.fromPath("assets/crop.qoi"), "Failed to load crop image")
-    this.cropTexture = textureManager:upload(cropImage)
-
-    local resizeImage = assert(Image.fromPath("assets/resize.qoi"), "Failed to load resize image")
-    this.resizeTexture = textureManager:upload(resizeImage)
-
-    local rotateImage = assert(Image.fromPath("assets/rotate.qoi"), "Failed to load rotate image")
-    this.rotateTexture = textureManager:upload(rotateImage)
-
-    local brushesImage = assert(Image.fromPath("assets/brushes.qoi"), "Failed to load brushes image")
-    this.brushesTexture = textureManager:upload(brushesImage)
-
-    this.canvasBuffer = ffi.new("uint8_t[?]", 800 * 600 * 4)
-    for i = 0, 800 * 600 * 4 - 1 do
-        this.canvasBuffer[i] = 255
-    end
-
-    local canvasImage = Image.new(800, 600, 4, this.canvasBuffer, "")
-    this.canvasTexture = textureManager:upload(canvasImage)
-
-    return this
-end)
+Arisu.runApp(App.new)

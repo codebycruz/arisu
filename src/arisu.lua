@@ -12,6 +12,7 @@ local VAO = require "src.gl.vao"
 local Uniform = require "src.gl.uniform"
 local UniformBlock = require "src.gl.uniform_block"
 local TextureManager = require "src.gl.texture_manager"
+local FontManager = require "src.gl.font_manager"
 
 local Layout = require "src.ui.layout"
 local Element = require "src.ui.element"
@@ -201,7 +202,7 @@ local Arisu = {}
 
 ---@generic T
 ---@generic Message
----@param cons fun(textureManager: TextureManager): { view: fun(self: T, windowId: number), update: fun(self: T, message: Message, windowId: number): Task?, event: fun(self: T, event: Event): Message }
+---@param cons fun(window: Window, textureManager: TextureManager, fontManager: FontManager): { view: fun(self: T, windowId: number), update: fun(self: T, message: Message, windowId: number): Task?, event: fun(self: T, event: Event): Message }
 function Arisu.runApp(cons)
     local eventLoop = window.EventLoop.new()
     local window = window.WindowBuilder.new()
@@ -219,7 +220,7 @@ function Arisu.runApp(cons)
     if not ctx then
         window:destroy()
         x11.closeDisplay(display)
-        return 1
+        error("Failed to create rendering context")
     end
 
     ctx:makeCurrent()
@@ -249,10 +250,11 @@ function Arisu.runApp(cons)
     local samplers = Uniform.new("sampler2DArray", 0)
     local textureDims = UniformBlock.new(0)
     local textureManager = TextureManager.new(samplers, textureDims, 0)
+    local fontManager = FontManager.new(textureManager)
 
     -- Run the app constructor in the rendering context so they can initialize any
     -- GL resources they need.
-    local app = cons(textureManager)
+    local app = cons(window, textureManager, fontManager)
     app.event = app.event or function(_) end
 
     local ui = app:view(window.id)
@@ -279,6 +281,8 @@ function Arisu.runApp(cons)
             layoutTree = Layout.fromElement(ui)
         elseif task.variant == "windowOpen" then
             task.builder:build(eventLoop)
+        elseif task.variant == "setTitle" then
+            window:setTitle(task.to)
         end
     end
 

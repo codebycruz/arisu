@@ -1,2 +1,2 @@
 ---@alias Color { r: number, g: number, b: number, a: number }
----@alias VisualStyle { bg: Color, bgImage: Texture, bgImageUV: { u0: number, u1: number, v0: number, v1: number }, fg: Color }
+---@alias VisualStyle { bg: Color, bgImage: Texture, bgImageUV: { u0: number, u1: number, v0: number, v1: number }, fg: Color, font: Font }

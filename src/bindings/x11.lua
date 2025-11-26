@@ -275,11 +275,16 @@ return {
     ---@type fun(display: XDisplay)
     flush = C.XFlush,
 
-    changeProperty = function(display --[[@param display XDisplay]], w --[[@param w number]], property --[[@param property string]], type --[[@param type string]], format --[[@param format number]], mode --[[@param mode number]], data --[[@param data userdata]], nelements --[[@param nelements number]])
+    changeProperty = function(display --[[@param display XDisplay]], w --[[@param w number]], property --[[@param property string]], ty --[[@param ty string]], format --[[@param format number]], mode --[[@param mode number]], data --[[@param data userdata]], nelements --[[@param nelements number]])
         local property_atom = C.XInternAtom(display, property, 0)
-        local type_atom = C.XInternAtom(display, type, 0)
+        local type_atom = C.XInternAtom(display, ty, 0)
 
-        C.XChangeProperty(display, w, property_atom, type_atom, format, mode, data, nelements)
+        local data_ptr = data
+        if type(data) ~= "string" then
+            data_ptr = ffi.cast("const unsigned char*", data)
+        end
+
+        C.XChangeProperty(display, w, property_atom, type_atom, format, mode, data_ptr, nelements)
     end,
 
     XC_arrow = 2,

@@ -1,4 +1,5 @@
 local x11 = require "src.bindings.x11"
+local ffi = require "ffi"
 
 --- @class Window
 --- @field id number
@@ -20,6 +21,46 @@ function Window:destroy()
     end
 
     x11.destroyWindow(self.display, self.id)
+end
+
+function Window:setTitle(title --[[@param title string]])
+    x11.changeProperty(self.display, self.id, "_NET_WM_NAME", "UTF8_STRING", 8, 0, title, #title)
+    x11.flush(self.display)
+end
+
+function Window:setIcon(image --[[@param image Image|nil]])
+    if image == nil then
+        return
+    end
+
+    local iconSize = 2 + (image.width * image.height)
+    local iconData = ffi.new("uint32_t[?]", iconSize)
+
+    iconData[0] = image.width
+    iconData[1] = image.height
+
+    local pixels = ffi.cast("uint8_t*", image.pixels)
+
+    if image.channels == 4 then -- RGBA8 -> ARGB32
+        for i = 0, image.width * image.height - 1 do
+            local r = pixels[i * 4 + 0]
+            local g = pixels[i * 4 + 1]
+            local b = pixels[i * 4 + 2]
+            local a = pixels[i * 4 + 3]
+
+            iconData[i + 2] = bit.lshift(a, 24) + bit.lshift(r, 16) + bit.lshift(g, 8) + b
+        end
+    else -- RGB8 -> ARGB32 (assuming fully opaque)
+        for i = 0, image.width * image.height - 1 do
+            local r = pixels[i * 3 + 0]
+            local g = pixels[i * 3 + 1]
+            local b = pixels[i * 3 + 2]
+
+            iconData[i + 2] = 0xFF000000 + bit.lshift(r, 16) + bit.lshift(g, 8) + b
+        end
+    end
+
+    x11.changeProperty(self.display, self.id, "_NET_WM_ICON", "CARDINAL", 32, 0, ffi.cast("unsigned char*", iconData), iconSize)
 end
 
 local cursors = {
@@ -51,6 +92,7 @@ end
 --- @field width number
 --- @field height number
 --- @field title string
+--- @field icon Image|nil
 local WindowBuilder = {}
 WindowBuilder.__index = WindowBuilder
 
@@ -66,6 +108,11 @@ end
 function WindowBuilder:withSize(width, height)
     self.width = width
     self.height = height
+    return self
+end
+
+function WindowBuilder:withIcon(iconData)
+    self.icon = iconData
     return self
 end
 
@@ -88,7 +135,8 @@ function WindowBuilder:build(eventLoop --[[@param eventLoop EventLoop]]) ---@ret
     x11.mapWindow(display, id)
 
     local window = Window.new(display, id, self.width, self.height)
-    x11.changeProperty(display, id, "_NET_WM_NAME", "UTF8_STRING", 8, 0, self.title, #self.title)
+    window:setTitle(self.title)
+    window:setIcon(self.icon)
     x11.setWMProtocols(display, window, {"WM_DELETE_WINDOW"})
     x11.selectInput(display, id, bit.bor(x11.ExposureMask, x11.StructureNotifyMask, x11.ButtonPressMask, x11.ButtonReleaseMask, x11.PointerMotionMask))
     eventLoop:register(window)
