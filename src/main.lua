@@ -793,6 +793,13 @@ function App:update(message, windowId)
                     10,
                     self.currentColor
                 )
+            elseif self.selectedTool == "pencil" then
+                self.compute:stamp(
+                    (message.x / message.elementWidth) * 800,
+                    (message.y / message.elementHeight) * 600,
+                    1,
+                    self.currentColor
+                )
             end
         end
     end
