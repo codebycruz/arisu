@@ -207,7 +207,8 @@ local function convertTextElements(element, fontManager)
         end
 
         return Element.new("div")
-            :withStyle({ direction = "row", bg = { r = 0, g = 0, b = 0, a = 0 } })
+            :withVisualStyle(element.visualStyle)
+            :withLayoutStyle(element.layoutStyle)
             :withChildren(children)
     end
 
