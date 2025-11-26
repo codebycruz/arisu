@@ -8,12 +8,14 @@ local computeSource = io.open("src/shaders/brush.compute.glsl"):read("*a")
 
 ---@class Compute
 ---@field pipeline Pipeline
----@field layer Uniform
+---@field writeLayer Uniform
+---@field readLayer Uniform
 ---@field center Uniform
 ---@field radius Uniform
 ---@field color Uniform
 ---@field tool Uniform
 ---@field canvas Texture
+---@field temp Texture
 ---@field textureManager TextureManager
 local Compute = {}
 Compute.__index = Compute
@@ -27,17 +29,23 @@ function Compute.new(textureManager, canvas)
 
     local center = Uniform.new(computeProgram, "ivec2", 0)
     local radius = Uniform.new(computeProgram, "float", 1)
-    local layer = Uniform.new(computeProgram, "int", 2)
+    local writeLayer = Uniform.new(computeProgram, "int", 2)
     local color = Uniform.new(computeProgram, "vec4", 3)
     local tool = Uniform.new(computeProgram, "int", 4)
+    local readLayer = Uniform.new(computeProgram, "int", 5)
+
+    -- TODO: Un-hard code this when canvas is passed as a Texture with width/height
+    local tempLayer = textureManager:allocate(800, 600)
 
     return setmetatable({
         textureManager = textureManager,
         canvas = canvas,
+        temp = tempLayer,
         pipeline = pipeline,
         center = center,
         radius = radius,
-        layer = layer,
+        readLayer = readLayer,
+        writeLayer = writeLayer,
         color = color,
         tool = tool,
     }, Compute)
@@ -58,7 +66,7 @@ function Compute:stamp(x, y, radius, color)
 
     self.center:set({ x, y })
     self.radius:set(radius)
-    self.layer:set(self.canvas)
+    self.writeLayer:set(self.canvas)
     self.color:set({ color.r, color.g, color.b, color.a })
     self.tool:set(TOOL_BRUSH)
 
@@ -79,7 +87,7 @@ function Compute:erase(x, y, radius)
 
     self.center:set({ x, y })
     self.radius:set(radius)
-    self.layer:set(self.canvas)
+    self.writeLayer:set(self.canvas)
     self.tool:set(TOOL_ERASER)
 
     gl.bindImageTexture(0, self.textureManager.textureHandle, 0, 1, 0, gl.READ_WRITE, gl.RGBA8)
@@ -92,12 +100,16 @@ end
 
 ---@param x number
 ---@param y number
----@param color { r: number, g: number, b: number, a: number
+---@param color { r: number, g: number, b: number, a: number }
 function Compute:fill(x, y, color)
     self.pipeline:bind()
 
+    self.textureManager:copy(self.canvas, self.temp)
+    gl.memoryBarrier(gl.SHADER_IMAGE_ACCESS_BARRIER_BIT)
+    gl.finish()
+
     self.center:set({ x, y })
-    self.layer:set(self.canvas)
+    self.color:set({ color.r, color.g, color.b, color.a })
     self.tool:set(TOOL_FILL)
 
     gl.bindImageTexture(0, self.textureManager.textureHandle, 0, 1, 0, gl.READ_WRITE, gl.RGBA8)
@@ -108,20 +120,30 @@ function Compute:fill(x, y, color)
     local canvasHeight = canvasInfo.height
 
     -- This one needs to run iteratively.
-    for i = 1, 20 do
+    for i = 1, 40 do
+        -- Ping pong between the two to avoid constant copies
+        -- Need to do this so the parallel reads/writes don't conflict
+        if i % 2 == 1 then
+            self.readLayer:set(self.temp)
+            self.writeLayer:set(self.canvas)
+        else
+            self.readLayer:set(self.canvas)
+            self.writeLayer:set(self.temp)
+        end
+
         self.pipeline:dispatchCompute(
             canvasWidth / WORK_GROUP_SIZE,
             canvasHeight / WORK_GROUP_SIZE,
             1
         )
 
-        -- Ensure GPU writes run iteratively
         gl.memoryBarrier(gl.SHADER_IMAGE_ACCESS_BARRIER_BIT)
+        gl.finish()
 
         -- Force cpu to wait for gpu every 10 iterations
-        if i % 10 == 0 then
-            gl.finish()
-        end
+        -- if i % 10 == 0 then
+        --     gl.finish()
+        -- end
     end
 end
 

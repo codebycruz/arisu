@@ -77,6 +77,34 @@ function TextureManager:allocate(width, height)
     return layer
 end
 
+---@param source Texture
+---@param destination Texture
+function TextureManager:copy(source, destination)
+    assert(self.textures[source], "Source texture does not exist")
+    assert(self.textures[destination], "Destination texture does not exist")
+
+    local width = math.min(self.textures[source].width, self.textures[destination].width)
+    local height = math.min(self.textures[source].height, self.textures[destination].height)
+
+    gl.copyImageSubData(
+        self.textureHandle,
+        gl.TEXTURE_2D_ARRAY,
+        0,
+        0,
+        0,
+        source,
+        self.textureHandle,
+        gl.TEXTURE_2D_ARRAY,
+        0,
+        0,
+        0,
+        destination,
+        width,
+        height,
+        1
+    )
+end
+
 ---@param image Image
 function TextureManager:update(texture, image)
     assert(self.textures[texture], "Texture does not exist")

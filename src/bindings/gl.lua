@@ -63,6 +63,7 @@ ffi.cdef[[
     void glTextureParameteri(GLuint texture, GLenum pname, GLint param);
     void glBindTextureUnit(GLuint unit, GLuint texture);
     void glDeleteTextures(GLsizei n, const GLuint* textures);
+    void glCopyImageSubData(GLuint srcName, GLenum srcTarget, GLint srcLevel, GLint srcX, GLint srcY, GLint srcZ, GLuint dstName, GLenum dstTarget, GLint dstLevel, GLint dstX, GLint dstY, GLint dstZ, GLsizei width, GLsizei height, GLsizei depth);
 
     // Uniform Buffer Objects
     void glBindBufferBase(GLenum target, GLuint index, GLuint buffer);
@@ -296,4 +297,7 @@ return {
 
     ---@type fun()
     finish = C.glFinish,
+
+    ---@type fun(srcName: number, srcTarget: number, srcLevel: number, srcX: number, srcY: number, srcZ: number, dstName: number, dstTarget: number, dstLevel: number, dstX: number, dstY: number, dstZ: number, width: number, height: number, depth: number)
+    copyImageSubData = C.glCopyImageSubData,
 }
