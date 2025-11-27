@@ -813,12 +813,17 @@ function App:update(message, window)
             local x = (message.x / message.elementWidth) * 800
             local y = (message.y / message.elementHeight) * 600
 
-            self.compute:setSelection(
-                math.min(self.selectStart.x, x),
-                math.min(self.selectStart.y, y),
-                math.max(self.selectStart.x, x),
-                math.max(self.selectStart.y, y)
-            )
+            if self.selectStart.x == x and self.selectStart.y == y then
+                -- Click without drag, clear selection
+                self.compute:resetSelection()
+            else
+                self.compute:setSelection(
+                    math.min(self.selectStart.x, x),
+                    math.min(self.selectStart.y, y),
+                    math.max(self.selectStart.x, x),
+                    math.max(self.selectStart.y, y)
+                )
+            end
 
             self.selectStart = nil
         end
@@ -828,6 +833,10 @@ function App:update(message, window)
         self.currentColor = { r = message.r, g = message.g, b = message.b, a = 1.0 }
         return Task.refreshView(window)
     elseif message.type == "ToolClicked" then
+        if message.tool == "select" then
+            self.compute:resetSelection()
+        end
+
         self.selectedTool = message.tool
         return Task.refreshView(window)
     elseif message.type == "ClearClicked" then
