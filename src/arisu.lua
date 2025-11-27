@@ -30,45 +30,43 @@ local function generateLayoutQuads(layout, parentX, parentY, vertices, indices, 
     local y = (parentY or 0) + (layout.y or 0)
     local width = layout.width
     local height = layout.height
-    local z = layout.zIndex
+    local z = math.min(layout.zIndex or 0, 100000) / 1000000
 
-    if layout.style then
-        local color = layout.style.bg or { r = 1.0, g = 1.0, b = 1.0, a = 1.0 }
-        local baseIdx = #vertices / 10
+    local color = layout.style.bg or { r = 1.0, g = 1.0, b = 1.0, a = 1.0 }
+    local baseIdx = #vertices / 10
 
-        local left = toNDC(x, windowWidth)
-        local right = toNDC(x + width, windowWidth)
-        local top = -toNDC(y, windowHeight)
-        local bottom = -toNDC(y + height, windowHeight)
+    local left = toNDC(x, windowWidth)
+    local right = toNDC(x + width, windowWidth)
+    local top = -toNDC(y, windowHeight)
+    local bottom = -toNDC(y + height, windowHeight)
 
-        local textureId = 0 -- default white texture
-        if layout.style.bgImage then
-            textureId = layout.style.bgImage
-        end
+    local textureId = 0 -- default white texture
+    if layout.style.bgImage then
+        textureId = layout.style.bgImage
+    end
 
-        local u0, v0, u1, v1 = 0, 0, 1, 1
-        if layout.style.bgImageUV then
-            u0 = layout.style.bgImageUV.u0 or 0
-            v0 = layout.style.bgImageUV.v0 or 0
-            u1 = layout.style.bgImageUV.u1 or 1
-            v1 = layout.style.bgImageUV.v1 or 1
-        end
+    local u0, v0, u1, v1 = 0, 0, 1, 1
+    if layout.style.bgImageUV then
+        u0 = layout.style.bgImageUV.u0 or 0
+        v0 = layout.style.bgImageUV.v0 or 0
+        u1 = layout.style.bgImageUV.u1 or 1
+        v1 = layout.style.bgImageUV.v1 or 1
+    end
 
-        for _, v in ipairs {
-            left, top, z, color.r, color.g, color.b, color.a, u0, v0, textureId,
-            right, top, z, color.r, color.g, color.b, color.a, u1, v0, textureId,
-            right, bottom, z, color.r, color.g, color.b, color.a, u1, v1, textureId,
-            left, bottom, z, color.r, color.g, color.b, color.a, u0, v1, textureId
-        } do
-            table.insert(vertices, v)
-        end
+    for _, v in ipairs {
+        left, top, z, color.r, color.g, color.b, color.a, u0, v0, textureId,
+        right, top, z, color.r, color.g, color.b, color.a, u1, v0, textureId,
+        right, bottom, z, color.r, color.g, color.b, color.a, u1, v1, textureId,
+        left, bottom, z, color.r, color.g, color.b, color.a, u0, v1, textureId
+    } do
+        table.insert(vertices, v)
+    end
 
-        for _, idx in ipairs {
-            baseIdx, baseIdx + 1, baseIdx + 2,
-            baseIdx, baseIdx + 2, baseIdx + 3
-        } do
-            table.insert(indices, idx)
-        end
+    for _, idx in ipairs {
+        baseIdx, baseIdx + 1, baseIdx + 2,
+        baseIdx, baseIdx + 2, baseIdx + 3
+    } do
+        table.insert(indices, idx)
     end
 
     -- Generate border quads after background (so they render on top)

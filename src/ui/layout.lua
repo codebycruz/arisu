@@ -21,8 +21,14 @@
 ---@field border Borders
 ---@field zIndex number
 ---@field visibility Visibility
+---@field top number
+---@field left number
+---@field right number
+---@field bottom number
+---@field position "relative" | "static"
 
 ---@class Layout: LayoutStyle
+---@field children Layout[]
 ---@field visualStyle VisualStyle
 local Layout = {}
 Layout.__index = Layout
@@ -32,6 +38,7 @@ function Layout.new()
         width = { rel = 1.0 },
         height = { rel = 1.0 },
         direction = "row",
+        position = "static",
         zIndex = 0,
         children = {}
     }, Layout)
@@ -57,6 +64,9 @@ end
 ---@field children ComputedLayout[]
 ---@field visible boolean
 ---@field zIndex number
+
+---@type Border
+local DEFAULT_BORDER = { width = 0, style = "none", color = { r = 0, g = 0, b = 0, a = 1 } }
 
 ---@param parentWidth number
 ---@param parentHeight number
@@ -86,11 +96,11 @@ function Layout:solve(parentWidth, parentHeight)
     end
 
     -- Allow shorthand border definitions for all sides
-    local border = self.border or { width = 0, style = "none", color = { r = 0, g = 0, b = 0, a = 1 } }
-    border.top = border.top or border
-    border.bottom = border.bottom or border
-    border.left = border.left or border
-    border.right = border.right or border
+    local border = self.border or {}
+    border.top = border.top or DEFAULT_BORDER
+    border.bottom = border.bottom or DEFAULT_BORDER
+    border.left = border.left or DEFAULT_BORDER
+    border.right = border.right or DEFAULT_BORDER
 
     local borderWidth = (border.left.width or 0) + (border.right.width or 0)
     local borderHeight = (border.top.width or 0) + (border.bottom.width or 0)
@@ -119,6 +129,7 @@ function Layout:solve(parentWidth, parentHeight)
         padding.left = self.padding.left or 0
         padding.right = self.padding.right or 0
     end
+
     local contentWidth = width - padding.left - padding.right - borderWidth
     local contentHeight = height - padding.top - padding.bottom - borderHeight
 
@@ -138,6 +149,7 @@ function Layout:solve(parentWidth, parentHeight)
     local containerMainSize = isRow and contentWidth or contentHeight
     local containerCrossSize = isRow and contentHeight or contentWidth
 
+    ---@type ComputedLayout[]
     local childResults = {}
     local totalMainSize = 0
     local visibleChildCount = 0
@@ -194,10 +206,10 @@ function Layout:solve(parentWidth, parentHeight)
             end
 
             local childResult = tempChild:solve(contentWidth, contentHeight)
-            table.insert(childResults, childResult)
+            childResults[#childResults + 1] = childResult
         else
             local childResult = child:solve(contentWidth, contentHeight)
-            table.insert(childResults, childResult)
+            childResults[#childResults + 1] = childResult
         end
     end
 
@@ -235,17 +247,21 @@ function Layout:solve(parentWidth, parentHeight)
     local align = self.align or "start"
 
     local processedVisible = 0
-    for i, childResult in ipairs(childResults) do
+    for _, childResult in ipairs(childResults) do
         local isVisible = childResult.width > 0 or childResult.height > 0
+        if childResult.position == "relative" then
+            print("graaahh", childResult.x)
+        end
 
         if isVisible then
             processedVisible = processedVisible + 1
             local isLastVisible = processedVisible == visibleChildCount
 
-            setMainPos(childResult, offset + (isRow and padding.left or padding.top))
+            local mainPos = offset + (isRow and padding.left or padding.top)
+            setMainPos(childResult, mainPos + (isRow and childResult.x or childResult.y))
             offset = offset + mainSize(childResult) + (isLastVisible and 0 or spacing)
 
-            local crossOffset = isRow and padding.top or padding.left
+            local crossOffset = (isRow and padding.top or padding.left) + (isRow and childResult.y or childResult.x)
             if align == "center" then
                 setCrossPos(childResult, crossOffset + (containerCrossSize - crossSize(childResult)) / 2)
             elseif align == "end" then
@@ -256,15 +272,35 @@ function Layout:solve(parentWidth, parentHeight)
         end
     end
 
+    local isRelative = self.position == "relative"
+
+    local x = margin.left
+    local y = margin.top
+
+    if isRelative then
+        if self.left then -- If both provided, use left
+            x = x + self.left
+        elseif self.right then
+            x = x - self.right
+        end
+
+        if self.top then -- If both provided, use top
+            y = y + self.top
+        elseif self.bottom then
+            y = y - self.bottom
+        end
+    end
+
     return {
         width = width,
         height = height,
-        x = margin.left,
-        y = margin.top,
+        x = x,
+        y = y,
         style = self.style,
         border = border,
         children = childResults,
         zIndex = self.zIndex,
+        position = self.position,
         visible = true
     }
 end
