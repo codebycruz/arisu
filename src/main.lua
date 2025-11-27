@@ -67,6 +67,8 @@ App.__index = App
 ---@param textureManager TextureManager
 ---@param fontManager FontManager
 function App.new(window, textureManager, fontManager)
+    window:setTitle("Arisu")
+
     local arisuImage = assert(Image.fromPath("assets/brushes.qoi"), "Failed to load window icon")
     window:setIcon(arisuImage)
 
