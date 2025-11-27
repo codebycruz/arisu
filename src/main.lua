@@ -2,6 +2,8 @@ local Arisu = require "src.arisu"
 local Element = require "src.ui.element"
 local Image = require "src.image"
 local Task = require "src.task"
+local Audio = require "src.audio"
+local SoundManager = require "src.sound_manager"
 local Compute = require "src.tools.compute"
 local FilePicker = require "src.tools.file_picker"
 local WindowStateManager = require "src.tools.window_state"
@@ -45,8 +47,10 @@ local ffi = require("ffi")
 ---@field resizeTexture Texture
 ---@field rotateTexture Texture
 ---@field brushesTexture Texture
+---@field twangAudio Audio
 ---@field textureManager TextureManager
 ---@field fontManager FontManager
+---@field soundManager SoundManager
 ---@field compute Compute
 ---@field mainWindow Window
 ---@field canvasBuffer userdata
@@ -137,6 +141,9 @@ function App.new(window, textureManager, fontManager)
 
     this.mainWindow = window
     this.pendingFilePickerState = nil
+
+    this.soundManager = SoundManager.new()
+    this.twangAudio = assert(Audio.fromPath("assets/twang.wav"), "Failed to load sound")
 
     return this
 end
@@ -818,6 +825,8 @@ function App:update(message, window)
         end
 
         self.selectedTool = message.tool
+        self.soundManager:play(self.twangAudio)
+
         return Task.refreshView(window)
     elseif message.type == "ClearClicked" then
         for i = 0, 800 * 600 * 4 - 1 do

@@ -5,8 +5,9 @@ A painting program implemented entirely from scratch in LuaJIT.
 ## Requirements
 
 - Linux
-- Support for OpenGL 4.3
-- That's it.
+- Support for OpenGL 4.3 (you most certainly have this)
+- ALSA for audio
+- _That's it._
 
 There are no dependencies used by the library. Pure X11 and OpenGL.
 
@@ -22,6 +23,12 @@ There are no dependencies used by the library. Pure X11 and OpenGL.
 
 ## Attributions
 
+### Icons
+
 Almost all of the icons are sourced from FamFamFam (Mark James)'s Silk icon set.
 
 The rest are made by me sloppily in GIMP.
+
+### Sound
+
+Free sounds are sourced from [ZapSplat](https://www.zapsplat.com).
