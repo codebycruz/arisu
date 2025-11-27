@@ -51,10 +51,6 @@ local ffi = require("ffi")
 ---@field mainWindow Window
 ---@field canvasBuffer userdata
 ---@field isDrawing boolean
----@field lastGPUUpdate number
----@field gpuUpdateInterval number
----@field fps number
----@field lastFrameTime number
 ---@field currentColor {r: number, g: number, b: number, a: number}
 ---@field selectedTool string
 ---@field selectStart { x: number, y: number }|nil
@@ -74,10 +70,6 @@ function App.new(window, textureManager, fontManager)
     this.isDrawing = false
     this.textureManager = textureManager
     this.fontManager = fontManager
-    this.lastGPUUpdate = 0
-    this.gpuUpdateInterval = 1.0 / 30
-    this.fps = 60
-    this.lastFrameTime = 0
     this.currentColor = { r = 0.0, g = 0.0, b = 0.0, a = 1.0 }
     this.selectedTool = "brush"
 
@@ -709,6 +701,8 @@ function App:view(window)
                                 :withStyle({
                                     align = "center",
                                     justify = "center",
+                                    left = 50,
+                                    position = "relative",
                                     height = { rel = 0.3 },
                                 })
                         })
@@ -752,7 +746,7 @@ function App:view(window)
                     width = "auto"
                 })
                 :withChildren({
-                    Element.from(string.format("arisu v0.1", self.fps))
+                    Element.from("arisu v0.1")
                         :withStyle({
                             align = "center",
                             padding = { left = 10 }
@@ -763,19 +757,7 @@ end
 
 ---@param event Event
 function App:event(event)
-    if event.name == "redraw" then
-        local currentTime = os.clock()
-        local deltaTime = currentTime - self.lastFrameTime
-        local frameTime = 1.0 / 60
-
-        if deltaTime >= frameTime then
-            if self.lastFrameTime > 0 then
-                local actualFps = 1.0 / deltaTime
-                self.fps = self.fps * 0.9 + actualFps * 0.1
-            end
-            self.lastFrameTime = currentTime
-        end
-    elseif event.name == "map" and self.pendingFilePickerState then
+    if event.name == "map" and self.pendingFilePickerState then
         WindowStateManager.setState(event.window, "file_picker", self.pendingFilePickerState)
         self.pendingFilePickerState = nil
     end
@@ -846,7 +828,7 @@ function App:update(message, window)
 
         local canvasImage = Image.new(800, 600, 4, self.canvasBuffer, "")
         self.textureManager:update(self.canvasTexture, canvasImage)
-        self.lastGPUUpdate = os.clock()
+        return Task.redraw(self.mainWindow)
     elseif message.type == "OpenClicked" then
         local builder = WindowBuilder.new()
             :withTitle("Open File")
