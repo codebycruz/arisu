@@ -6,6 +6,7 @@ local WAV = require "src.audio.wav"
 ---@field channels number
 ---@field sampleRate number
 ---@field bitsPerSample number
+---@field duration number
 ---@field data string
 ---@field dataLen number
 ---@field buffer string
@@ -15,14 +16,16 @@ Audio.__index = Audio
 ---@param channels number
 ---@param sampleRate number
 ---@param bitsPerSample number
+---@param duration number
 ---@param data string
 ---@param dataLen number
 ---@param buffer string
-function Audio.new(channels, sampleRate, bitsPerSample, data, dataLen, buffer)
+function Audio.new(channels, sampleRate, bitsPerSample, duration, data, dataLen, buffer)
     return setmetatable({
         channels = channels,
         sampleRate = sampleRate,
         bitsPerSample = bitsPerSample,
+        duration = duration,
         data = data,
         dataLen = dataLen,
         buffer = buffer
@@ -34,7 +37,21 @@ end
 function Audio.fromData(content)
     if WAV.isValid(content) then
         local wavData = WAV.Decode(content)
-        return Audio.new(wavData.channels, wavData.sampleRate, wavData.bitsPerSample, wavData.data, wavData.dataLen, wavData.buffer)
+
+        local bytesPerSample = wavData.bitsPerSample / 8
+        local bytesPerFrame = bytesPerSample * wavData.channels
+        local numFrames = wavData.dataLen / bytesPerFrame
+        local duration = numFrames / wavData.sampleRate
+
+        return Audio.new(
+            wavData.channels,
+            wavData.sampleRate,
+            wavData.bitsPerSample,
+            duration,
+            wavData.data,
+            wavData.dataLen,
+            wavData.buffer
+        )
     end
 
     return nil, "Unsupported audio format"

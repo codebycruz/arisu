@@ -3,28 +3,45 @@ local ffi = require "ffi"
 
 local Audio = require "src.audio"
 
+---@class Playback
+---@field started number
+---@field audio Audio
+
 ---@class SoundManager
----@field pcms table<Audio, userdata>
+---@field pcms table<alsa.PCM, Playback>
 local SoundManager = {}
 SoundManager.__index = SoundManager
 
 function SoundManager.new()
     return setmetatable({
-        pcms = setmetatable({}, { __mode = "k" })
+        pcms = {}
     }, SoundManager)
+end
+
+--- Removes unused pcms
+---@param force boolean? # If true, remove even those still playing
+function SoundManager:clean(force)
+    local now = os.time()
+
+    for pcm, playback in pairs(self.pcms) do
+        local elapsed = now - playback.started
+        if force or elapsed >= playback.audio.duration then
+            alsa.pcmClose(pcm)
+            self.pcms[pcm] = nil
+        end
+    end
 end
 
 ---@param audio Audio
 function SoundManager:play(audio)
-    local pcm_array = ffi.new("snd_pcm_t*[1]")
-    local err = alsa.pcmOpen(pcm_array, "default", 0, 1)
-    if err < 0 then
-        error("Error opening PCM device: " .. ffi.string(alsa.strError(err)))
+    self:clean()
+
+    local pcm, err = alsa.pcmOpen("default", 0, 1)
+    if not pcm then
+        error("Error opening PCM device: " .. err)
     end
 
-    local pcm = pcm_array[0]
-
-    err = alsa.pcmSetParams(
+    local ok, err = alsa.pcmSetParams(
         pcm,
         alsa.SND_PCM_FORMAT_S16_LE,
         alsa.SND_PCM_ACCESS_RW_INTERLEAVED,
@@ -34,9 +51,9 @@ function SoundManager:play(audio)
         500000 -- latency in us
     )
 
-    if err < 0 then
+    if not ok then
         alsa.pcmClose(pcm)
-        error("Error setting PCM parameters: " .. ffi.string(alsa.strError(err)))
+        error("Error setting PCM parameters: " .. err)
     end
 
     local frames = audio.dataLen / (audio.channels * (audio.bitsPerSample / 8))
@@ -45,14 +62,16 @@ function SoundManager:play(audio)
     local buffer = ffi.new("int16_t[?]", frames * audio.channels)
     ffi.copy(buffer, audio.data, audio.dataLen)
 
-    err = alsa.pcmWritei(pcm, buffer, frames)
-    if err < 0 then
+    ok, err = alsa.pcmWritei(pcm, buffer, frames)
+    if not ok then
         alsa.pcmClose(pcm)
-        error("Error writing to PCM device: " .. ffi.string(alsa.strError(err)))
+        error("Error writing to PCM device: " .. err)
     end
 
-    -- alsa.pcmDrain(pcm)
-    -- alsa.pcmClose(pcm)
+    self.pcms[pcm] = {
+        started = os.time(),
+        audio = audio
+    }
 end
 
 return SoundManager

@@ -18,7 +18,7 @@ ffi.cdef[[
 
 local WAV = {}
 
----@return { channels: number, sampleRate: number, bitsPerSample: number, data: userdata, buffer: string }
+---@return { channels: number, sampleRate: number, bitsPerSample: number, data: userdata, dataLen: number, buffer: string }
 function WAV.Decode(content --[[@param content string]])
     local header = ffi.cast("const wav_header_t*", content)
     local channels = tonumber(header.num_channels)
