@@ -810,6 +810,23 @@ function App:update(message, window)
             local y = (message.y / message.elementHeight) * 600
 
             self.selectStart = { x = x, y = y }
+        elseif self.selectedTool == "pencil" then
+            self.compute:stamp(
+                (message.x / message.elementWidth) * 800,
+                (message.y / message.elementHeight) * 600,
+                1,
+                self.currentColor
+            )
+
+            self.isDrawing = true
+        elseif self.selectedTool == "eraser" then
+            self.compute:erase(
+                (message.x / message.elementWidth) * 800,
+                (message.y / message.elementHeight) * 600,
+                10
+            )
+
+            self.isDrawing = true
         end
 
         return Task.redraw(window)

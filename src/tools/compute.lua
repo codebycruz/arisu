@@ -94,7 +94,7 @@ function Compute:stamp(x, y, radius, color)
     self.tool:set(TOOL_BRUSH)
 
     -- Bind the canvas as an image for writing
-    gl.bindImageTexture(0, self.textureManager.textureHandle, 0, 1, 0, gl.READ_WRITE, gl.RGBA8)
+    gl.bindImageTexture(0, self.textureManager.textureHandle, 0, 1, 0, gl.WRITE_ONLY, gl.RGBA8)
 
     local diameter = radius * 2
     local groupsX = math.ceil(diameter / WORK_GROUP_SIZE)
@@ -115,7 +115,7 @@ function Compute:erase(x, y, radius)
     self.writeLayer:set(self.canvas)
     self.tool:set(TOOL_ERASER)
 
-    gl.bindImageTexture(0, self.textureManager.textureHandle, 0, 1, 0, gl.READ_WRITE, gl.RGBA8)
+    gl.bindImageTexture(0, self.textureManager.textureHandle, 0, 1, 0, gl.WRITE_ONLY, gl.RGBA8)
 
     local diameter = radius * 2
     local groupsX = math.ceil(diameter / WORK_GROUP_SIZE)
