@@ -20,6 +20,7 @@ function Context.new(display, window, sharedCtx)
         glx.RENDER_TYPE, glx.RGBA_BIT,
         glx.DRAWABLE_TYPE, glx.WINDOW_BIT,
         glx.DOUBLEBUFFER, 1,
+        glx.DEPTH_SIZE, 24
     })
     if not fbConfig then
         error("Failed to choose FBConfig")

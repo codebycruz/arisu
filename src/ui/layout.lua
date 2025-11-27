@@ -249,10 +249,6 @@ function Layout:solve(parentWidth, parentHeight)
     local processedVisible = 0
     for _, childResult in ipairs(childResults) do
         local isVisible = childResult.width > 0 or childResult.height > 0
-        if childResult.position == "relative" then
-            print("graaahh", childResult.x)
-        end
-
         if isVisible then
             processedVisible = processedVisible + 1
             local isLastVisible = processedVisible == visibleChildCount

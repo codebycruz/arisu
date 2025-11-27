@@ -24,13 +24,19 @@ local function toNDC(pos, screenSize)
     return (pos / (screenSize * 0.5)) - 1.0
 end
 
+--- Converts a z-index to an NDC z-value
+---@param z number?
+local function convertZ(z)
+    return 1 - math.min(z or 0, 100000) / 1000000
+end
+
 ---@param layout ComputedLayout
 local function generateLayoutQuads(layout, parentX, parentY, vertices, indices, windowWidth, windowHeight)
     local x = (parentX or 0) + (layout.x or 0)
     local y = (parentY or 0) + (layout.y or 0)
     local width = layout.width
     local height = layout.height
-    local z = math.min(layout.zIndex or 0, 100000) / 1000000
+    local z = layout.zIndex or 0
 
     local color = layout.style.bg or { r = 1.0, g = 1.0, b = 1.0, a = 1.0 }
     local baseIdx = #vertices / 10
@@ -54,10 +60,10 @@ local function generateLayoutQuads(layout, parentX, parentY, vertices, indices, 
     end
 
     for _, v in ipairs {
-        left, top, z, color.r, color.g, color.b, color.a, u0, v0, textureId,
-        right, top, z, color.r, color.g, color.b, color.a, u1, v0, textureId,
-        right, bottom, z, color.r, color.g, color.b, color.a, u1, v1, textureId,
-        left, bottom, z, color.r, color.g, color.b, color.a, u0, v1, textureId
+        left, top, convertZ(z), color.r, color.g, color.b, color.a, u0, v0, textureId,
+        right, top, convertZ(z), color.r, color.g, color.b, color.a, u1, v0, textureId,
+        right, bottom, convertZ(z), color.r, color.g, color.b, color.a, u1, v1, textureId,
+        left, bottom, convertZ(z), color.r, color.g, color.b, color.a, u0, v1, textureId
     } do
         table.insert(vertices, v)
     end
@@ -86,10 +92,10 @@ local function generateLayoutQuads(layout, parentX, parentY, vertices, indices, 
             local bottom = -toNDC(by + bh, windowHeight)
 
             for _, v in ipairs {
-                left, top, z + 0.002, color.r, color.g, color.b, color.a, 0, 0, 0,
-                right, top, z + 0.002, color.r, color.g, color.b, color.a, 0, 0, 0,
-                right, bottom, z + 0.002, color.r, color.g, color.b, color.a, 0, 0, 0,
-                left, bottom, z + 0.002, color.r, color.g, color.b, color.a, 0, 0, 0
+                left, top, convertZ(z + 1), color.r, color.g, color.b, color.a, 0, 0, 0,
+                right, top, convertZ(z + 1), color.r, color.g, color.b, color.a, 0, 0, 0,
+                right, bottom, convertZ(z + 1), color.r, color.g, color.b, color.a, 0, 0, 0,
+                left, bottom, convertZ(z + 1), color.r, color.g, color.b, color.a, 0, 0, 0
             } do
                 table.insert(vertices, v)
             end
@@ -407,6 +413,10 @@ function Arisu.runApp(cons)
 
         gl.enable(gl.BLEND)
         gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
+
+        gl.enable(gl.DEPTH_TEST)
+        gl.depthFunc(gl.LESS_EQUAL)
+        gl.clear(bit.bor(gl.COLOR_BUFFER_BIT, gl.DEPTH_BUFFER_BIT))
 
         gl.viewport(0, 0, ctx.window.width, ctx.window.height)
 

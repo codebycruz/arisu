@@ -81,6 +81,7 @@ ffi.cdef[[
     void glBlendFunc(GLenum sfactor, GLenum dfactor);
     void glFinish();
     void glFlush();
+    void glDepthFunc(GLenum func);
 
     // Fences
     GLsync glFenceSync(GLenum condition, unsigned int flags);
@@ -98,6 +99,8 @@ return {
 
     COLOR_BUFFER_BIT = 0x4000,
     DEPTH_BUFFER_BIT = 0x0100,
+
+    DEPTH_TEST = 0x0B71,
 
     STATIC_DRAW = 0x88E4,
 
@@ -152,6 +155,11 @@ return {
 
     SYNC_GPU_COMMANDS_COMPLETE = 0x9117,
     SYNC_FLUSH_COMMANDS_BIT = 0x00000001,
+
+    LESS = 0x0201,
+    LESS_EQUAL = 0x0203,
+    GREATER = 0x0204,
+    GREATER_EQUAL = 0x0206,
 
     --- @param type ShaderType
     --- @param src string
@@ -324,4 +332,7 @@ return {
 
     ---@type fun(sync: Fence, flags: number, timeout: number): number
     clientWaitSync = C.glClientWaitSync,
+
+    ---@type fun(func: number)
+    depthFunc = C.glDepthFunc,
 }
