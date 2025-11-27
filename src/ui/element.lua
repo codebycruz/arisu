@@ -25,7 +25,7 @@ Element.__index = Element
 
 ---@param type string
 function Element.new(type)
-    return setmetatable({ type = type, children = {} }, Element)
+    return setmetatable({ type = type, children = {}, visualStyle = {}, layoutStyle = {} }, Element)
 end
 
 ---@param val IntoElement

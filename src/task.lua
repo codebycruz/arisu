@@ -5,6 +5,7 @@
 --- | { variant: "setTitle", to: string }
 --- | { variant: "waitOnGPU", window: Window }
 --- | { variant: "chain", tasks: Task[] }
+--- | { variant: "closeWindow", window: Window }
 
 local Task = {}
 Task.__index = Task
@@ -36,6 +37,11 @@ end
 ---@param tasks Task[]
 function Task.chain(tasks) ---@return Task
     return { variant = "chain", tasks = tasks }
+end
+
+---@param window Window
+function Task.closeWindow(window) ---@return Task
+    return { variant = "closeWindow", window = window }
 end
 
 return Task

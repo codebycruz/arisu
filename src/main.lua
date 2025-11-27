@@ -3,6 +3,8 @@ local Element = require "src.ui.element"
 local Image = require "src.image"
 local Task = require "src.task"
 local Compute = require "src.tools.compute"
+local FilePicker = require "src.tools.file_picker"
+local WindowStateManager = require "src.tools.window_state"
 
 local WindowBuilder = (require "src.window").WindowBuilder
 
@@ -55,6 +57,8 @@ local ffi = require("ffi")
 ---@field selectedTool string
 local App = {}
 App.__index = App
+
+
 
 ---@param window Window
 ---@param textureManager TextureManager
@@ -137,6 +141,7 @@ function App.new(window, textureManager, fontManager)
     this.compute = compute
 
     this.mainWindow = window
+    this.pendingFilePickerState = nil
 
     return this
 end
@@ -144,13 +149,23 @@ end
 ---@param window Window
 function App:view(window)
     if window ~= self.mainWindow then
-        return Element.new("div")
-            :withStyle({
-                direction = "column",
-                width = { abs = 500 },
-                height = { abs = 500 },
-                bg = { r = 1, g = 0, b = 0, a = 1 }
-             })
+        local state = WindowStateManager.getState(window)
+        local windowType = WindowStateManager.getType(window)
+
+        if windowType == "file_picker" and state then
+            return FilePicker.view(state)
+        else
+            -- Default view for unknown window types
+            return Element.new("div")
+                :withStyle({
+                    direction = "column",
+                    bg = { r = 0.9, g = 0.9, b = 0.9, a = 1 },
+                    padding = { top = 20, bottom = 20, left = 20, right = 20 }
+                })
+                :withChildren({
+                    Element.from("Unknown window type")
+                })
+        end
     end
 
     local borderColor = { r = 0.8, g = 0.8, b = 0.8, a = 1 }
@@ -180,9 +195,12 @@ function App:view(window)
                     }
                 })
                 :withChildren({
-                    Element.from("File")
+                    Element.from("Open")
                         :withStyle({ width = { abs = 50 } })
-                        :onClick({ type = "FileClicked" }),
+                        :onClick({ type = "OpenClicked" }),
+                    Element.from("Save")
+                        :withStyle({ width = { abs = 50 } })
+                        :onClick({ type = "SaveClicked" }),
                     Element.from("Edit")
                         :withStyle({ width = { abs = 50 } }),
                     Element.from("View")
@@ -751,6 +769,9 @@ function App:event(event)
             end
             self.lastFrameTime = currentTime
         end
+    elseif event.name == "map" and self.pendingFilePickerState then
+        WindowStateManager.setState(event.window, "file_picker", self.pendingFilePickerState)
+        self.pendingFilePickerState = nil
     end
 end
 
@@ -792,12 +813,103 @@ function App:update(message, window)
         local canvasImage = Image.new(800, 600, 4, self.canvasBuffer, "")
         self.textureManager:update(self.canvasTexture, canvasImage)
         self.lastGPUUpdate = os.clock()
-    elseif message.type == "FileClicked" then
+    elseif message.type == "OpenClicked" then
         local builder = WindowBuilder.new()
-            :withTitle("File Picker")
+            :withTitle("Open File")
             :withSize(600, 400)
 
+        self.pendingFilePickerState = FilePicker.new("open", ".", function(filePath)
+            local image, err = Image.fromPath(filePath)
+            if image then
+                if image.width == 800 and image.height == 600 and image.channels == 4 then
+                    -- Direct copy if dimensions match
+                    ffi.copy(self.canvasBuffer, image.pixels, 800 * 600 * 4)
+                else
+                    -- Clear canvas first
+                    for i = 0, 800 * 600 * 4 - 1 do
+                        self.canvasBuffer[i] = 255
+                    end
+                    -- Simple center placement for different sized images
+                    local startX = math.max(0, math.floor((800 - image.width) / 2))
+                    local startY = math.max(0, math.floor((600 - image.height) / 2))
+                    local endX = math.min(800, startX + image.width)
+                    local endY = math.min(600, startY + image.height)
+
+                    for y = startY, endY - 1 do
+                        for x = startX, endX - 1 do
+                            local srcIndex = ((y - startY) * image.width + (x - startX)) * image.channels
+                            local dstIndex = (y * 800 + x) * 4
+
+                            if image.channels == 4 then
+                                self.canvasBuffer[dstIndex] = image.pixels[srcIndex]
+                                self.canvasBuffer[dstIndex + 1] = image.pixels[srcIndex + 1]
+                                self.canvasBuffer[dstIndex + 2] = image.pixels[srcIndex + 2]
+                                self.canvasBuffer[dstIndex + 3] = image.pixels[srcIndex + 3]
+                            elseif image.channels == 3 then
+                                self.canvasBuffer[dstIndex] = image.pixels[srcIndex]
+                                self.canvasBuffer[dstIndex + 1] = image.pixels[srcIndex + 1]
+                                self.canvasBuffer[dstIndex + 2] = image.pixels[srcIndex + 2]
+                                self.canvasBuffer[dstIndex + 3] = 255
+                            end
+                        end
+                    end
+                end
+
+                local canvasImage = Image.new(800, 600, 4, self.canvasBuffer, "")
+                self.textureManager:update(self.canvasTexture, canvasImage)
+
+                return Task.redraw(self.mainWindow)
+            else
+                print("Failed to load image: " .. (err or "unknown error"))
+            end
+        end, function()
+            print("Open cancelled")
+        end)
+
         return Task.openWindow(builder)
+    elseif message.type == "SaveClicked" then
+        local builder = WindowBuilder.new()
+            :withTitle("Save File")
+            :withSize(600, 400)
+
+        self.pendingFilePickerState = FilePicker.new("save", ".", function(filePath)
+            -- Ensure file has .qoi extension
+            local saveFilePath = filePath
+            if not saveFilePath:match("%.qoi$") then
+                saveFilePath = saveFilePath .. ".qoi"
+            end
+
+            -- Create image from canvas buffer
+            local canvasImage = Image.new(800, 600, 4, self.canvasBuffer, "")
+
+            -- Save the image
+            local success, err = pcall(function()
+                local file = assert(io.open(saveFilePath, "wb"))
+                file:write(canvasImage:toQOI())
+                file:close()
+            end)
+
+            if success then
+                print("Saved canvas to: " .. saveFilePath)
+            else
+                print("Failed to save canvas: " .. tostring(err))
+            end
+        end, function()
+            print("Save cancelled")
+        end)
+
+        return Task.openWindow(builder)
+    elseif WindowStateManager.hasState(window) then
+        local state = WindowStateManager.getState(window)
+        local windowType = WindowStateManager.getType(window)
+
+        if windowType == "file_picker" then
+            local result = FilePicker.update(state, message, window)
+            if result and result.variant == "closeWindow" then
+                WindowStateManager.removeState(window)
+            end
+            return result
+        end
     elseif message.type == "Hovered" then
         if self.isDrawing then
             -- TODO: Un-hard code canvas size (800, 600)

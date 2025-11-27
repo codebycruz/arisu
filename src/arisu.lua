@@ -388,6 +388,9 @@ function Arisu.runApp(cons)
             local ctx = windowContexts[task.window]
             ctx.renderCtx:makeCurrent()
             gl.finish()
+        elseif task.variant == "closeWindow" then
+            windowContexts[task.window] = nil
+            eventLoop:close(task.window)
         elseif task.variant == "chain" then
             for _, subtask in ipairs(task.tasks) do
                 runTask(subtask, handler)
@@ -420,17 +423,12 @@ function Arisu.runApp(cons)
     end
 
     eventLoop:run(function(event, handler)
+        runEvent(event, handler)
+
         local eventName = event.name
         if eventName == "redraw" then
             local ctx = windowContexts[event.window]
-
-            -- local currentTime = os.clock()
-            -- local deltaTime = currentTime - ctx.lastFrameTime
-
-            -- if deltaTime >= FRAME_TIME then
-                draw(ctx)
-            --     ctx.lastFrameTime = currentTime
-            -- end
+            draw(ctx)
         elseif eventName == "windowClose" then
             -- Ensure we only exit if the main window is closed
             -- TODO: Maybe allow users to specify this behavior?

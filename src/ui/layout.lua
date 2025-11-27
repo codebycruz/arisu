@@ -2,8 +2,8 @@
 ---@alias Direction "row" | "column"
 ---@alias Alignment "start" | "center" | "end"
 ---@alias Justify "start" | "center" | "end" | "space-between" | "space-around"
----@alias Padding { top: number?, bottom: number?, left: number?, right: number? } | number
----@alias Margin { top: number?, bottom: number?, left: number?, right: number? } | number
+---@alias Padding { top: number?, bottom: number?, left: number?, right: number? }
+---@alias Margin { top: number?, bottom: number?, left: number?, right: number? }
 ---@alias Visibility "visible" | "none"
 ---@alias BorderStyle "solid" | "dashed" | "dotted" | "none"
 ---@alias Border { width: number?, style: BorderStyle?, color: { r: number, g: number, b: number, a: number }? }
