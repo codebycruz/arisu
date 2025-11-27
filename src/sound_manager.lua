@@ -21,7 +21,7 @@ end
 --- Removes unused pcms
 ---@param force boolean? # If true, remove even those still playing
 function SoundManager:clean(force)
-    local now = os.time()
+    local now = os.clock()
 
     for pcm, playback in pairs(self.pcms) do
         local elapsed = now - playback.started
@@ -33,7 +33,10 @@ function SoundManager:clean(force)
 end
 
 ---@param audio Audio
-function SoundManager:play(audio)
+---@param volume number? # Volume multiplier (default: 1.0, max: 1.5)
+function SoundManager:play(audio, volume)
+    volume = math.min(1.5, volume or 1.0)
+
     self:clean()
 
     local pcm, err = alsa.pcmOpen("default", 0, 1)
@@ -41,6 +44,9 @@ function SoundManager:play(audio)
         error("Error opening PCM device: " .. err)
     end
 
+    -- AFAIK, this is arbitrary magic math so different length sounds work.
+    -- Need to properly fix this at some point.
+    local latencyUs = math.min(1e5, audio.duration * 1e6 / 2)
     local ok, err = alsa.pcmSetParams(
         pcm,
         alsa.SND_PCM_FORMAT_S16_LE,
@@ -48,7 +54,7 @@ function SoundManager:play(audio)
         audio.channels,
         audio.sampleRate,
         alsa.SOFT_RESAMPLE,
-        500000 -- latency in us
+        latencyUs
     )
 
     if not ok then
@@ -62,6 +68,12 @@ function SoundManager:play(audio)
     local buffer = ffi.new("int16_t[?]", frames * audio.channels)
     ffi.copy(buffer, audio.data, audio.dataLen)
 
+    if volume ~= 1.0 then
+        for i = 0, frames * audio.channels - 1 do
+            buffer[i] = math.floor(buffer[i] * volume)
+        end
+    end
+
     ok, err = alsa.pcmWritei(pcm, buffer, frames)
     if not ok then
         alsa.pcmClose(pcm)
@@ -69,7 +81,7 @@ function SoundManager:play(audio)
     end
 
     self.pcms[pcm] = {
-        started = os.time(),
+        started = os.clock(),
         audio = audio
     }
 end

@@ -47,7 +47,7 @@ local ffi = require("ffi")
 ---@field resizeTexture Texture
 ---@field rotateTexture Texture
 ---@field brushesTexture Texture
----@field twangAudio Audio
+---@field popAudio Audio
 ---@field textureManager TextureManager
 ---@field fontManager FontManager
 ---@field soundManager SoundManager
@@ -143,7 +143,7 @@ function App.new(window, textureManager, fontManager)
     this.pendingFilePickerState = nil
 
     this.soundManager = SoundManager.new()
-    this.twangAudio = assert(Audio.fromPath("assets/twang.wav"), "Failed to load sound")
+    this.popAudio = assert(Audio.fromPath("assets/pop.wav"), "Failed to load sound")
 
     return this
 end
@@ -841,7 +841,7 @@ function App:update(message, window)
         end
 
         self.selectedTool = message.tool
-        self.soundManager:play(self.twangAudio)
+        self.soundManager:play(self.popAudio, 1.0)
 
         return Task.refreshView(window)
     elseif message.type == "ClearClicked" then
