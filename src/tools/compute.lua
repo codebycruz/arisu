@@ -14,6 +14,8 @@ local computeSource = io.open("src/shaders/brush.compute.glsl"):read("*a")
 ---@field radius Uniform
 ---@field color Uniform
 ---@field tool Uniform
+---@field selectTopLeft Uniform
+---@field selectBottomRight Uniform
 ---@field canvas Texture
 ---@field temp Texture
 ---@field textureManager TextureManager
@@ -33,11 +35,13 @@ function Compute.new(textureManager, canvas)
     local color = Uniform.new(computeProgram, "vec4", 3)
     local tool = Uniform.new(computeProgram, "int", 4)
     local readLayer = Uniform.new(computeProgram, "int", 5)
+    local selectTopLeft = Uniform.new(computeProgram, "vec2", 6)
+    local selectBottomRight = Uniform.new(computeProgram, "vec2", 7)
 
     -- TODO: Un-hard code this when canvas is passed as a Texture with width/height
     local tempLayer = textureManager:allocate(800, 600)
 
-    return setmetatable({
+    local self = setmetatable({
         textureManager = textureManager,
         canvas = canvas,
         temp = tempLayer,
@@ -48,7 +52,12 @@ function Compute.new(textureManager, canvas)
         writeLayer = writeLayer,
         color = color,
         tool = tool,
+        selectTopLeft = selectTopLeft,
+        selectBottomRight = selectBottomRight,
     }, Compute)
+
+    self:resetSelection()
+    return self
 end
 
 local TOOL_BRUSH = 0
@@ -56,6 +65,20 @@ local TOOL_ERASER = 1
 local TOOL_FILL = 2
 
 local WORK_GROUP_SIZE = 16
+
+function Compute:resetSelection()
+    self.selectTopLeft:set({ -1, -1 })
+    self.selectBottomRight:set({ -1, -1 })
+end
+
+---@param x1 number
+---@param y1 number
+---@param x2 number
+---@param y2 number
+function Compute:setSelection(x1, y1, x2, y2)
+    self.selectTopLeft:set({ x1, y1 })
+    self.selectBottomRight:set({ x2, y2 })
+end
 
 ---@param x number
 ---@param y number

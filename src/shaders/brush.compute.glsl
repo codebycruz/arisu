@@ -15,6 +15,8 @@ layout(location = 3) uniform vec4 color;
 layout(location = 4) uniform int tool;
 
 layout(location = 5) uniform int readLayer;
+layout(location = 6) uniform vec2 selectTopLeft;
+layout(location = 7) uniform vec2 selectBottomRight;
 
 float colorDistance(vec3 color1, vec3 color2) {
     vec3 diff = color1 - color2;
@@ -34,6 +36,12 @@ void main() {
 
         float dist = distance(vec2(localCoords), vec2(radius));
         if (dist > radius) return;
+    }
+
+    // Check if pixel is within selected area
+    if (selectTopLeft.x != -1 && (pixelCoords.x < selectTopLeft.x || pixelCoords.x > selectBottomRight.x ||
+                pixelCoords.y < selectTopLeft.y || pixelCoords.y > selectBottomRight.y)) {
+        return;
     }
 
     if (tool == 0) {

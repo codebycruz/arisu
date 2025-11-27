@@ -490,7 +490,9 @@ function Arisu.runApp(cons)
             end)
 
             if info then
-                runUpdate(info.element.onmouseup, ctx.window, handler)
+                local relX = event.x - info.absX
+                local relY = event.y - info.absY
+                runUpdate(info.element.onmouseup(relX, relY, info.layout.width, info.layout.height), ctx.window, handler)
             end
         elseif eventName == "map" then
             if not windowContexts[event.window] then

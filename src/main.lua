@@ -10,10 +10,12 @@ local WindowBuilder = (require "src.window").WindowBuilder
 
 local ffi = require("ffi")
 
+---@alias Tool "brush" | "eraser" | "fill" | "pencil" | "text" | "select"
+
 ---@alias Message
 --- | { type: "EraserClicked" }
 --- | { type: "ColorClicked", r: number, g: number, b: number }
---- | { type: "ToolClicked", tool: string }
+--- | { type: "ToolClicked", tool: Tool }
 --- | { type: "ClearClicked" }
 --- | { type: "SaveClicked" }
 --- | { type: "LoadClicked" }
@@ -55,6 +57,7 @@ local ffi = require("ffi")
 ---@field lastFrameTime number
 ---@field currentColor {r: number, g: number, b: number, a: number}
 ---@field selectedTool string
+---@field selectStart { x: number, y: number }|nil
 local App = {}
 App.__index = App
 
@@ -332,7 +335,8 @@ function App:view(window)
                                                     border = squareBorder,
                                                     bgImage = self.selectTexture,
                                                     height = { rel = 2/3 }
-                                                }),
+                                                })
+                                                :onClick({ type = "ToolClicked", tool = "select" }),
                                             Element.from("Select")
                                                 :withStyle({ height = { rel = 1/3 } })
                                                 }),
@@ -734,7 +738,9 @@ function App:view(window)
                                 :onMouseDown(function(x, y, elementWidth, elementHeight)
                                     return { type = "StartDrawing", x = x, y = y, elementWidth = elementWidth, elementHeight = elementHeight }
                                 end)
-                                :onMouseUp({ type = "StopDrawing" })
+                                :onMouseUp(function(x, y, elementWidth, elementHeight)
+                                    return { type = "StopDrawing", x = x, y = y, elementWidth = elementWidth, elementHeight = elementHeight }
+                                end)
                                 :onMouseMove(function(x, y, elementWidth, elementHeight)
                                     return { type = "Hovered", x = x, y = y, elementWidth = elementWidth, elementHeight = elementHeight }
                                 end)
@@ -794,10 +800,29 @@ function App:update(message, window)
             )
 
             self.isDrawing = true
+        elseif self.selectedTool == "select" then
+            local x = (message.x / message.elementWidth) * 800
+            local y = (message.y / message.elementHeight) * 600
+
+            self.selectStart = { x = x, y = y }
         end
 
         return Task.redraw(window)
     elseif message.type == "StopDrawing" then
+        if self.selectedTool == "select" and self.selectStart then
+            local x = (message.x / message.elementWidth) * 800
+            local y = (message.y / message.elementHeight) * 600
+
+            self.compute:setSelection(
+                math.min(self.selectStart.x, x),
+                math.min(self.selectStart.y, y),
+                math.max(self.selectStart.x, x),
+                math.max(self.selectStart.y, y)
+            )
+
+            self.selectStart = nil
+        end
+
         self.isDrawing = false
     elseif message.type == "ColorClicked" then
         self.currentColor = { r = message.r, g = message.g, b = message.b, a = 1.0 }
