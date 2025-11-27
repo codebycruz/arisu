@@ -365,7 +365,6 @@ function Arisu.runApp(cons)
         ctx.index:setData("u32", indices)
         ctx.nIndices = #indices
 
-        -- This is only necessary if we don't force a redraw on aboutToWait
         handler:requestRedraw(ctx.window)
     end
 
