@@ -170,6 +170,8 @@ function App:view(window)
         end
     end
 
+    local disabledColor = { r = 0.7, g = 0.7, b = 0.7, a = 1.0 }
+    local selectedColor = { r = 0.7, g = 0.7, b = 1.0, a = 1.0 }
     local borderColor = { r = 0.8, g = 0.8, b = 0.8, a = 1 }
     local squareBorder = {
         top = { width = 1, color = borderColor },
@@ -177,6 +179,18 @@ function App:view(window)
         left = { width = 1, color = borderColor },
         right = { width = 1, color = borderColor }
     }
+
+    local function toolBg(tool)
+        if tool == "zoom" or tool == "text" then
+            return disabledColor
+        end
+
+        if self.selectedTool == tool then
+            return selectedColor
+        else
+            return { r = 0.9, g = 0.9, b = 0.9, a = 1.0 }
+        end
+    end
 
     return Element.new("div")
         :withStyle({
@@ -204,9 +218,9 @@ function App:view(window)
                         :withStyle({ width = { abs = 50 } })
                         :onClick({ type = "SaveClicked" }),
                     Element.from("Edit")
-                        :withStyle({ width = { abs = 50 } }),
+                        :withStyle({ fg = disabledColor, width = { abs = 50 } }),
                     Element.from("View")
-                        :withStyle({ width = { abs = 50 } }),
+                        :withStyle({ fg = disabledColor, width = { abs = 50 } }),
                     Element.from("Clear")
                         :withStyle({ width = { abs = 50 } })
                         :onClick({ type = "ClearClicked" })
@@ -250,7 +264,7 @@ function App:view(window)
                                                     height = { rel = 2/3 }
                                                 }),
                                             Element.from("Paste")
-                                                :withStyle({ height = { rel = 1/3 } })
+                                                :withStyle({ fg = disabledColor, height = { rel = 1/3 } })
                                         }),
                                     Element.new("div")
                                         :withStyle({
@@ -276,7 +290,7 @@ function App:view(window)
                                                             margin = { right = 2 }
                                                         }),
                                                     Element.from("Cut")
-                                                        :withStyle({ height = { rel = 1.0 } })
+                                                        :withStyle({ fg = disabledColor, height = { rel = 1.0 } })
                                                 }),
                                             Element.new("div")
                                                 :withStyle({
@@ -294,7 +308,7 @@ function App:view(window)
                                                             margin = { right = 2 }
                                                         }),
                                                     Element.from("Copy")
-                                                        :withStyle({ height = { rel = 1.0 } })
+                                                        :withStyle({ fg = disabledColor, height = { rel = 1.0 } })
                                                 })
                                         }),
                                 }),
@@ -302,6 +316,7 @@ function App:view(window)
                                 :withStyle({
                                     align = "center",
                                     justify = "center",
+                                    fg = disabledColor,
                                     height = { rel = 0.3 },
                                 })
                         }),
@@ -363,7 +378,7 @@ function App:view(window)
                                                             margin = { right = 2 }
                                                         }),
                                                     Element.from("Crop")
-                                                        :withStyle({ height = { rel = 1.0 } })
+                                                        :withStyle({ fg = disabledColor, height = { rel = 1.0 } })
                                                 }),
                                             Element.new("div")
                                                 :withStyle({
@@ -381,7 +396,7 @@ function App:view(window)
                                                             margin = { right = 2 }
                                                         }),
                                                     Element.from("Resize")
-                                                        :withStyle({ height = { rel = 1.0 } })
+                                                        :withStyle({ fg = disabledColor, height = { rel = 1.0 } })
                                                 }),
                                             Element.new("div")
                                                 :withStyle({
@@ -399,7 +414,7 @@ function App:view(window)
                                                             margin = { right = 2 }
                                                         }),
                                                     Element.from("Rotate")
-                                                        :withStyle({ height = { rel = 1.0 } })
+                                                        :withStyle({ fg = disabledColor, height = { rel = 1.0 } })
                                                 })
                                         })
                                 }),
@@ -436,7 +451,7 @@ function App:view(window)
                                                 :withStyle({
                                                     width = { abs = 35 },
                                                     height = { abs = 35 },
-                                                    bg = self.selectedTool == "brush" and { r = 0.7, g = 0.7, b = 1.0, a = 1.0 } or { r = 0.9, g = 0.9, b = 0.9, a = 1.0 },
+                                                    bg = toolBg("brush"),
                                                     bgImage = self.brushTexture,
                                                     margin = { right = 1 }
                                                 })
@@ -445,7 +460,7 @@ function App:view(window)
                                                 :withStyle({
                                                     width = { abs = 35 },
                                                     height = { abs = 35 },
-                                                    bg = self.selectedTool == "eraser" and { r = 0.7, g = 0.7, b = 1.0, a = 1.0 } or { r = 0.9, g = 0.9, b = 0.9, a = 1.0 },
+                                                    bg = toolBg("eraser"),
                                                     bgImage = self.eraserTexture,
                                                     margin = { right = 1 }
                                                 })
@@ -454,7 +469,7 @@ function App:view(window)
                                                 :withStyle({
                                                     width = { abs = 35 },
                                                     height = { abs = 35 },
-                                                    bg = self.selectedTool == "fill" and { r = 0.7, g = 0.7, b = 1.0, a = 1.0 } or { r = 0.9, g = 0.9, b = 0.9, a = 1.0 },
+                                                    bg = toolBg("fill"),
                                                     bgImage = self.bucketTexture,
                                                 })
                                                 :onClick({ type = "ToolClicked", tool = "fill" })
@@ -470,7 +485,7 @@ function App:view(window)
                                                 :withStyle({
                                                     width = { abs = 35 },
                                                     height = { abs = 35 },
-                                                    bg = self.selectedTool == "pencil" and { r = 0.7, g = 0.7, b = 1.0, a = 1.0 } or { r = 0.9, g = 0.9, b = 0.9, a = 1.0 },
+                                                    bg = toolBg("pencil"),
                                                     bgImage = self.pencilTexture,
                                                 })
                                                 :onClick({ type = "ToolClicked", tool = "pencil" }),
@@ -478,18 +493,18 @@ function App:view(window)
                                                 :withStyle({
                                                     width = { abs = 35 },
                                                     height = { abs = 35 },
-                                                    bg = self.selectedTool == "text" and { r = 0.7, g = 0.7, b = 1.0, a = 1.0 } or { r = 0.9, g = 0.9, b = 0.9, a = 1.0 },
+                                                    bg = toolBg("text"),
                                                     bgImage = self.textTexture,
-                                                })
-                                                :onClick({ type = "ToolClicked", tool = "text" }),
+                                                }),
+                                                -- :onClick({ type = "ToolClicked", tool = "text" }),
                                             Element.new("div")
                                                 :withStyle({
                                                     width = { abs = 35 },
                                                     height = { abs = 35 },
-                                                    bg = self.selectedTool == "zoom" and { r = 0.7, g = 0.7, b = 1.0, a = 1.0 } or { r = 0.9, g = 0.9, b = 0.9, a = 1.0 },
+                                                    bg = toolBg("zoom"),
                                                     bgImage = self.magnifierTexture
                                                 })
-                                                :onClick({ type = "ToolClicked", tool = "circle" })
+                                                -- :onClick({ type = "ToolClicked", tool = "zoom" })
                                         })
                                 }),
                             Element.from("Tools")
@@ -526,6 +541,7 @@ function App:view(window)
                                 :withStyle({
                                     align = "center",
                                     justify = "center",
+                                    fg = disabledColor,
                                     height = { rel = 0.3 },
                                 })
                         }),
@@ -708,7 +724,7 @@ function App:view(window)
                                 :withStyle({
                                     align = "center",
                                     justify = "center",
-                                    height = { rel = 0.3 },
+                                    height = { rel = 0.3 }
                                 })
                         })
                 }),
@@ -751,7 +767,7 @@ function App:view(window)
                     width = "auto"
                 })
                 :withChildren({
-                    Element.from("arisu v0.1")
+                    Element.from("arisu v0.2.0")
                         :withStyle({
                             align = "center",
                             padding = { left = 10 }

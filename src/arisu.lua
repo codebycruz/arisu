@@ -186,6 +186,8 @@ local function convertTextElements(element, fontManager)
         ---@type string
         local value = element.userdata
 
+        local fg = element.visualStyle.fg or { r = 0.0, g = 0.0, b = 0.0, a = 1.0 }
+
         local font = element.visualStyle.font or fontManager:getDefault()
         local fontBitmap = fontManager:getBitmap(font)
         local uvs = fontBitmap:getStringUVs(value)
@@ -196,7 +198,7 @@ local function convertTextElements(element, fontManager)
 
             children[i] = Element.new("div")
                 :withStyle({
-                    bg = { r = 0.0, g = 0.0, b = 0.0, a = 1.0 },
+                    bg = fg,
                     bgImage = font,
                     bgImageUV = quad,
                     width = { abs = quad.width },
