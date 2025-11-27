@@ -551,7 +551,6 @@ function App:view(window)
                                     Element.new("div")
                                         :withStyle({
                                             direction = "column",
-                                            width = { rel = 2/3 },
                                             justify = "center",
                                         })
                                         :withChildren({
@@ -681,8 +680,6 @@ function App:view(window)
                                                             width = { abs = 30 },
                                                             height = { abs = 30 },
                                                             bg = { r = 0.5, g = 0.0, b = 0.5, a = 1.0 },
-                                                            position = "relative",
-                                                            left = 10,
                                                             zIndex = 2,
                                                             border = squareBorder,
                                                             margin = { all = 1 }

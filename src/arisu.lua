@@ -143,9 +143,7 @@ local function findElementAtPosition(element, layout, x, y, parentX, parentY, ac
     local absX = (parentX or 0) + (layout.x or 0)
     local absY = (parentY or 0) + (layout.y or 0)
 
-    if x >= absX and x <= absX + layout.width and
-       y >= absY and y <= absY + layout.height then
-
+    if (x >= absX and x <= absX + layout.width) and (y >= absY and y <= absY + layout.height) then
         if layout.children and element.children then
             for i, childLayout in ipairs(layout.children) do
                 local found = findElementAtPosition(element.children[i], childLayout, x, y, absX, absY, acceptFn)
@@ -163,27 +161,22 @@ local function findElementAtPosition(element, layout, x, y, parentX, parentY, ac
     return nil
 end
 
+---@param element Element
+---@param layout ComputedLayout
 ---@param results table<Element, { layout: ComputedLayout, absX: number, absY: number }>
----@return boolean
 local function findElementsAtPosition(element, layout, x, y, parentX, parentY, results)
     local absX = (parentX or 0) + (layout.x or 0)
     local absY = (parentY or 0) + (layout.y or 0)
 
-    if x >= absX and x <= absX + layout.width and
-        y >= absY and y <= absY + layout.height then
-
+    if (x >= absX and x <= absX + layout.width) and (y >= absY and y <= absY + layout.height) then
         results[element] = { layout = layout, absX = absX, absY = absY }
+
         if layout.children and element.children then
             for i, childLayout in ipairs(layout.children) do
-                local found = findElementsAtPosition(element.children[i], childLayout, x, y, absX, absY, results)
-                if not found then
-                    break
-                end
+                findElementsAtPosition(element.children[i], childLayout, x, y, absX, absY, results)
             end
         end
     end
-
-    return true
 end
 
 ---@param element Element
