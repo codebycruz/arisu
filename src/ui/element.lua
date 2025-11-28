@@ -20,6 +20,7 @@ end
 ---@field children Element[]?
 ---@field type string
 ---@field userdata any?
+---@field id string?
 Element = {}
 Element.__index = Element
 
@@ -31,6 +32,12 @@ end
 ---@param val IntoElement
 function Element.from(val)
     return intoElement(val)
+end
+
+---@param id string
+function Element:withId(id)
+    self.id = id
+    return self
 end
 
 ---@param children IntoElement[]

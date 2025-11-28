@@ -227,9 +227,6 @@ end
 
 local Arisu = {}
 
-local TARGET_FPS = 60
-local FRAME_TIME = 1 / TARGET_FPS
-
 ---@class WindowContext
 ---@field vao VAO
 ---@field vertex Buffer

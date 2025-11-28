@@ -61,8 +61,6 @@ local ffi = require("ffi")
 local App = {}
 App.__index = App
 
-
-
 ---@param window Window
 ---@param textureManager TextureManager
 ---@param fontManager FontManager
