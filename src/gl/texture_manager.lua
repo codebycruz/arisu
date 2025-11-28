@@ -40,18 +40,15 @@ function TextureManager.new(sampler2DArray, textureDims, textureUnit)
   gl.textureParameteri(textureHandle, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
   gl.textureParameteri(textureHandle, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
 
-  local this = setmetatable(
-    {
-      textureCount = 0,
-      textureDims = {},
-      textureDimsUniform = textureDims,
-      textureHandle = textureHandle,
-      textureUnit = textureUnit,
-      sampler2DArray = sampler2DArray,
-      textures = {},
-    },
-    TextureManager
-  )
+  local this = setmetatable({
+    textureCount = 0,
+    textureDims = {},
+    textureDimsUniform = textureDims,
+    textureHandle = textureHandle,
+    textureUnit = textureUnit,
+    sampler2DArray = sampler2DArray,
+    textures = {},
+  }, TextureManager)
   this.whiteTexture = this:upload(Image.new(1, 1, 3, ffi.new("uint8_t[?]", 3, { 255, 255, 255 }), ""))
   this.errorTexture = this:upload(Image.new(
     2,
