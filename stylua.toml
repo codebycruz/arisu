@@ -1,8 +1,8 @@
-syntax = "All"
+syntax = "LuaJIT"
 column_width = 128
 line_endings = "Unix"
-indent_type = "Spaces"
-indent_width = 2
+indent_type = "Tabs"
+indent_width = 4
 quote_style = "AutoPreferDouble"
 call_parentheses = "NoSingleString"
 collapse_simple_statement = "Never"
