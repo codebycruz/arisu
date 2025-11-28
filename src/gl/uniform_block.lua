@@ -1,6 +1,6 @@
-local gl = require("src.bindings.gl")
+local gl = require("bindings.gl")
 
-local Buffer = require("src.gl.buffer")
+local Buffer = require("gl.buffer")
 
 ---@class UniformBlock
 ---@field location number

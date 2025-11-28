@@ -1,7 +1,7 @@
-local gl = require("src.bindings.gl")
+local gl = require("bindings.gl")
 local ffi = require("ffi")
 
-local Image = require("src.image")
+local Image = require("image")
 
 local maxWidth = 1024
 local maxHeight = 1024

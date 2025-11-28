@@ -1,12 +1,14 @@
-local Arisu = require("src.arisu")
-local Element = require("src.ui.element")
-local Image = require("src.image")
-local Task = require("src.task")
-local Audio = require("src.audio")
-local SoundManager = require("src.sound_manager")
-local Compute = require("src.tools.compute")
+package.path = package.path .. ";./src/?.lua"
 
-local WindowBuilder = (require("src.window")).WindowBuilder
+local Arisu = require("arisu")
+local Element = require("ui.element")
+local Image = require("image")
+local Task = require("task")
+local Audio = require("audio")
+local SoundManager = require("sound_manager")
+local Compute = require("tools.compute")
+
+local WindowBuilder = (require("window")).WindowBuilder
 
 local ffi = require("ffi")
 
@@ -843,7 +845,8 @@ function App:update(message, window)
 			-- Currently it's fine since the canvas won't change size.
 			-- Probably want to refactor textureManager to return the info struct instead of just the id.
 			if self.selectedTool == "eraser" then
-				self.compute:erase((message.x / message.elementWidth) * 800, (message.y / message.elementHeight) * 600, 10)
+				self.compute:erase((message.x / message.elementWidth) * 800, (message.y / message.elementHeight) * 600,
+					10)
 			elseif self.selectedTool == "brush" then
 				self.compute:stamp(
 					(message.x / message.elementWidth) * 800,

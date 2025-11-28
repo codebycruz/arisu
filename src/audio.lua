@@ -1,6 +1,6 @@
-local alsa = require("src.bindings.alsa")
+local alsa = require("bindings.alsa")
 
-local WAV = require("src.audio.wav")
+local WAV = require("audio.wav")
 
 ---@class Audio
 ---@field channels number

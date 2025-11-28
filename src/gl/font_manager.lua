@@ -1,4 +1,4 @@
-local Bitmap = require("src.font.bitmap")
+local Bitmap = require("font.bitmap")
 
 ---@alias Font number
 
@@ -13,7 +13,8 @@ FontManager.__index = FontManager
 function FontManager.new(textureManager)
 	local self = setmetatable({ textureManager = textureManager, bitmaps = {} }, FontManager)
 
-	local characters = " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~"
+	local characters =
+	" !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~"
 	local defaultBitmap = assert(
 		Bitmap.fromPath(
 			{ ymargin = 2, xmargin = 4, gridWidth = 18, gridHeight = 18, characters = characters, perRow = 19 },

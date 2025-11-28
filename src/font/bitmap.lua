@@ -1,4 +1,4 @@
-local Image = require("src.image")
+local Image = require("image")
 local ffi = require("ffi")
 
 ---@class BitmapConfig

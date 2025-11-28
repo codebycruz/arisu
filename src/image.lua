@@ -1,5 +1,5 @@
-local PPM = require("src.image.ppm")
-local QOI = require("src.image.qoi")
+local PPM = require("image.ppm")
+local QOI = require("image.qoi")
 
 ---@class Image
 ---@field buffer string

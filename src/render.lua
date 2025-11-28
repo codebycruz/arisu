@@ -1,6 +1,6 @@
-local glx = require("src.bindings.glx")
-local x11 = require("src.bindings.x11")
-local gl = require("src.bindings.gl")
+local glx = require("bindings.glx")
+local x11 = require("bindings.x11")
+local gl = require("bindings.gl")
 
 --- @class Context
 --- @field display XDisplay

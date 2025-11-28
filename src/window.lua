@@ -1,4 +1,4 @@
-local x11 = require("src.bindings.x11")
+local x11 = require("bindings.x11")
 local ffi = require("ffi")
 
 --- @class Window
@@ -68,7 +68,8 @@ function Window:setIcon(
 		end
 	end
 
-	x11.changeProperty(self.display, self.id, "_NET_WM_ICON", "CARDINAL", 32, 0, ffi.cast("unsigned char*", iconData), iconSize)
+	x11.changeProperty(self.display, self.id, "_NET_WM_ICON", "CARDINAL", 32, 0, ffi.cast("unsigned char*", iconData),
+		iconSize)
 end
 
 local cursors = {

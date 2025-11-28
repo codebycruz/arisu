@@ -1,21 +1,21 @@
-local gl = require("src.bindings.gl")
-local x11 = require("src.bindings.x11")
+local gl = require("bindings.gl")
+local x11 = require("bindings.x11")
 
-local window = require("src.window")
-local render = require("src.render")
+local window = require("window")
+local render = require("render")
 
-local Pipeline = require("src.gl.pipeline")
-local Program = require("src.gl.program")
-local BufferDescriptor = require("src.gl.buffer_descriptor")
-local Buffer = require("src.gl.buffer")
-local VAO = require("src.gl.vao")
-local Uniform = require("src.gl.uniform")
-local UniformBlock = require("src.gl.uniform_block")
-local TextureManager = require("src.gl.texture_manager")
-local FontManager = require("src.gl.font_manager")
+local Pipeline = require("gl.pipeline")
+local Program = require("gl.program")
+local BufferDescriptor = require("gl.buffer_descriptor")
+local Buffer = require("gl.buffer")
+local VAO = require("gl.vao")
+local Uniform = require("gl.uniform")
+local UniformBlock = require("gl.uniform_block")
+local TextureManager = require("gl.texture_manager")
+local FontManager = require("gl.font_manager")
 
-local Layout = require("src.ui.layout")
-local Element = require("src.ui.element")
+local Layout = require("ui.layout")
+local Element = require("ui.element")
 
 local vertexShader = io.open("src/shaders/main.vert.glsl", "r"):read("*a")
 local fragmentShader = io.open("src/shaders/main.frag.glsl", "r"):read("*a")
@@ -59,58 +59,20 @@ local function generateLayoutQuads(layout, parentX, parentY, vertices, indices, 
 		v1 = layout.style.bgImageUV.v1 or 1
 	end
 
+	-- stylua: ignore
 	for _, v in ipairs({
-		left,
-		top,
-		convertZ(z),
-		color.r,
-		color.g,
-		color.b,
-		color.a,
-		u0,
-		v0,
-		textureId,
-		right,
-		top,
-		convertZ(z),
-		color.r,
-		color.g,
-		color.b,
-		color.a,
-		u1,
-		v0,
-		textureId,
-		right,
-		bottom,
-		convertZ(z),
-		color.r,
-		color.g,
-		color.b,
-		color.a,
-		u1,
-		v1,
-		textureId,
-		left,
-		bottom,
-		convertZ(z),
-		color.r,
-		color.g,
-		color.b,
-		color.a,
-		u0,
-		v1,
-		textureId,
+		left, top, convertZ(z), color.r, color.g, color.b, color.a, u0, v0, textureId,
+		right, top, convertZ(z), color.r, color.g, color.b, color.a, u1, v0, textureId,
+		right, bottom, convertZ(z), color.r, color.g, color.b, color.a, u1, v1, textureId,
+		left, bottom, convertZ(z), color.r, color.g, color.b, color.a, u0, v1, textureId,
 	}) do
 		table.insert(vertices, v)
 	end
 
+	-- stylua: ignore
 	for _, idx in ipairs({
-		baseIdx,
-		baseIdx + 1,
-		baseIdx + 2,
-		baseIdx,
-		baseIdx + 2,
-		baseIdx + 3,
+		baseIdx, baseIdx + 1, baseIdx + 2,
+		baseIdx, baseIdx + 2, baseIdx + 3,
 	}) do
 		table.insert(indices, idx)
 	end
@@ -133,58 +95,20 @@ local function generateLayoutQuads(layout, parentX, parentY, vertices, indices, 
 			local top = -toNDC(by, windowHeight)
 			local bottom = -toNDC(by + bh, windowHeight)
 
+			-- stylua: ignore
 			for _, v in ipairs({
-				left,
-				top,
-				convertZ(z + 1),
-				color.r,
-				color.g,
-				color.b,
-				color.a,
-				0,
-				0,
-				0,
-				right,
-				top,
-				convertZ(z + 1),
-				color.r,
-				color.g,
-				color.b,
-				color.a,
-				0,
-				0,
-				0,
-				right,
-				bottom,
-				convertZ(z + 1),
-				color.r,
-				color.g,
-				color.b,
-				color.a,
-				0,
-				0,
-				0,
-				left,
-				bottom,
-				convertZ(z + 1),
-				color.r,
-				color.g,
-				color.b,
-				color.a,
-				0,
-				0,
-				0,
+				left, top, convertZ(z + 1), color.r, color.g, color.b, color.a, 0, 0, 0,
+				right, top, convertZ(z + 1), color.r, color.g, color.b, color.a, 0, 0, 0,
+				right, bottom, convertZ(z + 1), color.r, color.g, color.b, color.a, 0, 0, 0,
+				left, bottom, convertZ(z + 1), color.r, color.g, color.b, color.a, 0, 0, 0,
 			}) do
 				table.insert(vertices, v)
 			end
 
+			-- stylua: ignore
 			for _, idx in ipairs({
-				baseIdx,
-				baseIdx + 1,
-				baseIdx + 2,
-				baseIdx,
-				baseIdx + 2,
-				baseIdx + 3,
+				baseIdx, baseIdx + 1, baseIdx + 2,
+				baseIdx, baseIdx + 2, baseIdx + 3,
 			}) do
 				table.insert(indices, idx)
 			end
@@ -559,7 +483,8 @@ function Arisu.runApp(cons)
 			if info then
 				local relX = event.x - info.absX
 				local relY = event.y - info.absY
-				runUpdate(info.element.onmousedown(relX, relY, info.layout.width, info.layout.height), ctx.window, handler)
+				runUpdate(info.element.onmousedown(relX, relY, info.layout.width, info.layout.height), ctx.window,
+					handler)
 			end
 		elseif eventName == "mouseRelease" then
 			local ctx = windowContexts[event.window]

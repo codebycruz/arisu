@@ -1,4 +1,4 @@
-local gl = require("src.bindings.gl")
+local gl = require("bindings.gl")
 
 ---@class Program
 ---@field id number
