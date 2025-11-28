@@ -1,24 +1,24 @@
-local gl = require "src.bindings.gl"
-local x11 = require "src.bindings.x11"
+local gl = require("src.bindings.gl")
+local x11 = require("src.bindings.x11")
 
-local window = require "src.window"
-local render = require "src.render"
+local window = require("src.window")
+local render = require("src.render")
 
-local Pipeline = require "src.gl.pipeline"
-local Program = require "src.gl.program"
-local BufferDescriptor = require "src.gl.buffer_descriptor"
-local Buffer = require "src.gl.buffer"
-local VAO = require "src.gl.vao"
-local Uniform = require "src.gl.uniform"
-local UniformBlock = require "src.gl.uniform_block"
-local TextureManager = require "src.gl.texture_manager"
-local FontManager = require "src.gl.font_manager"
+local Pipeline = require("src.gl.pipeline")
+local Program = require("src.gl.program")
+local BufferDescriptor = require("src.gl.buffer_descriptor")
+local Buffer = require("src.gl.buffer")
+local VAO = require("src.gl.vao")
+local Uniform = require("src.gl.uniform")
+local UniformBlock = require("src.gl.uniform_block")
+local TextureManager = require("src.gl.texture_manager")
+local FontManager = require("src.gl.font_manager")
 
-local Layout = require "src.ui.layout"
-local Element = require "src.ui.element"
+local Layout = require("src.ui.layout")
+local Element = require("src.ui.element")
 
-local vertexShader = io.open("src/shaders/main.vert.glsl", "r"):read "*a"
-local fragmentShader = io.open("src/shaders/main.frag.glsl", "r"):read "*a"
+local vertexShader = io.open("src/shaders/main.vert.glsl", "r"):read("*a")
+local fragmentShader = io.open("src/shaders/main.frag.glsl", "r"):read("*a")
 
 local function toNDC(pos, screenSize)
 	return (pos / (screenSize * 0.5)) - 1.0
@@ -349,7 +349,7 @@ function Arisu.runApp(cons)
 		end
 
 		renderCtx:makeCurrent()
-		renderCtx:setPresentMode "vsync"
+		renderCtx:setPresentMode("vsync")
 
 		local vertexDescriptor = BufferDescriptor
 			.new()
@@ -393,7 +393,7 @@ function Arisu.runApp(cons)
 		return ctx
 	end
 
-	local eventLoop = window.EventLoop.new "wait"
+	local eventLoop = window.EventLoop.new("wait")
 	local mainWindow = window.WindowBuilder.new():withTitle("Arisu Application"):withSize(1280, 720):build(eventLoop)
 
 	mainCtx = initWindow(mainWindow)
@@ -538,7 +538,7 @@ function Arisu.runApp(cons)
 			end
 
 			if anyWithMouseDown then
-				ctx.window:setCursor "hand2"
+				ctx.window:setCursor("hand2")
 			else
 				ctx.window:resetCursor()
 			end

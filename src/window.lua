@@ -1,5 +1,5 @@
-local x11 = require "src.bindings.x11"
-local ffi = require "ffi"
+local x11 = require("src.bindings.x11")
+local ffi = require("ffi")
 
 --- @class Window
 --- @field id number
@@ -132,13 +132,13 @@ function WindowBuilder:build(
 	local root = x11.defaultRootWindow(display)
 	if root == x11.None then
 		x11.closeDisplay(display)
-		error "No root window found"
+		error("No root window found")
 	end
 
 	local id = x11.createSimpleWindow(display, root, 0, 0, self.width, self.height, 0, 0, 0x000000)
 	if id == x11.None then
 		x11.closeDisplay(display)
-		error "Failed to create window"
+		error("Failed to create window")
 	end
 
 	local window = Window.new(display, id, self.width, self.height)
@@ -192,7 +192,7 @@ EventLoop.__index = EventLoop
 function EventLoop.new(startMode)
 	local display = x11.openDisplay(nil)
 	if display == nil then
-		error "Failed to open X11 display"
+		error("Failed to open X11 display")
 	end
 
 	return setmetatable({ startMode = startMode, display = display, windows = {} }, EventLoop)

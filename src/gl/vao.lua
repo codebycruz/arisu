@@ -1,5 +1,5 @@
-local gl = require "src.bindings.gl"
-local ffi = require "ffi"
+local gl = require("src.bindings.gl")
+local ffi = require("ffi")
 
 ---@class VAO
 ---@field id number
@@ -7,7 +7,7 @@ local VAO = {}
 VAO.__index = VAO
 
 function VAO.new()
-	local handle = ffi.new "GLuint[1]"
+	local handle = ffi.new("GLuint[1]")
 	gl.createVertexArrays(1, handle)
 	return setmetatable({ id = handle[0] }, VAO)
 end

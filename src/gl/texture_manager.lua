@@ -1,7 +1,7 @@
-local gl = require "src.bindings.gl"
-local ffi = require "ffi"
+local gl = require("src.bindings.gl")
+local ffi = require("ffi")
 
-local Image = require "src.image"
+local Image = require("src.image")
 
 local maxWidth = 1024
 local maxHeight = 1024
@@ -30,7 +30,7 @@ function TextureManager.new(sampler2DArray, textureDims, textureUnit)
 	assert(sampler2DArray.type == "sampler2DArray", "sampler2DArray must be of type sampler2DArray")
 	assert(textureUnit, "textureUnit is required")
 
-	local textureId = ffi.new "GLuint[1]"
+	local textureId = ffi.new("GLuint[1]")
 	gl.createTextures(gl.TEXTURE_2D_ARRAY, 1, textureId)
 	local textureHandle = textureId[0]
 
@@ -88,7 +88,7 @@ end
 function TextureManager:allocate(width, height)
 	local layer = self.textureCount
 	if layer >= maxLayers then
-		error "Maximum number of texture layers reached"
+		error("Maximum number of texture layers reached")
 	end
 
 	self.textures[layer] = { width = width, height = height }

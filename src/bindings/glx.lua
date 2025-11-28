@@ -1,6 +1,6 @@
-local ffi = require "ffi"
+local ffi = require("ffi")
 
-ffi.cdef [[
+ffi.cdef([[
     // X11
     typedef void* XDisplay;
     typedef unsigned long Window;
@@ -26,12 +26,12 @@ ffi.cdef [[
 
     // Misc
     const char* glXQueryExtensionsString(XDisplay* dpy, int screen);
-]]
+]])
 
 ---@class GLXContext: userdata
 ---@class GLXFBConfig: userdata
 
-local C = ffi.load "GL"
+local C = ffi.load("GL")
 
 return {
 	RGBA = 4,
@@ -57,7 +57,7 @@ return {
 		local attribList = ffi.new("int[?]", #attributes + 1, attributes)
 		attribList[#attributes] = 0
 
-		local nelements = ffi.new "int[1]"
+		local nelements = ffi.new("int[1]")
 		local configs = C.glXChooseFBConfig(display, screen, attribList, nelements)
 
 		if configs == nil or nelements[0] == 0 then
@@ -98,7 +98,7 @@ return {
 
 	---@type fun(display: XDisplay, draw: number, attribute: number): number
 	queryDrawable = function(display, draw, attribute)
-		local value = ffi.new "unsigned int[1]"
+		local value = ffi.new("unsigned int[1]")
 		C.glXQueryDrawable(display, draw, attribute, value)
 		return value[0]
 	end,

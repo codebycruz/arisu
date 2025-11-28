@@ -1,14 +1,14 @@
-local Arisu = require "src.arisu"
-local Element = require "src.ui.element"
-local Image = require "src.image"
-local Task = require "src.task"
-local Audio = require "src.audio"
-local SoundManager = require "src.sound_manager"
-local Compute = require "src.tools.compute"
+local Arisu = require("src.arisu")
+local Element = require("src.ui.element")
+local Image = require("src.image")
+local Task = require("src.task")
+local Audio = require("src.audio")
+local SoundManager = require("src.sound_manager")
+local Compute = require("src.tools.compute")
 
-local WindowBuilder = (require "src.window").WindowBuilder
+local WindowBuilder = (require("src.window")).WindowBuilder
 
-local ffi = require "ffi"
+local ffi = require("ffi")
 
 ---@alias Tool "brush" | "eraser" | "fill" | "pencil" | "text" | "select"
 
@@ -63,9 +63,9 @@ App.__index = App
 ---@param textureManager TextureManager
 ---@param fontManager FontManager
 function App.new(window, textureManager, fontManager)
-	window:setTitle "Arisu"
+	window:setTitle("Arisu")
 
-	local arisuImage = assert(Image.fromPath "assets/brushes.qoi", "Failed to load window icon")
+	local arisuImage = assert(Image.fromPath("assets/icons/brushes.qoi"), "Failed to load window icon")
 	window:setIcon(arisuImage)
 
 	local this = setmetatable({}, App)
@@ -75,55 +75,55 @@ function App.new(window, textureManager, fontManager)
 	this.currentColor = { r = 0.0, g = 0.0, b = 0.0, a = 1.0 }
 	this.selectedTool = "brush"
 
-	local brushImage = assert(Image.fromPath "assets/paintbrush.qoi", "Failed to load brush image")
+	local brushImage = assert(Image.fromPath("assets/icons/paintbrush.qoi"), "Failed to load brush image")
 	this.brushTexture = textureManager:upload(brushImage)
 
-	local bucketImage = assert(Image.fromPath "assets/paintcan.qoi", "Failed to load bucket image")
+	local bucketImage = assert(Image.fromPath("assets/icons/paintcan.qoi"), "Failed to load bucket image")
 	this.bucketTexture = textureManager:upload(bucketImage)
 
-	local paletteImage = assert(Image.fromPath "assets/palette.qoi", "Failed to load palette image")
+	local paletteImage = assert(Image.fromPath("assets/icons/palette.qoi"), "Failed to load palette image")
 	this.paletteTexture = textureManager:upload(paletteImage)
 
-	local pencilImage = assert(Image.fromPath "assets/pencil.qoi", "Failed to load pencil image")
+	local pencilImage = assert(Image.fromPath("assets/icons/pencil.qoi"), "Failed to load pencil image")
 	this.pencilTexture = textureManager:upload(pencilImage)
 
-	local textImage = assert(Image.fromPath "assets/text.qoi", "Failed to load text image")
+	local textImage = assert(Image.fromPath("assets/icons/text.qoi"), "Failed to load text image")
 	this.textTexture = textureManager:upload(textImage)
 
-	local eraserImage = assert(Image.fromPath "assets/eraser.qoi", "Failed to load eraser image")
+	local eraserImage = assert(Image.fromPath("assets/icons/eraser.qoi"), "Failed to load eraser image")
 	this.eraserTexture = textureManager:upload(eraserImage)
 
-	local magnifierImage = assert(Image.fromPath "assets/magnifier.qoi", "Failed to load magnifier image")
+	local magnifierImage = assert(Image.fromPath("assets/icons/magnifier.qoi"), "Failed to load magnifier image")
 	this.magnifierTexture = textureManager:upload(magnifierImage)
 
-	local pasteImage = assert(Image.fromPath "assets/paste.qoi", "Failed to load paste image")
+	local pasteImage = assert(Image.fromPath("assets/icons/paste.qoi"), "Failed to load paste image")
 	this.pasteTexture = textureManager:upload(pasteImage)
 
-	local selectImage = assert(Image.fromPath "assets/select.qoi", "Failed to load select image")
+	local selectImage = assert(Image.fromPath("assets/icons/select.qoi"), "Failed to load select image")
 	this.selectTexture = textureManager:upload(selectImage)
 
-	local soundImage = assert(Image.fromPath "assets/sound.qoi", "Failed to load sound image")
+	local soundImage = assert(Image.fromPath("assets/icons/sound.qoi"), "Failed to load sound image")
 	this.soundTexture = textureManager:upload(soundImage)
 
-	local soundMuteImage = assert(Image.fromPath "assets/sound_mute.qoi", "Failed to load sound mute image")
+	local soundMuteImage = assert(Image.fromPath("assets/icons/sound_mute.qoi"), "Failed to load sound mute image")
 	this.soundMuteTexture = textureManager:upload(soundMuteImage)
 
-	local copyImage = assert(Image.fromPath "assets/copy.qoi", "Failed to load copy image")
+	local copyImage = assert(Image.fromPath("assets/icons/copy.qoi"), "Failed to load copy image")
 	this.copyTexture = textureManager:upload(copyImage)
 
-	local cutImage = assert(Image.fromPath "assets/cut.qoi", "Failed to load cut image")
+	local cutImage = assert(Image.fromPath("assets/icons/cut.qoi"), "Failed to load cut image")
 	this.cutTexture = textureManager:upload(cutImage)
 
-	local cropImage = assert(Image.fromPath "assets/crop.qoi", "Failed to load crop image")
+	local cropImage = assert(Image.fromPath("assets/icons/crop.qoi"), "Failed to load crop image")
 	this.cropTexture = textureManager:upload(cropImage)
 
-	local resizeImage = assert(Image.fromPath "assets/resize.qoi", "Failed to load resize image")
+	local resizeImage = assert(Image.fromPath("assets/icons/resize.qoi"), "Failed to load resize image")
 	this.resizeTexture = textureManager:upload(resizeImage)
 
-	local rotateImage = assert(Image.fromPath "assets/rotate.qoi", "Failed to load rotate image")
+	local rotateImage = assert(Image.fromPath("assets/icons/rotate.qoi"), "Failed to load rotate image")
 	this.rotateTexture = textureManager:upload(rotateImage)
 
-	local brushesImage = assert(Image.fromPath "assets/brushes.qoi", "Failed to load brushes image")
+	local brushesImage = assert(Image.fromPath("assets/icons/brushes.qoi"), "Failed to load brushes image")
 	this.brushesTexture = textureManager:upload(brushesImage)
 
 	this.canvasBuffer = ffi.new("uint8_t[?]", 800 * 600 * 4)
@@ -140,7 +140,7 @@ function App.new(window, textureManager, fontManager)
 	this.mainWindow = window
 
 	this.soundManager = SoundManager.new()
-	this.popAudio = assert(Audio.fromPath "assets/pop.wav", "Failed to load sound")
+	this.popAudio = assert(Audio.fromPath("assets/sounds/pop.wav"), "Failed to load sound")
 
 	return this
 end
@@ -410,7 +410,7 @@ function App:view(window)
 												:withStyle({
 													width = { abs = 35 },
 													height = { abs = 35 },
-													bg = toolBg "brush",
+													bg = toolBg("brush"),
 													bgImage = self.brushTexture,
 													margin = { right = 1 },
 												})
@@ -419,7 +419,7 @@ function App:view(window)
 												:withStyle({
 													width = { abs = 35 },
 													height = { abs = 35 },
-													bg = toolBg "eraser",
+													bg = toolBg("eraser"),
 													bgImage = self.eraserTexture,
 													margin = { right = 1 },
 												})
@@ -428,7 +428,7 @@ function App:view(window)
 												:withStyle({
 													width = { abs = 35 },
 													height = { abs = 35 },
-													bg = toolBg "fill",
+													bg = toolBg("fill"),
 													bgImage = self.bucketTexture,
 												})
 												:onClick({ type = "ToolClicked", tool = "fill" }),
@@ -444,21 +444,21 @@ function App:view(window)
 												:withStyle({
 													width = { abs = 35 },
 													height = { abs = 35 },
-													bg = toolBg "pencil",
+													bg = toolBg("pencil"),
 													bgImage = self.pencilTexture,
 												})
 												:onClick({ type = "ToolClicked", tool = "pencil" }),
 											Element.new("div"):withStyle({
 												width = { abs = 35 },
 												height = { abs = 35 },
-												bg = toolBg "text",
+												bg = toolBg("text"),
 												bgImage = self.textTexture,
 											}),
 											-- :onClick({ type = "ToolClicked", tool = "text" }),
 											Element.new("div"):withStyle({
 												width = { abs = 35 },
 												height = { abs = 35 },
-												bg = toolBg "zoom",
+												bg = toolBg("zoom"),
 												bgImage = self.magnifierTexture,
 											}),
 											-- :onClick({ type = "ToolClicked", tool = "zoom" })

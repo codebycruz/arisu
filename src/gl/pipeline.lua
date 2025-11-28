@@ -1,5 +1,5 @@
-local gl = require "src.bindings.gl"
-local ffi = require "ffi"
+local gl = require("src.bindings.gl")
+local ffi = require("ffi")
 
 --- @class Pipeline
 --- @field id number

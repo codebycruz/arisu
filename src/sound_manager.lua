@@ -1,7 +1,7 @@
-local alsa = require "src.bindings.alsa"
-local ffi = require "ffi"
+local alsa = require("src.bindings.alsa")
+local ffi = require("ffi")
 
-local Audio = require "src.audio"
+local Audio = require("src.audio")
 
 ---@class Playback
 ---@field started number

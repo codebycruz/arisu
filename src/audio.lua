@@ -1,6 +1,6 @@
-local alsa = require "src.bindings.alsa"
+local alsa = require("src.bindings.alsa")
 
-local WAV = require "src.audio.wav"
+local WAV = require("src.audio.wav")
 
 ---@class Audio
 ---@field channels number
@@ -69,7 +69,7 @@ function Audio.fromPath(path)
 		return nil, "Failed to open image file: " .. err
 	end
 
-	local content = file:read "*all"
+	local content = file:read("*all")
 	return Audio.fromData(content)
 end
 

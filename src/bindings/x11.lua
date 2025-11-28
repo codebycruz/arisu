@@ -1,6 +1,6 @@
-local ffi = require "ffi"
+local ffi = require("ffi")
 
-ffi.cdef [[
+ffi.cdef([[
     typedef void Display;
     typedef unsigned long Window;
     typedef unsigned long Atom;
@@ -147,9 +147,9 @@ ffi.cdef [[
     void XFreeCursor(Display* display, Cursor cursor);
     void XFlush(Display* display);
     void XChangeProperty(Display* display, Window w, Atom property, Atom type, int format, int mode, const unsigned char* data, int nelements);
-]]
+]])
 
-local C = ffi.load "X11"
+local C = ffi.load("X11")
 
 ---@class XEvent: userdata
 ---@field type number
@@ -225,7 +225,7 @@ return {
 		display --[[@param display XDisplay]],
 		w --[[@param w Window]]
 	)
-		local attrs = ffi.new "XWindowAttributes"
+		local attrs = ffi.new("XWindowAttributes")
 
 		local status = C.XGetWindowAttributes(display, w.id, attrs)
 		if status == 0 then
@@ -263,7 +263,7 @@ return {
 
 	--- @type fun(): XEvent
 	newEvent = function()
-		return ffi.new "XEvent"
+		return ffi.new("XEvent")
 	end,
 
 	---@type fun(...: any): userdata

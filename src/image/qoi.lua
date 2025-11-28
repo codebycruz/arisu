@@ -1,7 +1,7 @@
-local ffi = require "ffi"
-local bit = require "bit"
+local ffi = require("ffi")
+local bit = require("bit")
 
-ffi.cdef [[
+ffi.cdef([[
     typedef struct {
         char magic[4];
         uint32_t width;
@@ -9,19 +9,19 @@ ffi.cdef [[
         uint8_t channels;
         uint8_t colorspace;
     } qoi_header_t;
-]]
+]])
 
 local QOI = {}
 
 -- Use tonumber instead of the actual literals since stylua complains
 -- (And I don't think they distribute it with LuaJIT for CI)
-local QOI_OP_RGB = tonumber "0b11111110"
-local QOI_OP_RGBA = tonumber "0b11111111"
+local QOI_OP_RGB = tonumber("0b11111110")
+local QOI_OP_RGBA = tonumber("0b11111111")
 
-local QOI_OP_INDEX = tonumber "0b00"
-local QOI_OP_DIFF = tonumber "0b01"
-local QOI_OP_LUMA = tonumber "0b10"
-local QOI_OP_RUN = tonumber "0b11"
+local QOI_OP_INDEX = tonumber("0b00")
+local QOI_OP_DIFF = tonumber("0b01")
+local QOI_OP_LUMA = tonumber("0b10")
+local QOI_OP_RUN = tonumber("0b11")
 
 local function hashPixel(r, g, b, a)
 	return (r * 3 + g * 5 + b * 7 + a * 11) % 64
@@ -51,7 +51,7 @@ function QOI.Decode(content)
 	local currentPixelCount = 0
 	local pos = 14
 
-	local index = ffi.new "uint8_t[64][4]"
+	local index = ffi.new("uint8_t[64][4]")
 	for i = 0, 63 do
 		index[i][0] = 0
 		index[i][1] = 0

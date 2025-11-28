@@ -1,6 +1,6 @@
-local ffi = require "ffi"
+local ffi = require("ffi")
 
-ffi.cdef [[
+ffi.cdef([[
     typedef struct {
         char riff[4];
         uint32_t size;
@@ -14,7 +14,7 @@ ffi.cdef [[
         uint16_t block_align;
         uint16_t bits_per_sample;
     } wav_header_t;
-]]
+]])
 
 local WAV = {}
 

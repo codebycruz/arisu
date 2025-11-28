@@ -1,6 +1,6 @@
-local glx = require "src.bindings.glx"
-local x11 = require "src.bindings.x11"
-local gl = require "src.bindings.gl"
+local glx = require("src.bindings.glx")
+local x11 = require("src.bindings.x11")
+local gl = require("src.bindings.gl")
 
 --- @class Context
 --- @field display XDisplay
@@ -27,7 +27,7 @@ function Context.new(display, window, sharedCtx)
 		24,
 	})
 	if not fbConfig then
-		error "Failed to choose FBConfig"
+		error("Failed to choose FBConfig")
 	end
 
 	local ctx = glx.createContextAttribsARB(display, fbConfig, sharedCtx and sharedCtx.ctx, 1, {
@@ -37,7 +37,7 @@ function Context.new(display, window, sharedCtx)
 		3,
 	})
 	if not ctx then
-		error "Failed to create GLX context with attributes"
+		error("Failed to create GLX context with attributes")
 	end
 
 	return setmetatable({ ctx = ctx, display = display, window = window }, Context)

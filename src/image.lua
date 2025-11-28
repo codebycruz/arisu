@@ -1,5 +1,5 @@
-local PPM = require "src.image.ppm"
-local QOI = require "src.image.qoi"
+local PPM = require("src.image.ppm")
+local QOI = require("src.image.qoi")
 
 ---@class Image
 ---@field buffer string
@@ -65,7 +65,7 @@ function Image.fromPath(path)
 		return nil, "Failed to open image file: " .. err
 	end
 
-	local content = file:read "*all"
+	local content = file:read("*all")
 	return Image.fromData(content)
 end
 

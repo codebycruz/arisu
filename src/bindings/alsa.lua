@@ -1,6 +1,6 @@
-local ffi = require "ffi"
+local ffi = require("ffi")
 
-ffi.cdef [[
+ffi.cdef([[
     typedef void snd_pcm_t;
 
     int snd_pcm_open(snd_pcm_t **pcm, const char *name, int stream, int mode);
@@ -19,9 +19,9 @@ ffi.cdef [[
     int snd_pcm_prepare(snd_pcm_t *pcm);
     const char* snd_strerror(int errnum);
     int snd_pcm_state(snd_pcm_t *pcm);
-]]
+]])
 
-local C = ffi.load "asound"
+local C = ffi.load("asound")
 
 ---@class alsa.PCM : userdata
 
@@ -49,7 +49,7 @@ return {
 
 	---@type fun(name: string, stream: number, mode: number): alsa.PCM?, string?
 	pcmOpen = function(name, stream, mode)
-		local pcm = ffi.new "snd_pcm_t*[1]"
+		local pcm = ffi.new("snd_pcm_t*[1]")
 
 		local err = C.snd_pcm_open(pcm, name, stream, mode)
 		if err < 0 then

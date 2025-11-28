@@ -1,5 +1,5 @@
-local gl = require "src.bindings.gl"
-local ffi = require "ffi"
+local gl = require("src.bindings.gl")
+local ffi = require("ffi")
 
 ---@class Buffer
 ---@field id number
@@ -7,7 +7,7 @@ local Buffer = {}
 Buffer.__index = Buffer
 
 function Buffer.new()
-	local handle = ffi.new "GLuint[1]"
+	local handle = ffi.new("GLuint[1]")
 	gl.createBuffers(1, handle)
 	return setmetatable({ id = handle[0] }, Buffer)
 end
@@ -15,8 +15,8 @@ end
 ---@alias BufferDataType "u32" | "f32"
 
 local typeSizes = {
-	u32 = ffi.sizeof "uint32_t",
-	f32 = ffi.sizeof "float",
+	u32 = ffi.sizeof("uint32_t"),
+	f32 = ffi.sizeof("float"),
 }
 
 local typeConstructors = {

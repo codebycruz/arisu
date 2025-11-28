@@ -6,7 +6,7 @@ local function intoElement(value)
 	elseif type(value) == "string" then
 		return Element.new("text"):withUserdata(value)
 	else
-		error "Cannot convert value to Element"
+		error("Cannot convert value to Element")
 	end
 end
 

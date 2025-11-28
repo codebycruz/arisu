@@ -1,6 +1,6 @@
-local ffi = require "ffi"
+local ffi = require("ffi")
 
-ffi.cdef [[
+ffi.cdef([[
     // Types
     typedef unsigned int GLenum;
     typedef unsigned int GLuint;
@@ -87,9 +87,9 @@ ffi.cdef [[
     GLsync glFenceSync(GLenum condition, unsigned int flags);
     void glDeleteSync(GLsync sync);
     GLenum glClientWaitSync(GLsync sync, unsigned int flags, uint64_t timeout);
-]]
+]])
 
-local C = ffi.load "GL"
+local C = ffi.load("GL")
 
 ---@class Fence: userdata
 
@@ -169,11 +169,11 @@ return {
 		local srcs = ffi.new("const char*[1]", { src })
 		local program = C.glCreateShaderProgramv(type, 1, srcs)
 
-		local status = ffi.new "GLint[1]"
+		local status = ffi.new("GLint[1]")
 		C.glGetProgramiv(program, 0x8B82 --[[GL_LINK_STATUS]], status)
 
 		if status[0] == 0 then
-			local infoLogLength = ffi.new "GLint[1]"
+			local infoLogLength = ffi.new("GLint[1]")
 			C.glGetProgramiv(program, 0x8B84 --[[GL_INFO_LOG_LENGTH]], infoLogLength)
 
 			local infoLog = ffi.new("GLchar[?]", infoLogLength[0])

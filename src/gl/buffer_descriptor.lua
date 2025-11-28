@@ -1,5 +1,5 @@
-local gl = require "src.bindings.gl"
-local ffi = require "ffi"
+local gl = require("src.bindings.gl")
+local ffi = require("ffi")
 
 ---@alias AttributeType "f32" | "i32"
 ---@alias Attribute { type: "f32" | "i32", size: number, offset: number, normalized: boolean }
@@ -34,9 +34,9 @@ function BufferDescriptor:getStride()
 	for _, attr in ipairs(self.attributes) do
 		local typeSize
 		if attr.type == "f32" then
-			typeSize = ffi.sizeof "float"
+			typeSize = ffi.sizeof("float")
 		elseif attr.type == "i32" then
-			typeSize = ffi.sizeof "int32_t"
+			typeSize = ffi.sizeof("int32_t")
 		else
 			error("Unknown attribute type: " .. tostring(attr.type))
 		end

@@ -1,4 +1,4 @@
-local Bitmap = require "src.font.bitmap"
+local Bitmap = require("src.font.bitmap")
 
 ---@alias Font number
 
@@ -17,7 +17,7 @@ function FontManager.new(textureManager)
 	local defaultBitmap = assert(
 		Bitmap.fromPath(
 			{ ymargin = 2, xmargin = 4, gridWidth = 18, gridHeight = 18, characters = characters, perRow = 19 },
-			"assets/JetBrainsMono.qoi"
+			"assets/fonts/JetBrainsMono.qoi"
 		),
 		"Failed to load bitmap font"
 	)

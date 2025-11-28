@@ -1,10 +1,10 @@
-local gl = require "src.bindings.gl"
+local gl = require("src.bindings.gl")
 
-local Uniform = require "src.gl.uniform"
-local Program = require "src.gl.program"
-local Pipeline = require "src.gl.pipeline"
+local Uniform = require("src.gl.uniform")
+local Program = require("src.gl.program")
+local Pipeline = require("src.gl.pipeline")
 
-local computeSource = io.open("src/shaders/brush.compute.glsl"):read "*a"
+local computeSource = io.open("src/shaders/brush.compute.glsl"):read("*a")
 
 ---@class Compute
 ---@field pipeline Pipeline
