@@ -1,7 +1,7 @@
 local windowBackend = require("window.x11")
 
 ---@class Window
----@field id number
+---@field id any?
 ---@field width number
 ---@field height number
 ---@field new fun(eventLoop: EventLoop, width: number, height: number): Window
