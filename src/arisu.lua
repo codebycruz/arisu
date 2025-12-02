@@ -317,7 +317,7 @@ function Arisu.runApp(cons)
 		return ctx
 	end
 
-	local eventLoop = window.EventLoop.new("wait")
+	local eventLoop = window.EventLoop.new()
 	local mainWindow = window.WindowBuilder.new():withTitle("Arisu Application"):withSize(1280, 720):build(eventLoop)
 
 	mainCtx = initWindow(mainWindow)
@@ -425,6 +425,7 @@ function Arisu.runApp(cons)
 	end
 
 	eventLoop:run(function(event, handler)
+		handler:setMode("wait")
 		runEvent(event, handler)
 
 		local eventName = event.name
