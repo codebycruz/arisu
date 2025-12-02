@@ -21,7 +21,7 @@ ffi.cdef([[
     int snd_pcm_state(snd_pcm_t *pcm);
 ]])
 
-local C = ffi.load("asound")
+local C = ffi.load("asound.so.2")
 
 ---@class alsa.PCM : userdata
 
