@@ -1,152 +1,152 @@
 local ffi = require("ffi")
 
 ffi.cdef([[
-    typedef void Display;
-    typedef unsigned long Window;
-    typedef unsigned long Atom;
-    typedef int Bool;
-    typedef int Status;
-    typedef void Visual;
-    typedef unsigned long Colormap;
-    typedef void Screen;
-    typedef unsigned long Time;
-    typedef unsigned long Cursor;
+	typedef void Display;
+	typedef unsigned long Window;
+	typedef unsigned long Atom;
+	typedef int Bool;
+	typedef int Status;
+	typedef void Visual;
+	typedef unsigned long Colormap;
+	typedef void Screen;
+	typedef unsigned long Time;
+	typedef unsigned long Cursor;
 
-    typedef struct {
-        int type;
-        unsigned long serial;
-        Bool send_event;
-        Display *display;
-        Window window;
-        Atom message_type;
-        int format;
-        union {
-            char b[20];
-            short s[10];
-            long l[5];
-        } data;
-    } XClientMessageEvent;
+	typedef struct {
+		int type;
+		unsigned long serial;
+		Bool send_event;
+		Display *display;
+		Window window;
+		Atom message_type;
+		int format;
+		union {
+			char b[20];
+			short s[10];
+			long l[5];
+		} data;
+	} XClientMessageEvent;
 
-    typedef struct {
-        int type;
-        unsigned long serial;
-        Bool send_event;
-        Display *display;
-        Window window;
-        int x, y;
-        int width, height;
-        int count;
-    } XExposeEvent;
+	typedef struct {
+		int type;
+		unsigned long serial;
+		Bool send_event;
+		Display *display;
+		Window window;
+		int x, y;
+		int width, height;
+		int count;
+	} XExposeEvent;
 
-    typedef struct {
-        int type;
-        unsigned long serial;
-        Bool send_event;
-        Display *display;
-        Window event;
-        Window window;
-        int x, y;
-        int width, height;
-        int border_width;
-        Window above;
-        Bool override_redirect;
-    } XConfigureEvent;
+	typedef struct {
+		int type;
+		unsigned long serial;
+		Bool send_event;
+		Display *display;
+		Window event;
+		Window window;
+		int x, y;
+		int width, height;
+		int border_width;
+		Window above;
+		Bool override_redirect;
+	} XConfigureEvent;
 
-    typedef struct {
-        int type;
-        unsigned long serial;
-        Bool send_event;
-        Display *display;
-        Window window;
-        Window root;
-        Window subwindow;
-        Time time;
-        int x, y;
-        int x_root, y_root;
-        unsigned int state;
-        char is_hint;
-        Bool same_screen;
-    } XMotionEvent;
+	typedef struct {
+		int type;
+		unsigned long serial;
+		Bool send_event;
+		Display *display;
+		Window window;
+		Window root;
+		Window subwindow;
+		Time time;
+		int x, y;
+		int x_root, y_root;
+		unsigned int state;
+		char is_hint;
+		Bool same_screen;
+	} XMotionEvent;
 
-    typedef struct {
-        int type;
-        unsigned long serial;
-        Bool send_event;
-        Display *display;
-        Window window;
-        Window root;
-        Window subwindow;
-        Time time;
-        int x, y;
-        int x_root, y_root;
-        unsigned int state;
-        unsigned int button;
-        Bool same_screen;
-    } XButtonEvent;
+	typedef struct {
+		int type;
+		unsigned long serial;
+		Bool send_event;
+		Display *display;
+		Window window;
+		Window root;
+		Window subwindow;
+		Time time;
+		int x, y;
+		int x_root, y_root;
+		unsigned int state;
+		unsigned int button;
+		Bool same_screen;
+	} XButtonEvent;
 
-    typedef struct {
-        int type;
-        unsigned long serial;
-        Bool send_event;
-        Display *display;
-        Window window;
-    } XAnyEvent;
+	typedef struct {
+		int type;
+		unsigned long serial;
+		Bool send_event;
+		Display *display;
+		Window window;
+	} XAnyEvent;
 
-    typedef union {
-        int type;
-        XAnyEvent xany;
-        XClientMessageEvent xclient;
-        XExposeEvent xexpose;
-        XConfigureEvent xconfigure;
-        XMotionEvent xmotion;
-        XButtonEvent xbutton;
-        long pad[24];
-    } XEvent;
+	typedef union {
+		int type;
+		XAnyEvent xany;
+		XClientMessageEvent xclient;
+		XExposeEvent xexpose;
+		XConfigureEvent xconfigure;
+		XMotionEvent xmotion;
+		XButtonEvent xbutton;
+		long pad[24];
+	} XEvent;
 
-    typedef struct {
-        int x, y;
-        int width, height;
-        int border_width;
-        int depth;
-        Visual* visual;
-        Window root;
-        int class;
-        int bit_gravity;
-        int win_gravity;
-        int backing_store;
-        unsigned long backing_planes;
-        unsigned long backing_pixel;
-        Bool save_under;
-        Colormap colormap;
-        Bool map_installed;
-        int map_state;
-        long all_event_masks;
-        long your_event_mask;
-        long do_not_propagate_mask;
-        Bool override_redirect;
-        Screen *screen;
-    } XWindowAttributes;
+	typedef struct {
+		int x, y;
+		int width, height;
+		int border_width;
+		int depth;
+		Visual* visual;
+		Window root;
+		int class;
+		int bit_gravity;
+		int win_gravity;
+		int backing_store;
+		unsigned long backing_planes;
+		unsigned long backing_pixel;
+		Bool save_under;
+		Colormap colormap;
+		Bool map_installed;
+		int map_state;
+		long all_event_masks;
+		long your_event_mask;
+		long do_not_propagate_mask;
+		Bool override_redirect;
+		Screen *screen;
+	} XWindowAttributes;
 
-    Display* XOpenDisplay(const char* display_name);
-    int XCloseDisplay(Display* display);
-    void XDestroyWindow(Display* display, unsigned long window);
-    Window XDefaultRootWindow(Display* display);
-    Window XCreateSimpleWindow(Display* display, Window parent, int x, int y, unsigned int width, unsigned int height, unsigned int border_width, unsigned long border, unsigned long background);
-    void XMapWindow(Display* display, Window w);
-    Atom XInternAtom(Display* display, const char* atom_name, Bool only_if_exists);
-    Status XSetWMProtocols(Display* display, Window w, Atom* protocols, int count);
-    void XNextEvent(Display* display, XEvent* event_return);
-    void XPeekEvent(Display* display, XEvent* event_return);
-    int XDefaultScreen(Display* display);
-    int XPending(Display* display);
-    void XSelectInput(Display* display, Window w, long event_mask);
-    Status XGetWindowAttributes(Display* display, Window w, XWindowAttributes* window_attributes_return);
-    Cursor XCreateFontCursor(Display* display, unsigned int shape);
-    void XDefineCursor(Display* display, Window w, Cursor cursor);
-    void XUndefineCursor(Display* display, Window w);
-    void XFreeCursor(Display* display, Cursor cursor);
-    void XFlush(Display* display);
-    void XChangeProperty(Display* display, Window w, Atom property, Atom type, int format, int mode, const unsigned char* data, int nelements);
+	Display* XOpenDisplay(const char* display_name);
+	int XCloseDisplay(Display* display);
+	void XDestroyWindow(Display* display, unsigned long window);
+	Window XDefaultRootWindow(Display* display);
+	Window XCreateSimpleWindow(Display* display, Window parent, int x, int y, unsigned int width, unsigned int height, unsigned int border_width, unsigned long border, unsigned long background);
+	void XMapWindow(Display* display, Window w);
+	Atom XInternAtom(Display* display, const char* atom_name, Bool only_if_exists);
+	Status XSetWMProtocols(Display* display, Window w, Atom* protocols, int count);
+	void XNextEvent(Display* display, XEvent* event_return);
+	void XPeekEvent(Display* display, XEvent* event_return);
+	int XDefaultScreen(Display* display);
+	int XPending(Display* display);
+	void XSelectInput(Display* display, Window w, long event_mask);
+	Status XGetWindowAttributes(Display* display, Window w, XWindowAttributes* window_attributes_return);
+	Cursor XCreateFontCursor(Display* display, unsigned int shape);
+	void XDefineCursor(Display* display, Window w, Cursor cursor);
+	void XUndefineCursor(Display* display, Window w);
+	void XFreeCursor(Display* display, Cursor cursor);
+	void XFlush(Display* display);
+	void XChangeProperty(Display* display, Window w, Atom property, Atom type, int format, int mode, const unsigned char* data, int nelements);
 ]])
 
 local C = ffi.load("X11")

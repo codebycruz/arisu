@@ -1,31 +1,31 @@
 local ffi = require("ffi")
 
 ffi.cdef([[
-    // X11
-    typedef void* XDisplay;
-    typedef unsigned long Window;
-    typedef void* GLXContext;
-    typedef void* GLXFBConfig;
+	// X11
+	typedef void* XDisplay;
+	typedef unsigned long Window;
+	typedef void* GLXContext;
+	typedef void* GLXFBConfig;
 
-    int glXMakeCurrent(XDisplay*, Window, GLXContext);
-    void glXSwapBuffers(XDisplay*, Window);
-    void glXDestroyContext(XDisplay*, GLXContext);
+	int glXMakeCurrent(XDisplay*, Window, GLXContext);
+	void glXSwapBuffers(XDisplay*, Window);
+	void glXDestroyContext(XDisplay*, GLXContext);
 
-    // Modern OpenGL
-    GLXFBConfig* glXChooseFBConfig(XDisplay* dpy, int screen, const int* attrib_list, int* nelements);
-    GLXContext glXCreateContextAttribsARB(XDisplay* dpy, GLXFBConfig* config, GLXContext share_context, int direct, const int* attrib_list);
+	// Modern OpenGL
+	GLXFBConfig* glXChooseFBConfig(XDisplay* dpy, int screen, const int* attrib_list, int* nelements);
+	GLXContext glXCreateContextAttribsARB(XDisplay* dpy, GLXFBConfig* config, GLXContext share_context, int direct, const int* attrib_list);
 
-    // Vsync
-    void glXSwapIntervalEXT(XDisplay* dpy, Window drawable, int interval);
+	// Vsync
+	void glXSwapIntervalEXT(XDisplay* dpy, Window drawable, int interval);
 
-    // Getters
-    GLXContext glXGetCurrentContext();
-    XDisplay* glXGetCurrentDisplay();
-    Window glXGetCurrentDrawable();
-    void glXQueryDrawable(XDisplay* dpy, Window draw, int attribute, unsigned int* value);
+	// Getters
+	GLXContext glXGetCurrentContext();
+	XDisplay* glXGetCurrentDisplay();
+	Window glXGetCurrentDrawable();
+	void glXQueryDrawable(XDisplay* dpy, Window draw, int attribute, unsigned int* value);
 
-    // Misc
-    const char* glXQueryExtensionsString(XDisplay* dpy, int screen);
+	// Misc
+	const char* glXQueryExtensionsString(XDisplay* dpy, int screen);
 ]])
 
 ---@class GLXContext: userdata

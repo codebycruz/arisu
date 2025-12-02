@@ -1,24 +1,24 @@
 local ffi = require("ffi")
 
 ffi.cdef([[
-    typedef void snd_pcm_t;
+	typedef void snd_pcm_t;
 
-    int snd_pcm_open(snd_pcm_t **pcm, const char *name, int stream, int mode);
-    int snd_pcm_close(snd_pcm_t *pcm);
-    int snd_pcm_set_params(
-      snd_pcm_t *pcm,
-      int format,
-      int access,
-      unsigned int channels,
-      unsigned int rate,
-      int soft_resample,
-      unsigned int latency
-    );
-    int snd_pcm_writei(snd_pcm_t *pcm, const void *buffer, unsigned int size);
-    int snd_pcm_drain(snd_pcm_t *pcm);
-    int snd_pcm_prepare(snd_pcm_t *pcm);
-    const char* snd_strerror(int errnum);
-    int snd_pcm_state(snd_pcm_t *pcm);
+	int snd_pcm_open(snd_pcm_t **pcm, const char *name, int stream, int mode);
+	int snd_pcm_close(snd_pcm_t *pcm);
+	int snd_pcm_set_params(
+	  snd_pcm_t *pcm,
+	  int format,
+	  int access,
+	  unsigned int channels,
+	  unsigned int rate,
+	  int soft_resample,
+	  unsigned int latency
+	);
+	int snd_pcm_writei(snd_pcm_t *pcm, const void *buffer, unsigned int size);
+	int snd_pcm_drain(snd_pcm_t *pcm);
+	int snd_pcm_prepare(snd_pcm_t *pcm);
+	const char* snd_strerror(int errnum);
+	int snd_pcm_state(snd_pcm_t *pcm);
 ]])
 
 local C = ffi.load("asound.so.2")
