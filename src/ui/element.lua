@@ -50,47 +50,29 @@ function Element:withChildren(children)
 	return self
 end
 
-function Element:withLayoutStyle(
-	style --[[@param style LayoutStyle]]
-)
-	self.layoutStyle = style
-	return self
-end
-
-function Element:withVisualStyle(
-	style --[[@param style VisualStyle]]
-)
-	self.visualStyle = style
-	return self
-end
-
-function Element:withStyle(
-	style --[[@param style LayoutStyle | VisualStyle]]
-)
+---@param style VisualStyle | LayoutStyle
+function Element:withStyle(style)
 	self.visualStyle = style
 	self.layoutStyle = style
 	return self
 end
 
-function Element:withUserdata(
-	data --[[@param data any]]
-)
+---@param data any
+function Element:withUserdata(data)
 	self.userdata = data
 	return self
 end
 
 ---@generic T
-function Element:onMouseMove(
-	message --[[@param message T]]
-)
+---@param message T
+function Element:onMouseMove(message)
 	self.onmousemove = message
 	return self
 end
 
 ---@generic T
-function Element:onClick(
-	message --[[@param message T]]
-)
+---@param message T
+function Element:onClick(message)
 	self.onmousedown = function()
 		return message
 	end
@@ -98,19 +80,36 @@ function Element:onClick(
 end
 
 ---@generic T
-function Element:onMouseDown(
-	cons --[[@param cons fun(): T]]
-)
+---@param cons fun(): T
+function Element:onMouseDown(cons)
 	self.onmousedown = cons
 	return self
 end
 
 ---@generic T
-function Element:onMouseUp(
-	message --[[@param message T]]
-)
+---@param message T
+function Element:onMouseUp(message)
 	self.onmouseup = message
 	return self
+end
+
+---@param style Style
+---@param children Element[]
+function Element.div(style, children)
+	return Element.new("div"):withStyle(style):withChildren(children)
+end
+
+---@param style Style
+---@param value string
+function Element.text(style, value)
+	return Element.from(value):withStyle(style)
+end
+
+---@param style Style
+---@param src string
+function Element.img(style, src)
+	style.bgImage = src
+	return Element.new("div"):withStyle(style)
 end
 
 return Element
