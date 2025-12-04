@@ -1,4 +1,6 @@
 local window = require("window")
+local util = require("util")
+
 local Context = require("context")
 
 local Layout = require("ui.layout")
@@ -459,6 +461,10 @@ function Arisu.runApp(cons)
 			local ctx = windowContexts[event.window]
 			ctx.renderCtx:makeCurrent()
 			gl.viewport(0, 0, ctx.window.width, ctx.window.height)
+
+			if util.isWindows() then
+				refreshView(ctx, handler)
+			end
 		elseif eventName == "mouseMove" then
 			local ctx = windowContexts[event.window]
 

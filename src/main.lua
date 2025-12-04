@@ -739,7 +739,7 @@ function App:view(window)
 					width = "auto",
 				})
 				:withChildren({
-					Element.from("arisu v0.2.0"):withStyle({
+					Element.from("arisu v0.3.0"):withStyle({
 						align = "center",
 						padding = { left = 10 },
 					}),

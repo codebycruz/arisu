@@ -4,12 +4,11 @@ A painting program implemented entirely from scratch in LuaJIT.
 
 ## Requirements
 
-- Linux
+- Linux or Windows (Linux is recommended)
 - Support for OpenGL 4.3 (you most certainly have this)
-- ALSA for audio
 - _That's it._
 
-There are no dependencies used by the library. Pure X11 and OpenGL.
+There are no dependencies used by the library. Pure X11/Win32 and OpenGL.
 
 ## Goals
 
@@ -20,6 +19,8 @@ There are no dependencies used by the library. Pure X11 and OpenGL.
 ## Showcase
 
 ![showcase](./showcase.png)
+
+![windows](./windows.png)
 
 ## Attributions
 

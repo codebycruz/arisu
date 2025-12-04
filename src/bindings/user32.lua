@@ -67,6 +67,19 @@ ffi.cdef([[
 		void* lpParam
 	);
 
+	typedef struct {
+		LONG left;
+		LONG top;
+		LONG right;
+		LONG bottom;
+	} RECT;
+
+	BOOL AdjustWindowRect(
+		RECT* lpRect,
+		DWORD dwStyle,
+		BOOL bMenu
+	);
+
 	// Window Creation
 	BOOL DestroyWindow(HWND hWnd);
 	BOOL ShowWindow(HWND hWnd, int nCmdShow);
@@ -117,6 +130,12 @@ ffi.cdef([[
 ---@field style number
 
 ---@class user32.HDC: userdata
+
+---@class user32.RECT: ffi.cdata*
+---@field left number
+---@field top number
+---@field right number
+---@field bottom number
 
 local C = ffi.load("user32")
 
@@ -283,4 +302,14 @@ return {
 
 	---@type fun(nIndex: number): userdata
 	getSysColorBrush = C.GetSysColorBrush,
+
+	---@type fun(lpRect: user32.RECT, dwStyle: number, bMenu: boolean): boolean
+	adjustWindowRect = function(lpRect, dwStyle, bMenu)
+		return C.AdjustWindowRect(lpRect, dwStyle, bMenu and 1 or 0) ~= 0
+	end,
+
+	---@type fun(): user32.RECT
+	newRect = function()
+		return ffi.new("RECT")
+	end,
 }

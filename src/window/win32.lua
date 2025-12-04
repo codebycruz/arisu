@@ -6,7 +6,7 @@ local util = require("util")
 ---@field display user32.HDC
 ---@field id ffi.cdata*
 ---@field hwnd user32.HWND
----@field currentCursor number?
+---@field currentCursor ffi.cdata*?
 local Win32Window = {}
 Win32Window.__index = Win32Window
 
@@ -14,6 +14,19 @@ Win32Window.__index = Win32Window
 ---@param width number
 ---@param height number
 function Win32Window.new(eventLoop, width, height)
+	-- We need to adjust the window size to account for borders and title bar
+	-- This is specific to windows as the width and height when creating a window isn't just the client area.
+	local rect = user32.newRect()
+	rect.right = width
+	rect.bottom = height
+
+	if not user32.adjustWindowRect(rect, bit.bor(user32.WS_VISIBLE, user32.WS_OVERLAPPEDWINDOW), false) then
+		error("Failed to adjust window rect: " .. kernel32.getLastErrorMessage())
+	end
+
+	local adjustedWidth = rect.right - rect.left
+	local adjustedHeight = rect.bottom - rect.top
+
 	local window = user32.createWindow(
 		0,
 		eventLoop.class.lpszClassName,
@@ -21,8 +34,8 @@ function Win32Window.new(eventLoop, width, height)
 		bit.bor(user32.WS_VISIBLE, user32.WS_OVERLAPPEDWINDOW),
 		user32.CW_USEDEFAULT,
 		user32.CW_USEDEFAULT,
-		width,
-		height,
+		adjustedWidth,
+		adjustedHeight,
 		nil,
 		nil,
 		eventLoop.class.hInstance,
@@ -33,12 +46,6 @@ function Win32Window.new(eventLoop, width, height)
 		error("Failed to create window: " .. kernel32.getLastErrorMessage())
 	end
 
-	user32.showWindow(window, user32.ShowWindow.SHOW)
-
-	if not user32.updateWindow(window) then
-		error("Failed to update window: " .. kernel32.getLastErrorMessage())
-	end
-
 	return setmetatable({ hwnd = window, id = util.toPointer(window), width = width, height = height }, Win32Window)
 end
 
@@ -47,18 +54,26 @@ function Win32Window:setIcon(image)
 	print("Warning: Win32Window:setIcon is unimplemented")
 end
 
+local cursors = {
+	pointer = user32.IDC_ARROW,
+	hand2 = user32.IDC_HAND
+}
+
 ---@param shape "pointer" | "hand2"
 function Win32Window:setCursor(shape)
-	print("Warning: Win32Window:setCursor is unimplemented")
+	local idc = assert(cursors[shape], "Unknown cursor shape: " .. tostring(shape))
+	local cursor = user32.loadCursor(nil, idc)
+	user32.setCursor(cursor)
+	self.currentCursor = cursor
 end
 
 function Win32Window:resetCursor()
-	print("Warning: Win32Window:resetCursor is unimplemented")
+	self:setCursor("pointer")
 end
 
 ---@param title string
 function Win32Window:setTitle(title)
-	print("Warning: Win32Window:setTitle is unimplemented")
+	user32.setWindowText(self.hwnd, title)
 end
 
 function Win32Window:destroy()
@@ -71,6 +86,7 @@ end
 ---@field currentMode "poll" | "wait"
 ---@field handler EventHandler
 ---@field callback fun(event: Event, handler: EventHandler)
+---@field pendingCreates table<number, boolean>
 local Win32EventLoop = {}
 Win32EventLoop.__index = Win32EventLoop
 
@@ -81,7 +97,11 @@ function Win32EventLoop.new()
 	end
 
 	local class = user32.newWndClassEx()
-	local self = setmetatable({ class = class, windows = {} }, Win32EventLoop)
+	local self = setmetatable({
+		class = class,
+		windows = {},
+		pendingCreates = {}
+	}, Win32EventLoop)
 
 	class.lpszClassName = "ArisuWindow"
 	class.lpfnWndProc = user32.newWndProc(function(hwnd, msg, wParam, lParam)
@@ -89,17 +109,53 @@ function Win32EventLoop.new()
 			return user32.defWindowProc(hwnd, msg, wParam, lParam)
 		end
 
-		local wnd = self.windows[util.toPointer(hwnd)]
+		if msg == user32.WM_CREATE then
+			self.pendingCreates[util.toPointer(hwnd)] = true
+			return 0
+		end
+
+		local window = self.windows[util.toPointer(hwnd)]
+
+		if not window then
+			return user32.defWindowProc(hwnd, msg, wParam, lParam)
+		end
 
 		if msg == user32.WM_PAINT then
-			self.callback({ name = "redraw", window = wnd }, self.handler)
+			self.callback({ name = "redraw", window = window }, self.handler)
 			return 0
 		elseif msg == user32.WM_SIZE then
-			if wnd then
-				wnd.width = bit.band(lParam, 0xFFFF)
-				wnd.height = bit.rshift(lParam, 16)
+			if window then
+				window.width = bit.tobit(bit.band(lParam, 0xFFFF))
+				window.height = bit.tobit(bit.rshift(lParam, 16))
 			end
-			self.callback({ name = "resize", window = wnd }, self.handler)
+
+			self.callback({ name = "resize", window = window }, self.handler)
+			return 0
+		elseif msg == user32.WM_SHOWWINDOW then
+			if wParam ~= 0 then
+				self.callback({ window = window, name = "map" }, self.handler)
+			else
+				self.callback({ window = window, name = "unmap" }, self.handler)
+			end
+
+			return 0
+		elseif msg == user32.WM_MOUSEMOVE then
+			local x = bit.tobit(bit.band(lParam, 0xFFFF))
+			local y = bit.tobit(bit.rshift(lParam, 16))
+			self.callback({ window = window, name = "mouseMove", x = x, y = y }, self.handler)
+			return 0
+		elseif msg == user32.WM_LBUTTONDOWN then
+			local x = bit.tobit(bit.band(lParam, 0xFFFF))
+			local y = bit.tobit(bit.rshift(lParam, 16))
+			self.callback({ window = window, name = "mousePress", x = x, y = y }, self.handler)
+			return 0
+		elseif msg == user32.WM_LBUTTONUP then
+			local x = bit.tobit(bit.band(lParam, 0xFFFF))
+			local y = bit.tobit(bit.rshift(lParam, 16))
+			self.callback({ window = window, name = "mouseRelease", x = x, y = y }, self.handler)
+			return 0
+		elseif msg == user32.WM_CLOSE then
+			self.callback({ window = window, name = "windowClose" }, self.handler)
 			return 0
 		end
 
@@ -139,6 +195,13 @@ end
 ---@param window Win32Window
 function Win32EventLoop:register(window)
 	self.windows[window.id] = window
+
+	if self.pendingCreates[window.id] then
+		self.callback({ name = "create", window = window }, self.handler)
+		self.callback({ name = "map", window = window }, self.handler)
+
+		self.pendingCreates[window.id] = nil
+	end
 end
 
 ---@param window Win32Window
@@ -152,9 +215,10 @@ function Win32EventLoop:run(callback)
 	self.isActive = true
 	self.currentMode = "poll"
 	self.callback = function(event, handler)
-		local ok, err = pcall(callback, event, handler)
+		local ok, err = xpcall(callback, debug.traceback, event, handler)
 		if not ok then
 			print("Error in event loop callback: " .. tostring(err))
+			os.exit(1)
 		end
 
 		return ok
@@ -176,7 +240,6 @@ function Win32EventLoop:run(callback)
 		for _, window in pairs(self.windows) do
 			if window.shouldRedraw then
 				window.shouldRedraw = false
-				print("??")
 				callback({ name = "redraw", window = window }, self.handler)
 			end
 		end
