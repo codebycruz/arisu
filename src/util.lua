@@ -1,13 +1,16 @@
 local ffi = require("ffi")
 
+local isWindows = string.sub(package.config, 1, 1) == '\\'
+local isUnix = string.sub(package.config, 1, 1) == '/'
+
 local Util = {}
 
 function Util.isWindows()
-	return package.config:sub(1, 1) == '\\'
+	return isWindows
 end
 
 function Util.isUnix()
-	return package.config:sub(1, 1) == '/'
+	return isUnix
 end
 
 -- This should work in the majority of cases
