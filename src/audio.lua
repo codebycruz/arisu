@@ -1,5 +1,3 @@
-local alsa = require("bindings.alsa")
-
 local WAV = require("audio.wav")
 
 ---@class Audio

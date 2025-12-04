@@ -2,12 +2,12 @@ local x11 = require("bindings.x11")
 local ffi = require("ffi")
 
 ---@class X11Window: Window
----@field private display XDisplay
----@field private currentCursor number?
+---@field display XDisplay
+---@field currentCursor number?
 local X11Window = {}
 X11Window.__index = X11Window
 
----@param eventLoop EventLoop
+---@param eventLoop X11EventLoop
 ---@param width number
 ---@param height number
 function X11Window.new(eventLoop, width, height)
@@ -122,7 +122,7 @@ function X11Window:destroy()
 end
 
 ---@class X11EventLoop: EventLoop
----@field private display XDisplay
+---@field display XDisplay
 local X11EventLoop = {}
 X11EventLoop.__index = X11EventLoop
 

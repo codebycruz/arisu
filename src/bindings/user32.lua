@@ -18,6 +18,7 @@ ffi.cdef([[
 	typedef void VOID;
 	typedef void* HCURSOR;
 	typedef void* HMODULE;
+	typedef void* HDC;
 
 	typedef struct {
 		HWND hwnd;
@@ -47,7 +48,7 @@ ffi.cdef([[
 		void* hIconSm;
 	} WNDCLASSEXA;
 
-	HWND CreateWindowA(
+	HWND CreateWindowExA(
 		LPCSTR lpClassName,
 		LPCSTR lpWindowName,
 		UINT dwStyle,
@@ -79,13 +80,13 @@ ffi.cdef([[
 	VOID PostQuitMessage(int nExitCode);
 
 	// Misc
-	HMODULE GetModuleHandleA(LPCSTR lpModuleName);
+	HDC GetDC(HWND hWnd);
 ]])
 
----@class HWND: userdata
+---@class user32.HWND: userdata
 
----@class win32.MSG: userdata
----@field hwnd HWND
+---@class user32.MSG: userdata
+---@field hwnd user32.HWND
 ---@field message number
 ---@field wParam number
 ---@field lParam number
@@ -93,13 +94,15 @@ ffi.cdef([[
 ---@field pt { x: number, y: number }
 ---@field lPrivate number
 
----@alias win32.WNDPROC fun(hWnd: HWND, uMsg: number, wParam: number, lParam: number): number
+---@alias user32.WNDPROC fun(hWnd: user32.HWND, uMsg: number, wParam: number, lParam: number): number
 
----@class WNDCLASSEXA: userdata
+---@class user32.WNDCLASSEXA: userdata
 ---@field lpfnWndProc userdata
 ---@field hInstance userdata
 ---@field lpszClassName string
 ---@field hCursor userdata
+
+---@class user32.HDC: userdata
 
 local C = ffi.load("user32")
 
@@ -115,7 +118,7 @@ return {
 
 	PM_REMOVE = 0x0001,
 
-	---@enum win32.ShowWindow
+	---@enum user32.ShowWindow
 	ShowWindow = {
 		HIDE = 0,
 		SHOWNORMAL = 1,
@@ -133,19 +136,19 @@ return {
 
 	CW_USEDEFAULT = 0x80000000,
 
-	---@type fun(lpClassName: string, lpWindowName: string, dwStyle: number, X: number, Y: number, nWidth: number, nHeight: number, hWndParent: userdata?, hMenu: userdata?, hInstance: userdata?, lpParam: userdata?): HWND?
-	createWindow = C.CreateWindowA,
+	---@type fun(lpClassName: string, lpWindowName: string, dwStyle: number, X: number, Y: number, nWidth: number, nHeight: number, hWndParent: userdata?, hMenu: userdata?, hInstance: userdata?, lpParam: userdata?): user32.HWND?
+	createWindow = C.CreateWindowExA,
 
-	---@type fun(hWnd: HWND): number
+	---@type fun(hWnd: user32.HWND): number
 	destroyWindow = C.DestroyWindow,
 
-	---@type fun(hWnd: HWND, nCmdShow: number): number
+	---@type fun(hWnd: user32.HWND, nCmdShow: number): number
 	showWindow = C.ShowWindow,
 
-	---@type fun(hWnd: HWND): number
+	---@type fun(hWnd: user32.HWND): number
 	updateWindow = C.UpdateWindow,
 
-	---@type fun(hWnd: HWND, lpString: string): number
+	---@type fun(hWnd: user32.HWND, lpString: string): number
 	setWindowText = C.SetWindowTextA,
 
 	---@type fun(lpWndClass: userdata): number
@@ -169,18 +172,21 @@ return {
 	---@type fun(nExitCode: number)
 	postQuitMessage = C.PostQuitMessage,
 
-	---@type fun(): win32.MSG
+	---@type fun(): user32.MSG
 	newMsg = function()
 		return ffi.new("MSG")
 	end,
 
-	---@type fun(): WNDCLASSEXA
+	---@type fun(): user32.WNDCLASSEXA
 	newWndClassEx = function()
 		return ffi.new("WNDCLASSEXA")
 	end,
 
-	---@type fun(fn: win32.WNDPROC): userdata
+	---@type fun(fn: user32.WNDPROC): userdata
 	newWndProc = function(fn)
 		return ffi.cast("WNDPROC", fn)
 	end,
+
+	---@type fun(hwnd: user32.HWND): user32.HDC
+	getDC = C.GetDC,
 }

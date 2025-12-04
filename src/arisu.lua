@@ -1,18 +1,5 @@
-local gl = require("bindings.gl")
-local x11 = require("bindings.x11")
-
 local window = require("window")
-local render = require("render")
-
-local Pipeline = require("gl.pipeline")
-local Program = require("gl.program")
-local BufferDescriptor = require("gl.buffer_descriptor")
-local Buffer = require("gl.buffer")
-local VAO = require("gl.vao")
-local Uniform = require("gl.uniform")
-local UniformBlock = require("gl.uniform_block")
-local TextureManager = require("gl.texture_manager")
-local FontManager = require("gl.font_manager")
+local Context = require("context")
 
 local Layout = require("ui.layout")
 local Element = require("ui.element")
@@ -262,18 +249,40 @@ function Arisu.runApp(cons)
 	local textureManager ---@type TextureManager
 	local fontManager ---@type FontManager
 
+	local gl
+	local Pipeline
+	local Program
+	local BufferDescriptor
+	local Buffer
+	local VAO
+	local Uniform
+	local UniformBlock
+	local TextureManager
+	local FontManager
+
 	---@param window Window
 	---@return WindowContext
 	local function initWindow(window)
-		local renderCtx = render.Context.new(window.display, window, mainCtx and mainCtx.renderCtx)
+		local renderCtx = Context.new(window, mainCtx and mainCtx.renderCtx)
 		if not renderCtx then
-			window:destroy()
-			x11.closeDisplay(window.display)
 			error("Failed to create rendering context for window " .. tostring(window.id))
 		end
 
 		renderCtx:makeCurrent()
 		renderCtx:setPresentMode("vsync")
+
+		if not mainCtx then
+			gl = require("bindings.gl")
+			Pipeline = require("gl.pipeline")
+			Program = require("gl.program")
+			BufferDescriptor = require("gl.buffer_descriptor")
+			Buffer = require("gl.buffer")
+			VAO = require("gl.vao")
+			Uniform = require("gl.uniform")
+			UniformBlock = require("gl.uniform_block")
+			TextureManager = require("gl.texture_manager")
+			FontManager = require("gl.font_manager")
+		end
 
 		local vertexDescriptor = BufferDescriptor
 			.new()

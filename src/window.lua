@@ -1,4 +1,5 @@
-local windowBackend = require("window.x11")
+local util = require("util")
+local windowBackend = util.isWindows() and require("window.win32") or require("window.x11")
 
 ---@class Window
 ---@field id any?

@@ -1,8 +1,6 @@
 local alsa = require("bindings.alsa")
 local ffi = require("ffi")
 
-local Audio = require("audio")
-
 ---@class Playback
 ---@field started number
 ---@field audio Audio

@@ -1,3 +1,4 @@
+local util = require("util")
 local ffi = require("ffi")
 
 ffi.cdef([[
@@ -14,67 +15,14 @@ ffi.cdef([[
 	typedef void* GLsync;
 
 	typedef void (*GLDEBUGPROC)(unsigned int, unsigned int, unsigned int, unsigned int, int, const char*, const void*);
+]])
 
+-- Core OpenGL 1.1 functions which should exist in the opengl library cross platform
+ffi.cdef([[
 	void glClear(unsigned int mask);
 	void glClearColor(float r, float g, float b, float a);
 	void glViewport(int x, int y, GLsizei width, GLsizei height);
-
-	// Shader programs
-	GLuint glCreateShaderProgramv(GLenum type, GLsizei count, const char** strings);
-	void glGetProgramiv(GLuint program, GLenum pname, GLint* params);
-	void glGetProgramInfoLog(GLuint program, GLsizei bufSize, GLsizei* length, GLchar* infoLog);
-	void glUseProgram(GLuint program);
-	void glDeleteProgram(GLuint program);
-
-	// Pipelines
-	void glGenProgramPipelines(GLsizei n, GLuint* pipelines);
-	void glUseProgramStages(GLuint pipeline, unsigned int stages, GLuint program);
-	void glBindProgramPipeline(GLuint pipeline);
-	void glDeleteProgramPipelines(GLsizei n, const GLuint* pipelines);
-
-	// Pipeline Uniforms
-	void glProgramUniform1i(GLuint program, GLint location, GLint v0);
-	void glProgramUniform1f(GLuint program, GLint location, GLfloat v0);
-	void glProgramUniform2i(GLuint program, GLint location, GLint v0, GLint v1);
-	void glProgramUniform2f(GLuint program, GLint location, GLfloat v0, GLfloat v1);
-	void glProgramUniform3f(GLuint program, GLint location, GLfloat v0, GLfloat v1, GLfloat v2);
-	void glProgramUniform4f(GLuint program, GLint location, GLfloat v0, GLfloat v1, GLfloat v2, GLfloat v3);
-	void glProgramUniformMatrix4fv(GLuint program, GLint location, GLsizei count, unsigned char transpose, const GLfloat* value);
-
-	// Buffers
-	void glVertexArrayVertexBuffer(GLuint vaobj, GLuint bindingindex, GLuint buffer, GLintptr offset, GLsizei stride);
-	void glVertexArrayElementBuffer(GLuint vaobj, GLuint buffer);
-	void glEnableVertexArrayAttrib(GLuint vaobj, GLuint attribindex);
-	void glVertexArrayAttribFormat(GLuint vaobj, GLuint attribindex, GLint size, GLenum type, unsigned char normalized, GLuint relativeoffset);
-	void glVertexArrayAttribBinding(GLuint vaobj, GLuint attribindex, GLuint bindingindex);
-	void glBindVertexArray(GLuint array);
-	void glCreateVertexArrays(GLsizei n, GLuint* arrays);
-
-	void glCreateBuffers(GLsizei n, GLuint* buffers);
-	void glNamedBufferData(GLuint buffer, GLsizeiptr size, const void* data, GLenum usage);
-	void glNamedBufferSubData(GLuint buffer, GLintptr offset, GLsizeiptr size, const void* data);
-
-	// Drawing
 	void glDrawElements(GLenum mode, GLsizei count, GLenum type, const void* indices);
-
-	// Textures
-	void glCreateTextures(GLenum target, GLsizei n, GLuint* textures);
-	void glTextureStorage3D(GLuint texture, GLsizei levels, GLenum internalformat, GLsizei width, GLsizei height, GLsizei depth);
-	void glTextureSubImage3D(GLuint texture, GLsizei level, GLint xoffset, GLint yoffset, GLint zoffset, GLsizei width, GLsizei height, GLsizei depth, GLenum format, GLenum type, const void* pixels);
-	void glTextureParameteri(GLuint texture, GLenum pname, GLint param);
-	void glBindTextureUnit(GLuint unit, GLuint texture);
-	void glDeleteTextures(GLsizei n, const GLuint* textures);
-	void glCopyImageSubData(GLuint srcName, GLenum srcTarget, GLint srcLevel, GLint srcX, GLint srcY, GLint srcZ, GLuint dstName, GLenum dstTarget, GLint dstLevel, GLint dstX, GLint dstY, GLint dstZ, GLsizei width, GLsizei height, GLsizei depth);
-
-	// Uniform Buffer Objects
-	void glBindBufferBase(GLenum target, GLuint index, GLuint buffer);
-
-	// Compute shaders
-	void glDispatchCompute(GLuint num_groups_x, GLuint num_groups_y, GLuint num_groups_z);
-	void glMemoryBarrier(unsigned int barriers);
-	void glBindImageTexture(GLuint unit, GLuint texture, GLint level, unsigned char layered, GLint layer, GLenum access, GLenum format);
-
-	// Misc
 	char* glGetString(GLenum name);
 	void glEnable(GLenum cap);
 	void glDisable(GLenum cap);
@@ -82,16 +30,148 @@ ffi.cdef([[
 	void glFinish();
 	void glFlush();
 	void glDepthFunc(GLenum func);
-
-	// Fences
-	GLsync glFenceSync(GLenum condition, unsigned int flags);
-	void glDeleteSync(GLsync sync);
-	GLenum glClientWaitSync(GLsync sync, unsigned int flags, uint64_t timeout);
 ]])
 
-local C = ffi.load("GL")
+local CFunctions
+if util.isUnix() then
+	ffi.cdef([[
+		void glClear(unsigned int mask);
+		void glClearColor(float r, float g, float b, float a);
+		void glViewport(int x, int y, GLsizei width, GLsizei height);
 
----@class Fence: userdata
+		// Shader programs
+		GLuint glCreateShaderProgramv(GLenum type, GLsizei count, const char** strings);
+		void glGetProgramiv(GLuint program, GLenum pname, GLint* params);
+		void glGetProgramInfoLog(GLuint program, GLsizei bufSize, GLsizei* length, GLchar* infoLog);
+		void glUseProgram(GLuint program);
+		void glDeleteProgram(GLuint program);
+
+		// Pipelines
+		void glGenProgramPipelines(GLsizei n, GLuint* pipelines);
+		void glUseProgramStages(GLuint pipeline, unsigned int stages, GLuint program);
+		void glBindProgramPipeline(GLuint pipeline);
+		void glDeleteProgramPipelines(GLsizei n, const GLuint* pipelines);
+
+		// Pipeline Uniforms
+		void glProgramUniform1i(GLuint program, GLint location, GLint v0);
+		void glProgramUniform1f(GLuint program, GLint location, GLfloat v0);
+		void glProgramUniform2i(GLuint program, GLint location, GLint v0, GLint v1);
+		void glProgramUniform2f(GLuint program, GLint location, GLfloat v0, GLfloat v1);
+		void glProgramUniform3f(GLuint program, GLint location, GLfloat v0, GLfloat v1, GLfloat v2);
+		void glProgramUniform4f(GLuint program, GLint location, GLfloat v0, GLfloat v1, GLfloat v2, GLfloat v3);
+		void glProgramUniformMatrix4fv(GLuint program, GLint location, GLsizei count, unsigned char transpose, const GLfloat* value);
+
+		// Buffers
+		void glVertexArrayVertexBuffer(GLuint vaobj, GLuint bindingindex, GLuint buffer, GLintptr offset, GLsizei stride);
+		void glVertexArrayElementBuffer(GLuint vaobj, GLuint buffer);
+		void glEnableVertexArrayAttrib(GLuint vaobj, GLuint attribindex);
+		void glVertexArrayAttribFormat(GLuint vaobj, GLuint attribindex, GLint size, GLenum type, unsigned char normalized, GLuint relativeoffset);
+		void glVertexArrayAttribBinding(GLuint vaobj, GLuint attribindex, GLuint bindingindex);
+		void glBindVertexArray(GLuint array);
+		void glCreateVertexArrays(GLsizei n, GLuint* arrays);
+
+		void glCreateBuffers(GLsizei n, GLuint* buffers);
+		void glNamedBufferData(GLuint buffer, GLsizeiptr size, const void* data, GLenum usage);
+		void glNamedBufferSubData(GLuint buffer, GLintptr offset, GLsizeiptr size, const void* data);
+
+		// Drawing
+		void glDrawElements(GLenum mode, GLsizei count, GLenum type, const void* indices);
+
+		// Textures
+		void glCreateTextures(GLenum target, GLsizei n, GLuint* textures);
+		void glTextureStorage3D(GLuint texture, GLsizei levels, GLenum internalformat, GLsizei width, GLsizei height, GLsizei depth);
+		void glTextureSubImage3D(GLuint texture, GLsizei level, GLint xoffset, GLint yoffset, GLint zoffset, GLsizei width, GLsizei height, GLsizei depth, GLenum format, GLenum type, const void* pixels);
+		void glTextureParameteri(GLuint texture, GLenum pname, GLint param);
+		void glBindTextureUnit(GLuint unit, GLuint texture);
+		void glDeleteTextures(GLsizei n, const GLuint* textures);
+		void glCopyImageSubData(GLuint srcName, GLenum srcTarget, GLint srcLevel, GLint srcX, GLint srcY, GLint srcZ, GLuint dstName, GLenum dstTarget, GLint dstLevel, GLint dstX, GLint dstY, GLint dstZ, GLsizei width, GLsizei height, GLsizei depth);
+
+		// Uniform Buffer Objects
+		void glBindBufferBase(GLenum target, GLuint index, GLuint buffer);
+
+		// Compute shaders
+		void glDispatchCompute(GLuint num_groups_x, GLuint num_groups_y, GLuint num_groups_z);
+		void glMemoryBarrier(unsigned int barriers);
+		void glBindImageTexture(GLuint unit, GLuint texture, GLint level, unsigned char layered, GLint layer, GLenum access, GLenum format);
+
+		// Misc
+		char* glGetString(GLenum name);
+		void glEnable(GLenum cap);
+		void glDisable(GLenum cap);
+		void glBlendFunc(GLenum sfactor, GLenum dfactor);
+		void glFinish();
+		void glFlush();
+		void glDepthFunc(GLenum func);
+	]])
+
+	CFunctions = ffi.load("GL")
+else
+	local dynFunctions = {}
+
+	-- On windows, bindings are not provided at link time, so we have to load them manually
+	local wgl = require("bindings.wgl")
+
+	for name, ty in pairs({
+		glCreateShaderProgramv = "GLuint(*)(GLenum, GLsizei, const GLchar**)",
+		glGetProgramiv = "void(*)(GLuint, GLenum, GLint*)",
+		glGetProgramInfoLog = "void(*)(GLuint, GLsizei, GLsizei*, GLchar*)",
+		glUseProgram = "void(*)(GLuint)",
+		glDeleteProgram = "void(*)(GLuint)",
+
+		glGenProgramPipelines = "void(*)(GLsizei, GLuint*)",
+		glUseProgramStages = "void(*)(GLuint, unsigned int, GLuint)",
+		glBindProgramPipeline = "void(*)(GLuint)",
+		glDeleteProgramPipelines = "void(*)(GLsizei, const GLuint*)",
+
+		glProgramUniform1i = "void(*)(GLuint, GLint, GLint)",
+		glProgramUniform1f = "void(*)(GLuint, GLint, GLfloat)",
+		glProgramUniform2i = "void(*)(GLuint, GLint, GLint, GLint)",
+		glProgramUniform2f = "void(*)(GLuint, GLint, GLfloat, GLfloat)",
+		glProgramUniform3f = "void(*)(GLuint, GLint, GLfloat, GLfloat, GLfloat)",
+		glProgramUniform4f = "void(*)(GLuint, GLint, GLfloat, GLfloat, GLfloat, GLfloat)",
+		glProgramUniformMatrix4fv = "void(*)(GLuint, GLint, GLsizei, unsigned char, const GLfloat*)",
+
+		glVertexArrayVertexBuffer = "void(*)(GLuint, GLuint, GLuint, GLintptr, GLsizei)",
+		glVertexArrayElementBuffer = "void(*)(GLuint, GLuint)",
+		glEnableVertexArrayAttrib = "void(*)(GLuint, GLuint)",
+		glVertexArrayAttribFormat = "void(*)(GLuint, GLuint, GLint, GLenum, unsigned char, GLuint)",
+		glVertexArrayAttribBinding = "void(*)(GLuint, GLuint, GLuint)",
+		glBindVertexArray = "void(*)(GLuint)",
+		glCreateVertexArrays = "void(*)(GLsizei, GLuint*)",
+
+		glCreateBuffers = "void(*)(GLsizei, GLuint*)",
+		glNamedBufferData = "void(*)(GLuint, GLsizeiptr, const void*, GLenum)",
+		glNamedBufferSubData = "void(*)(GLuint, GLintptr, GLsizeiptr, const void*)",
+
+		glCreateTextures = "void(*)(GLenum, GLsizei, GLuint*)",
+		glTextureStorage3D = "void(*)(GLuint, GLsizei, GLenum, GLsizei, GLsizei, GLsizei)",
+		glTextureSubImage3D = "void(*)(GLuint, GLsizei, GLint, GLint, GLint, GLsizei, GLsizei, GLsizei, GLenum, GLenum, const void*)",
+		glTextureParameteri = "void(*)(GLuint, GLenum, GLint)",
+		glBindTextureUnit = "void(*)(GLuint, GLuint)",
+		glDeleteTextures = "void(*)(GLsizei, const GLuint*)",
+		glCopyImageSubData = "void(*)(GLuint, GLenum, GLint, GLint, GLint, GLint, GLuint, GLenum, GLint, GLint, GLint, GLint, GLsizei, GLsizei, GLsizei)",
+
+		glBindBufferBase = "void(*)(GLenum, GLuint, GLuint)",
+
+		glDispatchCompute = "void(*)(GLuint, GLuint, GLuint)",
+		glMemoryBarrier = "void(*)(unsigned int)",
+		glBindImageTexture = "void(*)(GLuint, GLuint, GLint, unsigned char, GLint, GLenum, GLenum)",
+	}) do
+		local fn = ffi.cast(ty, wgl.getProcAddress(name))
+		print(name, fn)
+		assert(fn ~= nil,
+			"Failed to load OpenGL function: " ..
+			name .. ", ensure you're loading this after creating a valid OpenGL context.")
+
+		dynFunctions[name] = fn
+	end
+
+	CFunctions = setmetatable(dynFunctions, {
+		__index = ffi.load("opengl32")
+	})
+end
+
+local C = CFunctions
 
 return {
 	INVALID_VALUE = 0x0501,
@@ -324,15 +404,6 @@ return {
 
 	---@type fun(srcName: number, srcTarget: number, srcLevel: number, srcX: number, srcY: number, srcZ: number, dstName: number, dstTarget: number, dstLevel: number, dstX: number, dstY: number, dstZ: number, width: number, height: number, depth: number)
 	copyImageSubData = C.glCopyImageSubData,
-
-	---@type fun(condition: number, flags: number): Fence
-	fenceSync = C.glFenceSync,
-
-	---@type fun(sync: Fence)
-	deleteSync = C.glDeleteSync,
-
-	---@type fun(sync: Fence, flags: number, timeout: number): number
-	clientWaitSync = C.glClientWaitSync,
 
 	---@type fun(func: number)
 	depthFunc = C.glDepthFunc,

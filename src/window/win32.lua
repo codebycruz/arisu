@@ -1,9 +1,10 @@
-local win32 = require("bindings.win32")
-local ffi = require("ffi")
+local user32 = require("bindings.user32")
+local kernel32 = require("bindings.kernel32")
 
 ---@class Win32Window: Window
----@field private display XDisplay
----@field private currentCursor number?
+---@field display user32.HDC
+---@field id user32.HWND
+---@field currentCursor number?
 local Win32Window = {}
 Win32Window.__index = Win32Window
 
@@ -11,12 +12,12 @@ Win32Window.__index = Win32Window
 ---@param width number
 ---@param height number
 function Win32Window.new(eventLoop, width, height)
-	local window = win32.createWindow(
+	local window = user32.createWindow(
 		eventLoop.class.lpszClassName,
 		"Title",
-		bit.bor(win32.WS_BORDER, win32.WS_CAPTION, win32.WS_SYSMENU, win32.WS_THICKFRAME),
-		win32.CW_USEDEFAULT,
-		win32.CW_USEDEFAULT,
+		bit.bor(user32.WS_BORDER, user32.WS_CAPTION, user32.WS_SYSMENU, user32.WS_THICKFRAME),
+		user32.CW_USEDEFAULT,
+		user32.CW_USEDEFAULT,
 		width,
 		height,
 		nil,
@@ -25,52 +26,52 @@ function Win32Window.new(eventLoop, width, height)
 		nil
 	)
 
-	win32.showWindow(window, win32.ShowWindow.SHOW)
-	win32.updateWindow(window)
+	user32.showWindow(window, user32.ShowWindow.SHOW)
+	user32.updateWindow(window)
 
 	return setmetatable({ id = window, width = width, height = height }, Win32Window)
 end
 
 ---@param image Image|nil
 function Win32Window:setIcon(image)
-	error("Unimplemented")
+	print("Warning: Win32Window:setIcon is unimplemented")
 end
 
 ---@param shape "pointer" | "hand2"
 function Win32Window:setCursor(shape)
-	error("Unimplemented")
+	print("Warning: Win32Window:setCursor is unimplemented")
 end
 
 function Win32Window:resetCursor()
-	error("Unimplemented")
+	print("Warning: Win32Window:resetCursor is unimplemented")
 end
 
 ---@param title string
 function Win32Window:setTitle(title)
-	error("Unimplemented")
+	print("Warning: Win32Window:setTitle is unimplemented")
 end
 
 function Win32Window:destroy()
-	error("Unimplemented")
+	print("Warning: Win32Window:destroy is unimplemented")
 end
 
 ---@class Win32EventLoop: EventLoop
----@field class WNDCLASSEXA
+---@field class user32.WNDCLASSEXA
 local Win32EventLoop = {}
 Win32EventLoop.__index = Win32EventLoop
 
 function Win32EventLoop.new()
-	local hInstance = win32.GetModuleHandleA(nil)
+	local hInstance = kernel32.getModuleHandle(nil)
 
-	local class = win32.newWndClassEx()
+	local class = user32.newWndClassEx()
 	class.lpszClassName = "ArisuWindow"
-	class.lpfnWndProc = win32.newWndProc(function(wnd, msg, w, l)
+	class.lpfnWndProc = user32.newWndProc(function(wnd, msg, w, l)
 		print("class wnd proc...", wnd, msg, w, l)
 		return 0
 	end)
 	class.hInstance = hInstance
 
-	win32.registerClass(class)
+	user32.registerClass(class)
 
 	return setmetatable({ class = class, windows = {} }, Win32EventLoop)
 end
@@ -106,17 +107,17 @@ function Win32EventLoop:run(callback)
 		end
 	end
 
-	local msg = win32.newMsg()
+	local msg = user32.newMsg()
 	while isActive do
 		if currentMode == "poll" then
-			while win32.peekMessage(msg, nil, 0, 0, win32.PM_REMOVE) do
-				win32.translateMessage(msg)
-				win32.dispatchMessageA(msg)
+			while user32.peekMessage(msg, nil, 0, 0, user32.PM_REMOVE) do
+				user32.translateMessage(msg)
+				user32.dispatchMessageA(msg)
 			end
 		else
-			win32.getMessage(msg, nil, 0, 0)
-			win32.translateMessage(msg)
-			win32.dispatchMessageA(msg)
+			user32.getMessage(msg, nil, 0, 0)
+			user32.translateMessage(msg)
+			user32.dispatchMessageA(msg)
 		end
 	end
 end

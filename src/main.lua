@@ -5,8 +5,7 @@ local Element = require("ui.element")
 local Image = require("image")
 local Task = require("task")
 local Audio = require("audio")
-local SoundManager = require("sound_manager")
-local Compute = require("tools.compute")
+-- local SoundManager = require("sound_manager")
 
 local WindowBuilder = (require("window")).WindowBuilder
 
@@ -65,6 +64,7 @@ App.__index = App
 ---@param textureManager TextureManager
 ---@param fontManager FontManager
 function App.new(window, textureManager, fontManager)
+	local Compute = require("tools.compute")
 	window:setTitle("Arisu")
 
 	local arisuImage = assert(Image.fromPath("assets/icons/brushes.qoi"), "Failed to load window icon")
@@ -141,7 +141,7 @@ function App.new(window, textureManager, fontManager)
 
 	this.mainWindow = window
 
-	this.soundManager = SoundManager.new()
+	-- this.soundManager = SoundManager.new()
 	this.popAudio = assert(Audio.fromPath("assets/sounds/pop.wav"), "Failed to load sound")
 
 	return this
@@ -820,7 +820,7 @@ function App:update(message, window)
 		end
 
 		self.selectedTool = message.tool
-		self.soundManager:play(self.popAudio, 1.0)
+		-- self.soundManager:play(self.popAudio, 1.0)
 
 		return Task.refreshView(window)
 	elseif message.type == "ClearClicked" then

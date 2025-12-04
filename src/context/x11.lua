@@ -2,18 +2,17 @@ local glx = require("bindings.glx")
 local x11 = require("bindings.x11")
 local gl = require("bindings.gl")
 
---- @class Context
+--- @class X11Context
 --- @field display XDisplay
 --- @field window Window
 --- @field ctx userdata
---- @field fence Fence?
-local Context = {}
-Context.__index = Context
+local X11Context = {}
+X11Context.__index = X11Context
 
----@param display XDisplay
----@param window Window
----@param sharedCtx Context|nil
-function Context.new(display, window, sharedCtx)
+---@param window X11Window
+---@param sharedCtx X11Context?
+function X11Context.new(window, sharedCtx)
+	local display = window.display
 	local screen = x11.defaultScreen(display)
 
 	local fbConfig = glx.chooseFBConfig(display, screen, {
@@ -40,16 +39,16 @@ function Context.new(display, window, sharedCtx)
 		error("Failed to create GLX context with attributes")
 	end
 
-	return setmetatable({ ctx = ctx, display = display, window = window }, Context)
+	return setmetatable({ ctx = ctx, display = display, window = window }, X11Context)
 end
 
 ---@return boolean # true on success, false on failure
-function Context:makeCurrent()
+function X11Context:makeCurrent()
 	return glx.makeCurrent(self.display, self.window.id, self.ctx) ~= 0
 end
 
----@param mode "immediate" | "vsync"
-function Context:setPresentMode(mode)
+---@param mode PresentMode
+function X11Context:setPresentMode(mode)
 	local intMode = ({
 		["immediate"] = 0,
 		["vsync"] = 1,
@@ -58,18 +57,16 @@ function Context:setPresentMode(mode)
 	glx.swapIntervalEXT(self.display, self.window.id, intMode)
 end
 
-function Context:swapBuffers()
+function X11Context:swapBuffers()
 	glx.swapBuffers(self.display, self.window.id)
 end
 
-function Context:present()
+function X11Context:present()
 	self:swapBuffers()
 end
 
-function Context:destroy()
+function X11Context:destroy()
 	glx.destroyContext(self.display, self.ctx)
 end
 
-return {
-	Context = Context,
-}
+return X11Context
