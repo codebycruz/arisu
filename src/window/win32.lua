@@ -1,5 +1,6 @@
 local user32 = require("bindings.user32")
 local kernel32 = require("bindings.kernel32")
+local ffi = require("ffi")
 
 ---@class Win32Window: Window
 ---@field display user32.HDC
@@ -13,9 +14,10 @@ Win32Window.__index = Win32Window
 ---@param height number
 function Win32Window.new(eventLoop, width, height)
 	local window = user32.createWindow(
+		0,
 		eventLoop.class.lpszClassName,
 		"Title",
-		bit.bor(user32.WS_BORDER, user32.WS_CAPTION, user32.WS_SYSMENU, user32.WS_THICKFRAME),
+		bit.bor(user32.WS_VISIBLE, user32.WS_OVERLAPPEDWINDOW),
 		user32.CW_USEDEFAULT,
 		user32.CW_USEDEFAULT,
 		width,
@@ -26,8 +28,15 @@ function Win32Window.new(eventLoop, width, height)
 		nil
 	)
 
+	if window == nil then
+		error("Failed to create window: " .. kernel32.getLastErrorMessage())
+	end
+
 	user32.showWindow(window, user32.ShowWindow.SHOW)
-	user32.updateWindow(window)
+
+	if not user32.updateWindow(window) then
+		error("Failed to update window: " .. kernel32.getLastErrorMessage())
+	end
 
 	return setmetatable({ id = window, width = width, height = height }, Win32Window)
 end
@@ -62,16 +71,26 @@ Win32EventLoop.__index = Win32EventLoop
 
 function Win32EventLoop.new()
 	local hInstance = kernel32.getModuleHandle(nil)
+	if hInstance == nil then
+		error("Failed to get module handle: " .. kernel32.getLastErrorMessage())
+	end
 
 	local class = user32.newWndClassEx()
 	class.lpszClassName = "ArisuWindow"
 	class.lpfnWndProc = user32.newWndProc(function(wnd, msg, w, l)
 		print("class wnd proc...", wnd, msg, w, l)
-		return 0
+		return user32.defWindowProc(wnd, msg, w, l)
 	end)
+	class.hCursor = user32.loadCursor(nil, user32.IDC_ARROW)
+	class.hIcon = user32.loadIcon(nil, user32.IDI_APPLICATION)
+	class.hbrBackground = user32.getSysColorBrush(user32.COLOR_WINDOW)
+	class.style = bit.bor(user32.CS_HREDRAW, user32.CS_VREDRAW)
+
 	class.hInstance = hInstance
 
-	user32.registerClass(class)
+	if user32.registerClass(class) == 0 then
+		error("Failed to register window class: " .. kernel32.getLastErrorMessage())
+	end
 
 	return setmetatable({ class = class, windows = {} }, Win32EventLoop)
 end
@@ -119,6 +138,8 @@ function Win32EventLoop:run(callback)
 			user32.translateMessage(msg)
 			user32.dispatchMessage(msg)
 		end
+
+		callback({ name = "aboutToWait" }, handler)
 	end
 end
 

@@ -327,7 +327,10 @@ function Arisu.runApp(cons)
 	end
 
 	local eventLoop = window.EventLoop.new()
-	local mainWindow = window.WindowBuilder.new():withTitle("Arisu Application"):withSize(1280, 720):build(eventLoop)
+	local mainWindow = window.WindowBuilder.new()
+		:withTitle("Arisu Application")
+		:withSize(1280, 720)
+		:build(eventLoop)
 
 	mainCtx = initWindow(mainWindow)
 	mainCtx.renderCtx:makeCurrent()
