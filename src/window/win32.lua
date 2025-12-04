@@ -112,12 +112,12 @@ function Win32EventLoop:run(callback)
 		if currentMode == "poll" then
 			while user32.peekMessage(msg, nil, 0, 0, user32.PM_REMOVE) do
 				user32.translateMessage(msg)
-				user32.dispatchMessageA(msg)
+				user32.dispatchMessage(msg)
 			end
 		else
 			user32.getMessage(msg, nil, 0, 0)
 			user32.translateMessage(msg)
-			user32.dispatchMessageA(msg)
+			user32.dispatchMessage(msg)
 		end
 	end
 end
