@@ -4,7 +4,7 @@ A painting program implemented entirely from scratch in LuaJIT.
 
 ## Requirements
 
-- Linux or Windows (Linux is recommended)
+- Linux (Recommended) or Windows
 - Support for OpenGL 4.3 (you most certainly have this)
 - _That's it._
 
