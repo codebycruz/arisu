@@ -23,6 +23,7 @@ ffi.cdef([[
 	void glClearColor(float r, float g, float b, float a);
 	void glViewport(int x, int y, GLsizei width, GLsizei height);
 	void glDrawElements(GLenum mode, GLsizei count, GLenum type, const void* indices);
+	void glDeleteTextures(GLsizei n, const GLuint* textures);
 	char* glGetString(GLenum name);
 	void glEnable(GLenum cap);
 	void glDisable(GLenum cap);
@@ -145,11 +146,12 @@ else
 
 		glCreateTextures = "void(*)(GLenum, GLsizei, GLuint*)",
 		glTextureStorage3D = "void(*)(GLuint, GLsizei, GLenum, GLsizei, GLsizei, GLsizei)",
-		glTextureSubImage3D = "void(*)(GLuint, GLsizei, GLint, GLint, GLint, GLsizei, GLsizei, GLsizei, GLenum, GLenum, const void*)",
+		glTextureSubImage3D =
+		"void(*)(GLuint, GLsizei, GLint, GLint, GLint, GLsizei, GLsizei, GLsizei, GLenum, GLenum, const void*)",
 		glTextureParameteri = "void(*)(GLuint, GLenum, GLint)",
 		glBindTextureUnit = "void(*)(GLuint, GLuint)",
-		glDeleteTextures = "void(*)(GLsizei, const GLuint*)",
-		glCopyImageSubData = "void(*)(GLuint, GLenum, GLint, GLint, GLint, GLint, GLuint, GLenum, GLint, GLint, GLint, GLint, GLsizei, GLsizei, GLsizei)",
+		glCopyImageSubData =
+		"void(*)(GLuint, GLenum, GLint, GLint, GLint, GLint, GLuint, GLenum, GLint, GLint, GLint, GLint, GLsizei, GLsizei, GLsizei)",
 
 		glBindBufferBase = "void(*)(GLenum, GLuint, GLuint)",
 
@@ -158,7 +160,6 @@ else
 		glBindImageTexture = "void(*)(GLuint, GLuint, GLint, unsigned char, GLint, GLenum, GLenum)",
 	}) do
 		local fn = ffi.cast(ty, wgl.getProcAddress(name))
-		print(name, fn)
 		assert(fn ~= nil,
 			"Failed to load OpenGL function: " ..
 			name .. ", ensure you're loading this after creating a valid OpenGL context.")

@@ -330,7 +330,7 @@ function Layout.fromElement(element)
 			table.insert(childLayouts, Layout.fromElement(child))
 		end
 
-		layout:withChildren(table.unpack(childLayouts))
+		layout:withChildren(unpack(childLayouts))
 	end
 
 	return layout

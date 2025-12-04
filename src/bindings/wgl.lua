@@ -27,7 +27,7 @@ return {
 	---@type fun(hdc: user32.HDC): wgl.HGLRC
 	createContext = C.wglCreateContext,
 
-	---@type fun(hdc: user32.HDC, hglrc: wgl.HGLRC): boolean
+	---@type fun(hdc: user32.HDC, hglrc: wgl.HGLRC): number
 	makeCurrent = C.wglMakeCurrent,
 
 	---@type fun(hglrc: wgl.HGLRC): boolean

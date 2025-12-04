@@ -72,4 +72,23 @@ return {
 
 	---@type fun(hdc: user32.HDC)
 	swapBuffers = C.SwapBuffers,
+
+	PFD_DRAW_TO_WINDOW = 0x00000004,
+	PFD_SUPPORT_OPENGL = 0x00000020,
+	PFD_TYPE_RGBA = 0,
+	PFD_MAIN_PLANE = 0,
+
+	---@type fun(): gdi.PIXELFORMATDESCRIPTOR
+	newPFD = function()
+		return ffi.new("PIXELFORMATDESCRIPTOR", {
+			nSize = ffi.sizeof("PIXELFORMATDESCRIPTOR"),
+			nVersion = 1,
+			dwFlags = 0x00000004 + 0x00000020,
+			iPixelType = 0,
+			cColorBits = 32,
+			cDepthBits = 24,
+			cStencilBits = 8,
+			iLayerType = 0,
+		})
+	end,
 }
