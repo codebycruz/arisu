@@ -85,11 +85,21 @@ function Win32EventLoop.new()
 
 	class.lpszClassName = "ArisuWindow"
 	class.lpfnWndProc = user32.newWndProc(function(hwnd, msg, wParam, lParam)
+		if not self.callback then
+			return user32.defWindowProc(hwnd, msg, wParam, lParam)
+		end
+
 		local wnd = self.windows[util.toPointer(hwnd)]
 
-		if msg == user32.WM_PAINT and self.callback then
-			print("redraw here")
+		if msg == user32.WM_PAINT then
 			self.callback({ name = "redraw", window = wnd }, self.handler)
+			return 0
+		elseif msg == user32.WM_SIZE then
+			if wnd then
+				wnd.width = bit.band(lParam, 0xFFFF)
+				wnd.height = bit.rshift(lParam, 16)
+			end
+			self.callback({ name = "resize", window = wnd }, self.handler)
 			return 0
 		end
 
@@ -141,7 +151,14 @@ end
 function Win32EventLoop:run(callback)
 	self.isActive = true
 	self.currentMode = "poll"
-	self.callback = callback
+	self.callback = function(event, handler)
+		local ok, err = pcall(callback, event, handler)
+		if not ok then
+			print("Error in event loop callback: " .. tostring(err))
+		end
+
+		return ok
+	end
 
 	local msg = user32.newMsg()
 	while self.isActive do
