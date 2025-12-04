@@ -12,7 +12,7 @@ Win32Context.__index = Win32Context
 ---@param window Win32Window
 ---@param sharedCtx Win32Context?
 function Win32Context.new(window, sharedCtx)
-	local hdc = user32.getDC(window.id)
+	local hdc = user32.getDC(window.hwnd)
 
 	local pfDescriptor = gdi.newPFD()
 	local pf = gdi.choosePixelFormat(hdc, pfDescriptor)

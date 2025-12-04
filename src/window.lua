@@ -5,6 +5,7 @@ local windowBackend = util.isWindows() and require("window.win32") or require("w
 ---@field id any?
 ---@field width number
 ---@field height number
+---@field shouldRedraw boolean
 ---@field new fun(eventLoop: EventLoop, width: number, height: number): Window
 ---@field destroy fun(self: Window)
 ---@field setTitle fun(self: Window, title: string)

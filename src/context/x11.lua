@@ -61,10 +61,6 @@ function X11Context:swapBuffers()
 	glx.swapBuffers(self.display, self.window.id)
 end
 
-function X11Context:present()
-	self:swapBuffers()
-end
-
 function X11Context:destroy()
 	glx.destroyContext(self.display, self.ctx)
 end

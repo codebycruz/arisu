@@ -1,10 +1,11 @@
 local user32 = require("bindings.user32")
 local kernel32 = require("bindings.kernel32")
-local ffi = require("ffi")
+local util = require("util")
 
 ---@class Win32Window: Window
 ---@field display user32.HDC
----@field id user32.HWND
+---@field id ffi.cdata*
+---@field hwnd user32.HWND
 ---@field currentCursor number?
 local Win32Window = {}
 Win32Window.__index = Win32Window
@@ -38,7 +39,7 @@ function Win32Window.new(eventLoop, width, height)
 		error("Failed to update window: " .. kernel32.getLastErrorMessage())
 	end
 
-	return setmetatable({ id = window, width = width, height = height }, Win32Window)
+	return setmetatable({ hwnd = window, id = util.toPointer(window), width = width, height = height }, Win32Window)
 end
 
 ---@param image Image|nil
@@ -66,6 +67,10 @@ end
 
 ---@class Win32EventLoop: EventLoop
 ---@field class user32.WNDCLASSEXA
+---@field isActive boolean
+---@field currentMode "poll" | "wait"
+---@field handler EventHandler
+---@field callback fun(event: Event, handler: EventHandler)
 local Win32EventLoop = {}
 Win32EventLoop.__index = Win32EventLoop
 
@@ -76,10 +81,19 @@ function Win32EventLoop.new()
 	end
 
 	local class = user32.newWndClassEx()
+	local self = setmetatable({ class = class, windows = {} }, Win32EventLoop)
+
 	class.lpszClassName = "ArisuWindow"
-	class.lpfnWndProc = user32.newWndProc(function(wnd, msg, w, l)
-		print("class wnd proc...", wnd, msg, w, l)
-		return user32.defWindowProc(wnd, msg, w, l)
+	class.lpfnWndProc = user32.newWndProc(function(hwnd, msg, wParam, lParam)
+		local wnd = self.windows[util.toPointer(hwnd)]
+
+		if msg == user32.WM_PAINT and self.callback then
+			print("redraw here")
+			self.callback({ name = "redraw", window = wnd }, self.handler)
+			return 0
+		end
+
+		return user32.defWindowProc(hwnd, msg, wParam, lParam)
 	end)
 	class.hCursor = user32.loadCursor(nil, user32.IDC_ARROW)
 	class.hIcon = user32.loadIcon(nil, user32.IDI_APPLICATION)
@@ -92,43 +106,46 @@ function Win32EventLoop.new()
 		error("Failed to register window class: " .. kernel32.getLastErrorMessage())
 	end
 
-	return setmetatable({ class = class, windows = {} }, Win32EventLoop)
+	local handler = {}
+	do
+		function handler.exit(_)
+			self.isActive = false
+		end
+
+		function handler.setMode(_, mode)
+			self.currentMode = mode
+		end
+
+		function handler.requestRedraw(_, window)
+			window.shouldRedraw = true
+		end
+	end
+
+	self.handler = handler
+
+	return self
 end
 
 ---@param window Win32Window
 function Win32EventLoop:register(window)
-	self.windows[tostring(window.id)] = window
+	self.windows[window.id] = window
 end
 
 ---@param window Win32Window
 function Win32EventLoop:close(window)
 	window:destroy()
-	self.windows[tostring(window.id)] = nil
+	self.windows[window.id] = nil
 end
 
 ---@param callback fun(event: Event, handler: EventHandler)
 function Win32EventLoop:run(callback)
-	local isActive = true
-	local currentMode = "poll"
-
-	local handler = {}
-	do
-		function handler:exit()
-			isActive = false
-		end
-
-		function handler:setMode(mode)
-			currentMode = mode
-		end
-
-		function handler:requestRedraw(window)
-			window.shouldRedraw = true
-		end
-	end
+	self.isActive = true
+	self.currentMode = "poll"
+	self.callback = callback
 
 	local msg = user32.newMsg()
-	while isActive do
-		if currentMode == "poll" then
+	while self.isActive do
+		if self.currentMode == "poll" then
 			while user32.peekMessage(msg, nil, 0, 0, user32.PM_REMOVE) do
 				user32.translateMessage(msg)
 				user32.dispatchMessage(msg)
@@ -139,7 +156,15 @@ function Win32EventLoop:run(callback)
 			user32.dispatchMessage(msg)
 		end
 
-		callback({ name = "aboutToWait" }, handler)
+		for _, window in pairs(self.windows) do
+			if window.shouldRedraw then
+				window.shouldRedraw = false
+				print("??")
+				callback({ name = "redraw", window = window }, self.handler)
+			end
+		end
+
+		callback({ name = "aboutToWait" }, self.handler)
 	end
 end
 

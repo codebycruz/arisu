@@ -433,7 +433,7 @@ function Arisu.runApp(cons)
 		ctx.vao:bind()
 		gl.drawElements(gl.TRIANGLES, ctx.nIndices, gl.UNSIGNED_INT, nil)
 
-		ctx.renderCtx:present()
+		ctx.renderCtx:swapBuffers()
 	end
 
 	eventLoop:run(function(event, handler)
