@@ -3,7 +3,6 @@
 --- | { variant: "refreshView", window: Window }
 --- | { variant: "redraw", window: Window }
 --- | { variant: "setTitle", to: string }
---- | { variant: "waitOnGPU", window: Window }
 --- | { variant: "chain", tasks: Task[] }
 --- | { variant: "closeWindow", window: Window }
 
@@ -28,10 +27,6 @@ end
 ---@param title string
 function Task.setMainWindowTitle(title) ---@return Task
 	return { variant = "setTitle", to = title }
-end
-
-function Task.waitOnGPU(window) ---@return Task
-	return { variant = "waitOnGPU", window = window }
 end
 
 ---@param tasks Task[]

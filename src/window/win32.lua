@@ -185,6 +185,10 @@ function Win32EventLoop.new()
 		function handler.requestRedraw(_, window)
 			window.shouldRedraw = true
 		end
+
+		function handler.close(_, window)
+			self:close(window)
+		end
 	end
 
 	self.handler = handler

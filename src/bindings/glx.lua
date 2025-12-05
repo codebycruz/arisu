@@ -26,6 +26,7 @@ ffi.cdef([[
 
 	// Misc
 	const char* glXQueryExtensionsString(XDisplay* dpy, int screen);
+	void* glXGetProcAddress(const unsigned char* procname);
 ]])
 
 ---@class GLXContext: userdata
@@ -112,4 +113,7 @@ return {
 
 		return ffi.string(extStr)
 	end,
+
+	---@type fun(procname: string): function
+	getProcAddress = C.glXGetProcAddress
 }

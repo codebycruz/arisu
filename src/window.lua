@@ -67,7 +67,8 @@ end
 ---@alias EventLoopMode "poll" | "wait"
 
 ---@class EventHandler
----@field exit fun()
+---@field exit fun(self)
+---@field close fun(self, window: Window)
 ---@field requestRedraw fun(self, window: Window)
 ---@field setMode fun(self, mode: EventLoopMode)
 
