@@ -542,37 +542,40 @@ function App:view(window)
 									Element.new("div")
 										:withStyle({
 											direction = "row",
-											height = { abs = 24 },
+											height = { abs = 28 },
 										})
 										:withChildren({
 											Element.new("div"):withStyle({
-												width = { abs = 24 },
-												height = { abs = 24 },
+												width = { abs = 28 },
+												height = { abs = 28 },
+												bgImage = self.lineTexture,
+												bg = toolBg("line"),
+											}):onClick({ type = "ToolClicked", tool = "line" }),
+											Element.new("div"):withStyle({
+												width = { abs = 28 },
+												height = { abs = 28 },
+												bgImage = self.curveTexture,
+												bg = toolBg("curve"),
+											}):onClick({ type = "ToolClicked", tool = "curve" }),
+										}),
+									Element.new("div")
+										:withStyle({
+											direction = "row",
+											height = { abs = 28 },
+										})
+										:withChildren({
+											Element.new("div"):withStyle({
+												width = { abs = 28 },
+												height = { abs = 28 },
 												bgImage = self.squareTexture,
 												bg = toolBg("square"),
 											}):onClick({ type = "ToolClicked", tool = "square" }),
-										}),
-									Element.new("div")
-										:withStyle({
-											direction = "row",
-											height = { abs = 24 },
-										})
-										:withChildren({
 											Element.new("div"):withStyle({
-												width = { abs = 24 },
-												height = { abs = 24 },
-											}),
-										}),
-									Element.new("div")
-										:withStyle({
-											direction = "row",
-											height = { abs = 24 },
-										})
-										:withChildren({
-											Element.new("div"):withStyle({
-												width = { abs = 24 },
-												height = { abs = 24 },
-											}),
+												width = { abs = 28 },
+												height = { abs = 28 },
+												bgImage = self.circleTexture,
+												bg = toolBg("circle"),
+											}):onClick({ type = "ToolClicked", tool = "circle" }),
 										})
 								}),
 							Element.from("Shapes"):withStyle({
