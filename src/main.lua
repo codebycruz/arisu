@@ -12,11 +12,13 @@ local WindowBuilder = (require("window")).WindowBuilder
 local ffi = require("ffi")
 
 ---@alias Tool "brush" | "eraser" | "fill" | "pencil" | "text" | "select"
+---@alias Shape "square" | "line"
 
 ---@alias Message
 --- | { type: "EraserClicked" }
 --- | { type: "ColorClicked", r: number, g: number, b: number }
 --- | { type: "ToolClicked", tool: Tool }
+--- | { type: "ShapeClicked", shape: Shape }
 --- | { type: "ClearClicked" }
 --- | { type: "SaveClicked" }
 --- | { type: "LoadClicked" }
@@ -46,6 +48,10 @@ local ffi = require("ffi")
 ---@field resizeTexture Texture
 ---@field rotateTexture Texture
 ---@field brushesTexture Texture
+---@field squareTexture Texture
+---@field circleTexture Texture
+---@field lineTexture Texture
+---@field curveTexture Texture
 ---@field popAudio Audio
 ---@field textureManager TextureManager
 ---@field fontManager FontManager
@@ -55,7 +61,7 @@ local ffi = require("ffi")
 ---@field canvasBuffer userdata
 ---@field isDrawing boolean
 ---@field currentColor {r: number, g: number, b: number, a: number}
----@field selectedTool string
+---@field selectedTool Tool | Shape
 ---@field selectStart { x: number, y: number }|nil
 local App = {}
 App.__index = App
@@ -92,7 +98,7 @@ function App.new(window, textureManager, fontManager)
 	local textImage = assert(Image.fromPath("assets/icons/text.qoi"), "Failed to load text image")
 	this.textTexture = textureManager:upload(textImage)
 
-	local eraserImage = assert(Image.fromPath("assets/icons/eraser.qoi"), "Failed to load eraser image")
+	local eraserImage = assert(Image.fromPath("assets/icons/david/eraser.qoi"), "Failed to load eraser image")
 	this.eraserTexture = textureManager:upload(eraserImage)
 
 	local magnifierImage = assert(Image.fromPath("assets/icons/magnifier.qoi"), "Failed to load magnifier image")
@@ -127,6 +133,18 @@ function App.new(window, textureManager, fontManager)
 
 	local brushesImage = assert(Image.fromPath("assets/icons/brushes.qoi"), "Failed to load brushes image")
 	this.brushesTexture = textureManager:upload(brushesImage)
+
+	local squareImage = assert(Image.fromPath("assets/icons/david/square.qoi"), "Failed to load square image")
+	this.squareTexture = textureManager:upload(squareImage)
+
+	local circleImage = assert(Image.fromPath("assets/icons/david/circle.qoi"), "Failed to load circle image")
+	this.circleTexture = textureManager:upload(circleImage)
+
+	local lineImage = assert(Image.fromPath("assets/icons/david/line.qoi"), "Failed to load line image")
+	this.lineTexture = textureManager:upload(lineImage)
+
+	local curveImage = assert(Image.fromPath("assets/icons/david/curve.qoi"), "Failed to load curve image")
+	this.curveTexture = textureManager:upload(curveImage)
 
 	this.canvasBuffer = ffi.new("uint8_t[?]", 800 * 600 * 4)
 	for i = 0, 800 * 600 * 4 - 1 do
@@ -472,6 +490,8 @@ function App:view(window)
 								height = { rel = 0.3 },
 							}),
 						}),
+
+					-- Brushes section
 					Element.new("div")
 						:withStyle({
 							direction = "column",
@@ -498,6 +518,66 @@ function App:view(window)
 								align = "center",
 								justify = "center",
 								fg = disabledColor,
+								height = { rel = 0.3 },
+							}),
+						}),
+
+					-- Shapes section
+					Element.new("div")
+						:withStyle({
+							direction = "column",
+							width = { abs = 230 },
+							height = { rel = 1.0 },
+							border = { right = { width = 1, color = borderColor } },
+						})
+						:withChildren({
+							Element.new("div")
+								:withStyle({
+									direction = "column",
+									margin = { top = 3, bottom = 3, left = 3, right = 3 },
+									border = squareBorder,
+									height = { rel = 0.7 },
+								})
+								:withChildren({
+									Element.new("div")
+										:withStyle({
+											direction = "row",
+											height = { abs = 24 },
+										})
+										:withChildren({
+											Element.new("div"):withStyle({
+												width = { abs = 24 },
+												height = { abs = 24 },
+												bgImage = self.squareTexture,
+												bg = toolBg("square"),
+											}):onClick({ type = "ToolClicked", tool = "square" }),
+										}),
+									Element.new("div")
+										:withStyle({
+											direction = "row",
+											height = { abs = 24 },
+										})
+										:withChildren({
+											Element.new("div"):withStyle({
+												width = { abs = 24 },
+												height = { abs = 24 },
+											}),
+										}),
+									Element.new("div")
+										:withStyle({
+											direction = "row",
+											height = { abs = 24 },
+										})
+										:withChildren({
+											Element.new("div"):withStyle({
+												width = { abs = 24 },
+												height = { abs = 24 },
+											}),
+										})
+								}),
+							Element.from("Shapes"):withStyle({
+								align = "center",
+								justify = "center",
 								height = { rel = 0.3 },
 							}),
 						}),
