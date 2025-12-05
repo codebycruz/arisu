@@ -170,9 +170,12 @@ function Layout:solve(parentWidth, parentHeight)
 	-- First pass: scan for non-auto sizes and count auto elements
 	for i = 1, #self.children do
 		local child = self.children[i]
+		local childPosition = child.position or "static"
 		local childMainDimension = isRow and child.width or child.height
 
-		if childMainDimension == "auto" then
+		if childPosition == "relative" then
+			-- Relative positioned elements don't participate in layout
+		elseif childMainDimension == "auto" then
 			autoCount = autoCount + 1
 		else
 			-- Calculate size assuming rel takes full parent space
@@ -229,7 +232,8 @@ function Layout:solve(parentWidth, parentHeight)
 	totalMainSize = 0
 	visibleChildCount = 0
 	for i = 1, #childResults do
-		if childResults[i].width > 0 or childResults[i].height > 0 then
+		local childPosition = childResults[i].position or "static"
+		if (childResults[i].width > 0 or childResults[i].height > 0) and childPosition ~= "relative" then
 			local childMargin = childResults[i].margin
 			local childMainMargin = isRow and (childMargin.left + childMargin.right) or
 				(childMargin.top + childMargin.bottom)
@@ -262,8 +266,14 @@ function Layout:solve(parentWidth, parentHeight)
 
 	local processedVisible = 0
 	for _, childResult in ipairs(childResults) do
+		local childPosition = childResult.position or "static"
 		local isVisible = childResult.width > 0 or childResult.height > 0
-		if isVisible then
+
+		if isVisible and childPosition == "relative" then
+			-- Relative positioned elements are positioned at (0, 0) of parent's content area
+			setMainPos(childResult, (isRow and padding.left or padding.top) + (isRow and childResult.x or childResult.y))
+			setCrossPos(childResult, (isRow and padding.top or padding.left) + (isRow and childResult.y or childResult.x))
+		elseif isVisible then
 			processedVisible = processedVisible + 1
 			local isLastVisible = processedVisible == visibleChildCount
 

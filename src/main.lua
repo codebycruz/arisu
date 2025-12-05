@@ -780,6 +780,8 @@ function App:view(window)
 					Element.new("div")
 						:withStyle({
 							bgImage = self.canvasTexture,
+							width = { rel = 1 },
+							height = { rel = 1 },
 							margin = { right = 20, left = 20, top = 20, bottom = 20 },
 						})
 						:onMouseDown(function(x, y, elementWidth, elementHeight)
@@ -809,6 +811,14 @@ function App:view(window)
 								elementHeight = elementHeight,
 							}
 						end),
+					Element.new("div")
+						:withStyle({
+							position = "relative",
+							-- bg = { r = 1, g = 1, b = 1, a = 1 },
+							-- bgImage = self.bucketTexture,
+							top = 0,
+							left = 0
+						})
 				}),
 			Element.new("div")
 				:withStyle({
