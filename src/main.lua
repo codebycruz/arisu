@@ -776,47 +776,39 @@ function App:view(window)
 					bg = { r = 0.7, g = 0.7, b = 0.8, a = 1.0 },
 				})
 				:withChildren({
+					-- Main canvas
 					Element.new("div")
 						:withStyle({
-							bg = { r = 1, g = 1, b = 1, a = 1 },
-							width = { rel = 0.95 },
-							height = { rel = 0.95 },
+							bgImage = self.canvasTexture,
+							margin = { right = 20, left = 20, top = 20, bottom = 20 },
 						})
-						:withChildren({
-							Element.new("div")
-								:withStyle({
-									bgImage = self.canvasTexture,
-									width = { rel = 1.0 },
-									height = { rel = 1.0 },
-								})
-								:onMouseDown(function(x, y, elementWidth, elementHeight)
-									return {
-										type = "StartDrawing",
-										x = x,
-										y = y,
-										elementWidth = elementWidth,
-										elementHeight = elementHeight,
-									}
-								end)
-								:onMouseUp(function(x, y, elementWidth, elementHeight)
-									return {
-										type = "StopDrawing",
-										x = x,
-										y = y,
-										elementWidth = elementWidth,
-										elementHeight = elementHeight,
-									}
-								end)
-								:onMouseMove(function(x, y, elementWidth, elementHeight)
-									return {
-										type = "Hovered",
-										x = x,
-										y = y,
-										elementWidth = elementWidth,
-										elementHeight = elementHeight,
-									}
-								end),
-						}),
+						:onMouseDown(function(x, y, elementWidth, elementHeight)
+							return {
+								type = "StartDrawing",
+								x = x,
+								y = y,
+								elementWidth = elementWidth,
+								elementHeight = elementHeight,
+							}
+						end)
+						:onMouseUp(function(x, y, elementWidth, elementHeight)
+							return {
+								type = "StopDrawing",
+								x = x,
+								y = y,
+								elementWidth = elementWidth,
+								elementHeight = elementHeight,
+							}
+						end)
+						:onMouseMove(function(x, y, elementWidth, elementHeight)
+							return {
+								type = "Hovered",
+								x = x,
+								y = y,
+								elementWidth = elementWidth,
+								elementHeight = elementHeight,
+							}
+						end),
 				}),
 			Element.new("div")
 				:withStyle({

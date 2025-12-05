@@ -63,6 +63,7 @@ end
 ---@field y number
 ---@field style VisualStyle
 ---@field border Borders
+---@field margin Margin
 ---@field children ComputedLayout[]
 ---@field visible boolean
 ---@field zIndex number
@@ -84,6 +85,7 @@ function Layout:solve(parentWidth, parentHeight)
 			y = 0,
 			style = self.style,
 			border = self.border,
+			margin = margin,
 			children = {},
 			visible = false,
 		}
@@ -107,21 +109,21 @@ function Layout:solve(parentWidth, parentHeight)
 	local borderWidth = (border.left.width or 0) + (border.right.width or 0)
 	local borderHeight = (border.top.width or 0) + (border.bottom.width or 0)
 
-	local availableWidth = parentWidth - margin.left - margin.right - borderWidth
-	local availableHeight = parentHeight - margin.top - margin.bottom - borderHeight
+	local availableWidth = parentWidth - margin.left - margin.right
+	local availableHeight = parentHeight - margin.top - margin.bottom
 
 	local width
 	if self.width == "auto" then
-		width = availableWidth + borderWidth
+		width = availableWidth
 	else
-		width = (self.width.abs or (self.width.rel * (availableWidth + borderWidth)))
+		width = (self.width.abs or (self.width.rel * availableWidth))
 	end
 
 	local height
 	if self.height == "auto" then
-		height = availableHeight + borderHeight
+		height = availableHeight
 	else
-		height = (self.height.abs or (self.height.rel * (availableHeight + borderHeight)))
+		height = (self.height.abs or (self.height.rel * availableHeight))
 	end
 
 	local padding = { top = 0, bottom = 0, left = 0, right = 0 }
@@ -228,7 +230,10 @@ function Layout:solve(parentWidth, parentHeight)
 	visibleChildCount = 0
 	for i = 1, #childResults do
 		if childResults[i].width > 0 or childResults[i].height > 0 then
-			totalMainSize = totalMainSize + mainSize(childResults[i])
+			local childMargin = childResults[i].margin
+			local childMainMargin = isRow and (childMargin.left + childMargin.right) or
+				(childMargin.top + childMargin.bottom)
+			totalMainSize = totalMainSize + mainSize(childResults[i]) + childMainMargin
 			visibleChildCount = visibleChildCount + 1
 		end
 	end
@@ -267,10 +272,14 @@ function Layout:solve(parentWidth, parentHeight)
 			offset = offset + mainSize(childResult) + (isLastVisible and 0 or spacing)
 
 			local crossOffset = (isRow and padding.top or padding.left) + (isRow and childResult.y or childResult.x)
+			local childMargin = childResult.margin
+			local childCrossMargin = isRow and (childMargin.top + childMargin.bottom) or
+				(childMargin.left + childMargin.right)
 			if align == "center" then
-				setCrossPos(childResult, crossOffset + (containerCrossSize - crossSize(childResult)) / 2)
+				setCrossPos(childResult,
+					crossOffset + (containerCrossSize - crossSize(childResult) - childCrossMargin) / 2)
 			elseif align == "end" then
-				setCrossPos(childResult, crossOffset + containerCrossSize - crossSize(childResult))
+				setCrossPos(childResult, crossOffset + containerCrossSize - crossSize(childResult) - childCrossMargin)
 			else
 				setCrossPos(childResult, crossOffset)
 			end
@@ -303,6 +312,7 @@ function Layout:solve(parentWidth, parentHeight)
 		y = y,
 		style = self.style,
 		border = border,
+		margin = margin,
 		children = childResults,
 		zIndex = self.zIndex,
 		position = self.position,
