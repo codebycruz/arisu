@@ -6,9 +6,6 @@ local Context = require("context")
 local Layout = require("ui.layout")
 local Element = require("ui.element")
 
-local vertexShader = io.open("src/shaders/main.vert.glsl", "r"):read("*a")
-local fragmentShader = io.open("src/shaders/main.frag.glsl", "r"):read("*a")
-
 local function toNDC(pos, screenSize)
 	return (pos / (screenSize * 0.5)) - 1.0
 end
@@ -222,13 +219,17 @@ end
 local Arisu = {}
 
 ---@class WindowContext
----@field vao VAO
----@field vertex Buffer
----@field index Buffer
 ---@field lastFrameTime number
 ---@field window Window
 ---@field renderCtx Context
+---@field quadVAO VAO
 ---@field quadPipeline Pipeline
+---@field quadVertex Buffer
+---@field quadIndex Buffer
+---@field overlayVAO VAO
+---@field overlayPipeline Pipeline
+---@field overlayVertex Buffer
+---@field overlayIndex Buffer
 ---@field ui Element
 ---@field layoutTree Layout
 ---@field computedLayout ComputedLayout
@@ -244,8 +245,10 @@ function Arisu.runApp(cons)
 	---@type WindowContext
 	local mainCtx
 
-	local vertexProgram ---@type Program
-	local fragmentProgram ---@type Program
+	local mainVertexProgram ---@type Program
+	local mainFragmentProgram ---@type Program
+	local overlayVertexProgram ---@type Program
+	local overlayFragmentProgram ---@type Program
 	local samplers ---@type Uniform
 	local textureDims ---@type UniformBlock
 	local textureManager ---@type TextureManager
@@ -293,34 +296,68 @@ function Arisu.runApp(cons)
 			:withAttribute({ type = "f32", size = 2, offset = 28 }) -- uv
 			:withAttribute({ type = "f32", size = 1, offset = 36 }) -- texture id
 
-		local vertex = Buffer.new()
-		local index = Buffer.new()
+		local quadVertex = Buffer.new()
+		local quadIndex = Buffer.new()
 
-		local vao = VAO.new()
-		vao:setVertexBuffer(vertex, vertexDescriptor)
-		vao:setIndexBuffer(index)
+		local quadVAO = VAO.new()
+		quadVAO:setVertexBuffer(quadVertex, vertexDescriptor)
+		quadVAO:setIndexBuffer(quadIndex)
+
+		local overlayVertex = Buffer.new()
+		local overlayIndex = Buffer.new()
+
+		local overlayVertexDescriptor = BufferDescriptor
+			.new()
+			:withAttribute({ type = "f32", size = 3, offset = 0 }) -- position (vec3)
+			:withAttribute({ type = "f32", size = 4, offset = 12 }) -- color (rgba)
+			:withAttribute({ type = "f32", size = 2, offset = 28 }) -- uv
+
+		local overlayVAO = VAO.new()
+		overlayVAO:setVertexBuffer(overlayVertex, overlayVertexDescriptor)
+		overlayVAO:setIndexBuffer(overlayIndex)
 
 		if not mainCtx then
-			vertexProgram = Program.new(gl.ShaderType.VERTEX, vertexShader)
-			fragmentProgram = Program.new(gl.ShaderType.FRAGMENT, fragmentShader)
+			local mainVertexShader = io.open("src/shaders/main.vert.glsl", "r"):read("*a")
+			local mainFragmentShadder = io.open("src/shaders/main.frag.glsl", "r"):read("*a")
 
-			samplers = Uniform.new(fragmentProgram, "sampler2DArray", 0)
+			mainVertexProgram = Program.new(gl.ShaderType.VERTEX, mainVertexShader)
+			mainFragmentProgram = Program.new(gl.ShaderType.FRAGMENT, mainFragmentShadder)
+
+			local overlayVertexShader = io.open("src/shaders/overlay.vert.glsl", "r"):read("*a")
+			local overlayFragmentShader = io.open("src/shaders/overlay.frag.glsl", "r"):read("*a")
+
+			overlayVertexProgram = Program.new(gl.ShaderType.VERTEX, overlayVertexShader)
+			overlayFragmentProgram = Program.new(gl.ShaderType.FRAGMENT, overlayFragmentShader)
+
+			samplers = Uniform.new(mainFragmentProgram, "sampler2DArray", 0)
 			textureDims = UniformBlock.new(0)
 			textureManager = TextureManager.new(samplers, textureDims, 0)
 			fontManager = FontManager.new(textureManager)
 		end
 
 		local quadPipeline = Pipeline.new()
-		quadPipeline:setProgram(gl.ShaderType.VERTEX, vertexProgram)
-		quadPipeline:setProgram(gl.ShaderType.FRAGMENT, fragmentProgram)
+		quadPipeline:setProgram(gl.ShaderType.VERTEX, mainVertexProgram)
+		quadPipeline:setProgram(gl.ShaderType.FRAGMENT, mainFragmentProgram)
 
+		local overlayPipeline = Pipeline.new()
+		overlayPipeline:setProgram(gl.ShaderType.VERTEX, overlayFragmentProgram)
+		overlayPipeline:setProgram(gl.ShaderType.FRAGMENT, overlayVertexProgram)
+
+		---@type WindowContext
 		local ctx = {
-			vao = vao,
-			vertex = vertex,
-			index = index,
 			window = window,
 			lastFrameTime = -math.huge,
+
 			quadPipeline = quadPipeline,
+			quadVAO = quadVAO,
+			quadVertex = quadVertex,
+			quadIndex = quadIndex,
+
+			overlayPipeline = overlayPipeline,
+			overlayVAO = overlayVAO,
+			overlayVertex = overlayVertex,
+			overlayIndex = overlayIndex,
+
 			renderCtx = renderCtx,
 		}
 
@@ -346,8 +383,8 @@ function Arisu.runApp(cons)
 
 	local vertices, indices = {}, {}
 	generateLayoutQuads(mainCtx.computedLayout, 0, 0, vertices, indices, mainCtx.window.width, mainCtx.window.height)
-	mainCtx.vertex:setData("f32", vertices)
-	mainCtx.index:setData("u32", indices)
+	mainCtx.quadVertex:setData("f32", vertices)
+	mainCtx.quadIndex:setData("u32", indices)
 	mainCtx.nIndices = #indices
 
 	local runUpdate
@@ -371,8 +408,9 @@ function Arisu.runApp(cons)
 
 		local vertices, indices = {}, {}
 		generateLayoutQuads(ctx.computedLayout, 0, 0, vertices, indices, ctx.window.width, ctx.window.height)
-		ctx.vertex:setData("f32", vertices)
-		ctx.index:setData("u32", indices)
+
+		ctx.quadVertex:setData("f32", vertices)
+		ctx.quadIndex:setData("u32", indices)
 		ctx.nIndices = #indices
 
 		handler:requestRedraw(ctx.window)
@@ -427,10 +465,11 @@ function Arisu.runApp(cons)
 		gl.viewport(0, 0, ctx.window.width, ctx.window.height)
 
 		ctx.quadPipeline:bind()
-
 		textureManager:bind()
-		ctx.vao:bind()
+		ctx.quadVAO:bind()
 		gl.drawElements(gl.TRIANGLES, ctx.nIndices, gl.UNSIGNED_INT, nil)
+
+		ctx.overlayPipeline:bind()
 
 		ctx.renderCtx:swapBuffers()
 	end
@@ -499,7 +538,8 @@ function Arisu.runApp(cons)
 			if info then
 				local relX = event.x - info.absX
 				local relY = event.y - info.absY
-				runUpdate(info.element.onmousedown(relX, relY, info.layout.width, info.layout.height), ctx.window, handler)
+				runUpdate(info.element.onmousedown(relX, relY, info.layout.width, info.layout.height), ctx.window,
+					handler)
 			end
 		elseif eventName == "mouseRelease" then
 			local ctx = windowContexts[event.window]
