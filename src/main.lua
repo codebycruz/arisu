@@ -814,8 +814,8 @@ function App:view(window)
 					Element.new("div")
 						:withStyle({
 							position = "relative",
-							-- bg = { r = 1, g = 1, b = 1, a = 1 },
-							-- bgImage = self.bucketTexture,
+							bg = { r = 1, g = 1, b = 1, a = 1 },
+							bgImage = self.bucketTexture,
 							top = 0,
 							left = 0
 						})
