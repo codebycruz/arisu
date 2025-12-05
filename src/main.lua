@@ -11,20 +11,23 @@ local WindowBuilder = (require("window")).WindowBuilder
 
 local ffi = require("ffi")
 
----@alias Tool "brush" | "eraser" | "fill" | "pencil" | "text" | "select"
----@alias Shape "square" | "line"
+---@alias Tool "brush" | "eraser" | "fill" | "pencil" | "text" | "select" | "square" | "circle" | "line" | "curve"
 
 ---@alias Message
 --- | { type: "EraserClicked" }
 --- | { type: "ColorClicked", r: number, g: number, b: number }
 --- | { type: "ToolClicked", tool: Tool }
---- | { type: "ShapeClicked", shape: Shape }
 --- | { type: "ClearClicked" }
 --- | { type: "SaveClicked" }
 --- | { type: "LoadClicked" }
 --- | { type: "StartDrawing" }
 --- | { type: "StopDrawing" }
 --- | { type: "Hovered", x: number, y: number, elementWidth: number, elementHeight: number }
+
+---@alias Action
+--- | { tool: "select", start: { x: number, y: number }?, finish: { x: number, y: number }? }
+--- | { tool: "line", start: { x: number, y: number }?, finish: { x: number, y: number }? }
+--- | { tool: Tool }
 
 ---@class App
 ---@field patternTexture Texture
@@ -61,8 +64,7 @@ local ffi = require("ffi")
 ---@field canvasBuffer userdata
 ---@field isDrawing boolean
 ---@field currentColor {r: number, g: number, b: number, a: number}
----@field selectedTool Tool | Shape
----@field selectStart { x: number, y: number }|nil
+---@field currentAction Action
 local App = {}
 App.__index = App
 
@@ -81,7 +83,7 @@ function App.new(window, textureManager, fontManager)
 	this.textureManager = textureManager
 	this.fontManager = fontManager
 	this.currentColor = { r = 0.0, g = 0.0, b = 0.0, a = 1.0 }
-	this.selectedTool = "brush"
+	this.currentAction = { tool = "brush" }
 
 	local brushImage = assert(Image.fromPath("assets/icons/paintbrush.qoi"), "Failed to load brush image")
 	this.brushTexture = textureManager:upload(brushImage)
@@ -182,7 +184,7 @@ function App:view(window)
 			return disabledColor
 		end
 
-		if self.selectedTool == tool then
+		if self.currentAction.tool == tool then
 			return selectedColor
 		else
 			return { r = 0.9, g = 0.9, b = 0.9, a = 1.0 }
@@ -837,13 +839,13 @@ function App:event(event) end
 ---@param window Window
 function App:update(message, window)
 	if message.type == "StartDrawing" then
-		if self.selectedTool == "fill" then
+		if self.currentAction.tool == "fill" then
 			self.compute:fill(
 				(message.x / message.elementWidth) * 800,
 				(message.y / message.elementHeight) * 600,
 				self.currentColor
 			)
-		elseif self.selectedTool == "brush" then
+		elseif self.currentAction.tool == "brush" then
 			self.compute:stamp(
 				(message.x / message.elementWidth) * 800,
 				(message.y / message.elementHeight) * 600,
@@ -852,12 +854,12 @@ function App:update(message, window)
 			)
 
 			self.isDrawing = true
-		elseif self.selectedTool == "select" then
+		elseif self.currentAction.tool == "select" then
 			local x = (message.x / message.elementWidth) * 800
 			local y = (message.y / message.elementHeight) * 600
 
-			self.selectStart = { x = x, y = y }
-		elseif self.selectedTool == "pencil" then
+			self.currentAction.start = { x = x, y = y }
+		elseif self.currentAction.tool == "pencil" then
 			self.compute:stamp(
 				(message.x / message.elementWidth) * 800,
 				(message.y / message.elementHeight) * 600,
@@ -866,7 +868,7 @@ function App:update(message, window)
 			)
 
 			self.isDrawing = true
-		elseif self.selectedTool == "eraser" then
+		elseif self.currentAction.tool == "eraser" then
 			self.compute:erase((message.x / message.elementWidth) * 800, (message.y / message.elementHeight) * 600, 10)
 
 			self.isDrawing = true
@@ -874,23 +876,23 @@ function App:update(message, window)
 
 		return Task.redraw(window)
 	elseif message.type == "StopDrawing" then
-		if self.selectedTool == "select" and self.selectStart then
+		if self.currentAction.tool == "select" and self.currentAction.start then
 			local x = (message.x / message.elementWidth) * 800
 			local y = (message.y / message.elementHeight) * 600
 
-			if self.selectStart.x == x and self.selectStart.y == y then
+			local start = self.currentAction.start
+			if start.x == x and start.y == y then
 				-- Click without drag, clear selection
 				self.compute:resetSelection()
-			else
-				self.compute:setSelection(
-					math.min(self.selectStart.x, x),
-					math.min(self.selectStart.y, y),
-					math.max(self.selectStart.x, x),
-					math.max(self.selectStart.y, y)
-				)
-			end
 
-			self.selectStart = nil
+				self.currentAction.start = nil
+				self.currentAction.finish = nil
+			else
+				local start = { x = math.min(start.x, x), y = math.min(start.y, y) }
+				local finish = { x = math.max(start.x, x), y = math.max(start.y, y) }
+
+				self.compute:setSelection(start.x, start.y, finish.x, finish.y)
+			end
 		end
 
 		self.isDrawing = false
@@ -902,7 +904,7 @@ function App:update(message, window)
 			self.compute:resetSelection()
 		end
 
-		self.selectedTool = message.tool
+		self.currentAction.tool = message.tool
 		-- self.soundManager:play(self.popAudio, 1.0)
 
 		return Task.refreshView(window)
@@ -927,17 +929,17 @@ function App:update(message, window)
 			-- TODO: Un-hard code canvas size (800, 600)
 			-- Currently it's fine since the canvas won't change size.
 			-- Probably want to refactor textureManager to return the info struct instead of just the id.
-			if self.selectedTool == "eraser" then
+			if self.currentAction.tool == "eraser" then
 				self.compute:erase((message.x / message.elementWidth) * 800, (message.y / message.elementHeight) * 600,
 					10)
-			elseif self.selectedTool == "brush" then
+			elseif self.currentAction.tool == "brush" then
 				self.compute:stamp(
 					(message.x / message.elementWidth) * 800,
 					(message.y / message.elementHeight) * 600,
 					10,
 					self.currentColor
 				)
-			elseif self.selectedTool == "pencil" then
+			elseif self.currentAction.tool == "pencil" then
 				self.compute:stamp(
 					(message.x / message.elementWidth) * 800,
 					(message.y / message.elementHeight) * 600,
