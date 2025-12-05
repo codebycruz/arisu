@@ -1,7 +1,7 @@
 local ffi = require("ffi")
 
-local isWindows = string.sub(package.config, 1, 1) == '\\'
-local isUnix = string.sub(package.config, 1, 1) == '/'
+local isWindows = string.sub(package.config, 1, 1) == "\\"
+local isUnix = string.sub(package.config, 1, 1) == "/"
 
 local Util = {}
 

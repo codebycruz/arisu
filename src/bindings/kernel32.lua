@@ -33,16 +33,8 @@ return {
 		local FORMAT_MESSAGE_FROM_SYSTEM = 0x00001000
 		local buffer = ffi.new("char[256]")
 
-		local msgLen = C.FormatMessageA(
-			FORMAT_MESSAGE_FROM_SYSTEM,
-			nil,
-			C.GetLastError(),
-			0,
-			buffer,
-			ffi.sizeof(buffer),
-			nil
-		)
-
+		local msgLen = C.FormatMessageA(FORMAT_MESSAGE_FROM_SYSTEM, nil, C.GetLastError(), 0, buffer, ffi.sizeof(buffer),
+			nil)
 		if msgLen == 0 then
 			return "Unknown error"
 		end

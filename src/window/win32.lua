@@ -56,7 +56,7 @@ end
 
 local cursors = {
 	pointer = user32.IDC_ARROW,
-	hand2 = user32.IDC_HAND
+	hand2 = user32.IDC_HAND,
 }
 
 ---@param shape "pointer" | "hand2"
@@ -100,7 +100,7 @@ function Win32EventLoop.new()
 	local self = setmetatable({
 		class = class,
 		windows = {},
-		pendingCreates = {}
+		pendingCreates = {},
 	}, Win32EventLoop)
 
 	class.lpszClassName = "ArisuWindow"

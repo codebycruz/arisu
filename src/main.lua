@@ -547,18 +547,22 @@ function App:view(window)
 											height = { abs = 28 },
 										})
 										:withChildren({
-											Element.new("div"):withStyle({
-												width = { abs = 28 },
-												height = { abs = 28 },
-												bgImage = self.lineTexture,
-												bg = toolBg("line"),
-											}):onClick({ type = "ToolClicked", tool = "line" }),
-											Element.new("div"):withStyle({
-												width = { abs = 28 },
-												height = { abs = 28 },
-												bgImage = self.curveTexture,
-												bg = toolBg("curve"),
-											}):onClick({ type = "ToolClicked", tool = "curve" }),
+											Element.new("div")
+												:withStyle({
+													width = { abs = 28 },
+													height = { abs = 28 },
+													bgImage = self.lineTexture,
+													bg = toolBg("line"),
+												})
+												:onClick({ type = "ToolClicked", tool = "line" }),
+											Element.new("div")
+												:withStyle({
+													width = { abs = 28 },
+													height = { abs = 28 },
+													bgImage = self.curveTexture,
+													bg = toolBg("curve"),
+												})
+												:onClick({ type = "ToolClicked", tool = "curve" }),
 										}),
 									Element.new("div")
 										:withStyle({
@@ -566,19 +570,23 @@ function App:view(window)
 											height = { abs = 28 },
 										})
 										:withChildren({
-											Element.new("div"):withStyle({
-												width = { abs = 28 },
-												height = { abs = 28 },
-												bgImage = self.squareTexture,
-												bg = toolBg("square"),
-											}):onClick({ type = "ToolClicked", tool = "square" }),
-											Element.new("div"):withStyle({
-												width = { abs = 28 },
-												height = { abs = 28 },
-												bgImage = self.circleTexture,
-												bg = toolBg("circle"),
-											}):onClick({ type = "ToolClicked", tool = "circle" }),
-										})
+											Element.new("div")
+												:withStyle({
+													width = { abs = 28 },
+													height = { abs = 28 },
+													bgImage = self.squareTexture,
+													bg = toolBg("square"),
+												})
+												:onClick({ type = "ToolClicked", tool = "square" }),
+											Element.new("div")
+												:withStyle({
+													width = { abs = 28 },
+													height = { abs = 28 },
+													bgImage = self.circleTexture,
+													bg = toolBg("circle"),
+												})
+												:onClick({ type = "ToolClicked", tool = "circle" }),
+										}),
 								}),
 							Element.from("Shapes"):withStyle({
 								align = "center",
@@ -811,14 +819,13 @@ function App:view(window)
 								elementHeight = elementHeight,
 							}
 						end),
-					Element.new("div")
-						:withStyle({
-							position = "relative",
-							bg = { r = 1, g = 1, b = 1, a = 1 },
-							bgImage = self.bucketTexture,
-							top = 0,
-							left = 0
-						})
+					Element.new("div"):withStyle({
+						position = "relative",
+						bg = { r = 1, g = 1, b = 1, a = 1 },
+						bgImage = self.bucketTexture,
+						top = 0,
+						left = 0,
+					}),
 				}),
 			Element.new("div")
 				:withStyle({
@@ -932,8 +939,7 @@ function App:update(message, window)
 			-- Currently it's fine since the canvas won't change size.
 			-- Probably want to refactor textureManager to return the info struct instead of just the id.
 			if self.currentAction.tool == "eraser" then
-				self.compute:erase((message.x / message.elementWidth) * 800, (message.y / message.elementHeight) * 600,
-					10)
+				self.compute:erase((message.x / message.elementWidth) * 800, (message.y / message.elementHeight) * 600, 10)
 			elseif self.currentAction.tool == "brush" then
 				self.compute:stamp(
 					(message.x / message.elementWidth) * 800,

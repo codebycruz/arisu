@@ -329,10 +329,7 @@ function Arisu.runApp(cons)
 	end
 
 	local eventLoop = window.EventLoop.new()
-	local mainWindow = window.WindowBuilder.new()
-		:withTitle("Arisu Application")
-		:withSize(1280, 720)
-		:build(eventLoop)
+	local mainWindow = window.WindowBuilder.new():withTitle("Arisu Application"):withSize(1280, 720):build(eventLoop)
 
 	mainCtx = initWindow(mainWindow)
 	mainCtx.renderCtx:makeCurrent()
@@ -502,8 +499,7 @@ function Arisu.runApp(cons)
 			if info then
 				local relX = event.x - info.absX
 				local relY = event.y - info.absY
-				runUpdate(info.element.onmousedown(relX, relY, info.layout.width, info.layout.height), ctx.window,
-					handler)
+				runUpdate(info.element.onmousedown(relX, relY, info.layout.width, info.layout.height), ctx.window, handler)
 			end
 		elseif eventName == "mouseRelease" then
 			local ctx = windowContexts[event.window]
