@@ -12,9 +12,12 @@ There are no dependencies used by the library. Pure X11/Win32 and OpenGL.
 
 ## Goals
 
-- Be fast and lightweight
-- Be entirely from scratch
-- Implementing GPU accelerated painting operations from [Ciallo](https://dl.acm.org/doi/10.1145/3641519.3657418) via OpenGL Compute Shaders
+- [x] Fast
+	- Best practices in the GPU pipeline and when writing LuaJIT code.
+- [x] Written from scratch
+	- **Zero** dependencies
+- [x] Implement all painting operations on the GPU
+	- Canvas is stored on the GPU and manipulated purely with compute shaders
 
 ## Showcase
 
