@@ -10,7 +10,7 @@ local TextureManager = require("gl.texture_manager")
 local FontManager = require("gl.font_manager")
 local Context = require("context")
 
----@class plugin.render.Context
+---@class plugin.Render.Context
 ---@field window Window
 ---@field renderCtx Context
 ---@field quadVAO VAO
@@ -26,7 +26,7 @@ local Context = require("context")
 ---@field computedLayout ComputedLayout
 ---@field nIndices number
 
----@class plugin.render.SharedResources
+---@class plugin.Render.SharedResources
 ---@field mainVertexProgram Program
 ---@field mainFragmentProgram Program
 ---@field overlayVertexProgram Program
@@ -36,17 +36,27 @@ local Context = require("context")
 ---@field textureManager TextureManager
 ---@field fontManager FontManager
 
----@class RenderPlugin<Message>: { onWindowCreate: Message }
+---@class plugin.Render<Message>: { onWindowCreate: Message }
 ---@field windowPlugin plugin.Window<any>
----@field mainCtx plugin.render.Context?
----@field contexts table<Window, plugin.render.Context>
----@field sharedResources plugin.render.SharedResources?
+---@field mainCtx plugin.Render.Context?
+---@field contexts table<Window, plugin.Render.Context>
+---@field sharedResources plugin.Render.SharedResources?
 local RenderPlugin = {}
 RenderPlugin.__index = RenderPlugin
 
 ---@param windowPlugin plugin.Window
 function RenderPlugin.new(windowPlugin)
 	return setmetatable({ contexts = {}, windowPlugin = windowPlugin }, RenderPlugin)
+end
+
+---@param window Window
+---@param vertexData number[]
+---@param indexData number[]
+function RenderPlugin:setRenderData(window, vertexData, indexData)
+	local ctx = self:getContext(window)
+	ctx.quadVertex:setData("f32", vertexData)
+	ctx.quadIndex:setData("u32", indexData)
+	ctx.nIndices = #indexData
 end
 
 ---@param window Window
