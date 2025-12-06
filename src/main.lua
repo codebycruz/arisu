@@ -95,6 +95,9 @@ function App.new()
 	self.currentAction = { tool = "brush" }
 	self.startTime = os.clock()
 	self.overlaySelection = nil
+	self.overlayLine = nil
+	self.overlayRectangle = nil
+	self.overlayCircle = nil
 
 	return self
 end
@@ -717,12 +720,60 @@ function App:event(event, handler)
 			)
 		end
 
+		if self.overlayLine then
+			local start = self.overlayLine.start
+			local finish = self.overlayLine.finish or start
+
+			self.plugins.overlay:addLine(
+				event.window,
+				start.x, start.y,
+				finish.x, finish.y,
+				self.currentColor,
+				2
+			)
+		end
+
+		if self.overlayRectangle then
+			local start = self.overlayRectangle.start
+			local finish = self.overlayRectangle.finish or start
+
+			local x1 = start.x
+			local y1 = start.y
+			local x2 = finish.x
+			local y2 = finish.y
+
+			local boxX = math.min(x1, x2)
+			local boxY = math.min(y1, y2)
+			local boxW = math.abs(x2 - x1)
+			local boxH = math.abs(y2 - y1)
+
+			self.plugins.overlay:addBox(
+				event.window,
+				boxX, boxY, boxW, boxH,
+				self.currentColor,
+				2
+			)
+		end
+
+		if self.overlayCircle then
+			local start = self.overlayCircle.start
+			local finish = self.overlayCircle.finish or start
+
+			self.plugins.overlay:addEllipse(
+				event.window,
+				start.x, start.y,
+				finish.x, finish.y,
+				self.currentColor,
+				2
+			)
+		end
+
 		local time = os.clock() - self.startTime
 		self.plugins.overlay:draw(event.window, "marching_ants", time)
 
 		ctx.renderCtx:swapBuffers()
 
-		if self.overlaySelection then
+		if self.overlaySelection or self.overlayLine or self.overlayRectangle or self.overlayCircle then
 			handler:requestRedraw(event.window)
 		end
 
@@ -793,6 +844,21 @@ function App:update(message, window)
 			)
 			self.isDrawing = true
 			self.plugins.ui:refreshView(window)
+		elseif self.currentAction.tool == "line" then
+			local x = (message.x / message.elementWidth) * 800
+			local y = (message.y / message.elementHeight) * 600
+			self.overlayLine = { start = { x = x, y = y }, finish = nil }
+			self.isDrawing = true
+		elseif self.currentAction.tool == "square" then
+			local x = (message.x / message.elementWidth) * 800
+			local y = (message.y / message.elementHeight) * 600
+			self.overlayRectangle = { start = { x = x, y = y }, finish = nil }
+			self.isDrawing = true
+		elseif self.currentAction.tool == "circle" then
+			local x = (message.x / message.elementWidth) * 800
+			local y = (message.y / message.elementHeight) * 600
+			self.overlayCircle = { start = { x = x, y = y }, finish = nil }
+			self.isDrawing = true
 		end
 	elseif message.type == "StopDrawing" then
 		if self.currentAction.tool == "select" and self.overlaySelection then
@@ -809,6 +875,51 @@ function App:update(message, window)
 				self.resources.compute:setSelection(startPos.x, startPos.y, finishPos.x, finishPos.y)
 				self.overlaySelection.finish = { x = x, y = y }
 			end
+		elseif self.currentAction.tool == "line" and self.overlayLine then
+			local x = (message.x / message.elementWidth) * 800
+			local y = (message.y / message.elementHeight) * 600
+
+			local start = self.overlayLine.start
+			if start.x ~= x or start.y ~= y then
+				self.resources.compute:drawLine(
+					start.x, start.y,
+					x, y,
+					2,
+					self.currentColor
+				)
+				self.plugins.ui:refreshView(window)
+			end
+			self.overlayLine = nil
+		elseif self.currentAction.tool == "square" and self.overlayRectangle then
+			local x = (message.x / message.elementWidth) * 800
+			local y = (message.y / message.elementHeight) * 600
+
+			local start = self.overlayRectangle.start
+			if start.x ~= x or start.y ~= y then
+				self.resources.compute:drawRectangle(
+					start.x, start.y,
+					x, y,
+					2,
+					self.currentColor
+				)
+				self.plugins.ui:refreshView(window)
+			end
+			self.overlayRectangle = nil
+		elseif self.currentAction.tool == "circle" and self.overlayCircle then
+			local x = (message.x / message.elementWidth) * 800
+			local y = (message.y / message.elementHeight) * 600
+
+			local start = self.overlayCircle.start
+			if start.x ~= x or start.y ~= y then
+				self.resources.compute:drawEllipse(
+					start.x, start.y,
+					x, y,
+					2,
+					self.currentColor
+				)
+				self.plugins.ui:refreshView(window)
+			end
+			self.overlayCircle = nil
 		end
 		self.isDrawing = false
 		window.shouldRedraw = true
@@ -838,6 +949,21 @@ function App:update(message, window)
 				local x = (message.x / message.elementWidth) * 800
 				local y = (message.y / message.elementHeight) * 600
 				self.overlaySelection.finish = { x = x, y = y }
+				window.shouldRedraw = true
+			elseif self.currentAction.tool == "line" and self.overlayLine then
+				local x = (message.x / message.elementWidth) * 800
+				local y = (message.y / message.elementHeight) * 600
+				self.overlayLine.finish = { x = x, y = y }
+				window.shouldRedraw = true
+			elseif self.currentAction.tool == "square" and self.overlayRectangle then
+				local x = (message.x / message.elementWidth) * 800
+				local y = (message.y / message.elementHeight) * 600
+				self.overlayRectangle.finish = { x = x, y = y }
+				window.shouldRedraw = true
+			elseif self.currentAction.tool == "circle" and self.overlayCircle then
+				local x = (message.x / message.elementWidth) * 800
+				local y = (message.y / message.elementHeight) * 600
+				self.overlayCircle.finish = { x = x, y = y }
 				window.shouldRedraw = true
 			end
 			self.plugins.ui:requestRedraw(window)

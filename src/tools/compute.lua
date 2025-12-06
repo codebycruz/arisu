@@ -16,6 +16,7 @@ local computeSource = io.open("src/shaders/brush.compute.glsl"):read("*a")
 ---@field tool Uniform
 ---@field selectTopLeft Uniform
 ---@field selectBottomRight Uniform
+---@field lineEnd Uniform
 ---@field canvas Texture
 ---@field temp Texture
 ---@field textureManager TextureManager
@@ -37,6 +38,7 @@ function Compute.new(textureManager, canvas)
 	local readLayer = Uniform.new(computeProgram, "int", 5)
 	local selectTopLeft = Uniform.new(computeProgram, "vec2", 6)
 	local selectBottomRight = Uniform.new(computeProgram, "vec2", 7)
+	local lineEnd = Uniform.new(computeProgram, "ivec2", 8)
 
 	-- TODO: Un-hard code this when canvas is passed as a Texture with width/height
 	local tempLayer = textureManager:allocate(800, 600)
@@ -54,6 +56,7 @@ function Compute.new(textureManager, canvas)
 		tool = tool,
 		selectTopLeft = selectTopLeft,
 		selectBottomRight = selectBottomRight,
+		lineEnd = lineEnd,
 	}, Compute)
 
 	self:resetSelection()
@@ -63,6 +66,9 @@ end
 local TOOL_BRUSH = 0
 local TOOL_ERASER = 1
 local TOOL_FILL = 2
+local TOOL_LINE = 3
+local TOOL_RECTANGLE = 4
+local TOOL_CIRCLE = 5
 
 local WORK_GROUP_SIZE = 16
 
@@ -162,6 +168,93 @@ function Compute:fill(x, y, color)
 
 		gl.memoryBarrier(gl.SHADER_IMAGE_ACCESS_BARRIER_BIT)
 	end
+end
+
+---@param x1 number
+---@param y1 number
+---@param x2 number
+---@param y2 number
+---@param thickness number
+---@param color { r: number, g: number, b: number, a: number }
+function Compute:drawLine(x1, y1, x2, y2, thickness, color)
+	self.pipeline:bind()
+
+	self.center:set({ x1, y1 })
+	self.lineEnd:set({ x2, y2 })
+	self.radius:set(thickness)
+	self.writeLayer:set(self.canvas)
+	self.color:set({ color.r, color.g, color.b, color.a })
+	self.tool:set(TOOL_LINE)
+
+	gl.bindImageTexture(0, self.textureManager.textureHandle, 0, 1, 0, gl.WRITE_ONLY, gl.RGBA8)
+
+	local canvasInfo = self.textureManager.textures[self.canvas]
+	local canvasWidth = canvasInfo.width
+	local canvasHeight = canvasInfo.height
+
+	local groupsX = math.ceil(canvasWidth / WORK_GROUP_SIZE)
+	local groupsY = math.ceil(canvasHeight / WORK_GROUP_SIZE)
+	self.pipeline:dispatchCompute(groupsX, groupsY, 1)
+	gl.memoryBarrier(gl.SHADER_IMAGE_ACCESS_BARRIER_BIT)
+	gl.finish()
+end
+
+---@param x1 number
+---@param y1 number
+---@param x2 number
+---@param y2 number
+---@param thickness number
+---@param color { r: number, g: number, b: number, a: number }
+function Compute:drawRectangle(x1, y1, x2, y2, thickness, color)
+	self.pipeline:bind()
+
+	self.center:set({ x1, y1 })
+	self.lineEnd:set({ x2, y2 })
+	self.radius:set(thickness)
+	self.writeLayer:set(self.canvas)
+	self.color:set({ color.r, color.g, color.b, color.a })
+	self.tool:set(TOOL_RECTANGLE)
+
+	gl.bindImageTexture(0, self.textureManager.textureHandle, 0, 1, 0, gl.WRITE_ONLY, gl.RGBA8)
+
+	local canvasInfo = self.textureManager.textures[self.canvas]
+	local canvasWidth = canvasInfo.width
+	local canvasHeight = canvasInfo.height
+
+	local groupsX = math.ceil(canvasWidth / WORK_GROUP_SIZE)
+	local groupsY = math.ceil(canvasHeight / WORK_GROUP_SIZE)
+	self.pipeline:dispatchCompute(groupsX, groupsY, 1)
+	gl.memoryBarrier(gl.SHADER_IMAGE_ACCESS_BARRIER_BIT)
+	gl.finish()
+end
+
+---@param x1 number
+---@param y1 number
+---@param x2 number
+---@param y2 number
+---@param thickness number
+---@param color { r: number, g: number, b: number, a: number }
+function Compute:drawEllipse(x1, y1, x2, y2, thickness, color)
+	self.pipeline:bind()
+
+	self.center:set({ x1, y1 })
+	self.lineEnd:set({ x2, y2 })
+	self.radius:set(thickness)
+	self.writeLayer:set(self.canvas)
+	self.color:set({ color.r, color.g, color.b, color.a })
+	self.tool:set(TOOL_CIRCLE)
+
+	gl.bindImageTexture(0, self.textureManager.textureHandle, 0, 1, 0, gl.WRITE_ONLY, gl.RGBA8)
+
+	local canvasInfo = self.textureManager.textures[self.canvas]
+	local canvasWidth = canvasInfo.width
+	local canvasHeight = canvasInfo.height
+
+	local groupsX = math.ceil(canvasWidth / WORK_GROUP_SIZE)
+	local groupsY = math.ceil(canvasHeight / WORK_GROUP_SIZE)
+	self.pipeline:dispatchCompute(groupsX, groupsY, 1)
+	gl.memoryBarrier(gl.SHADER_IMAGE_ACCESS_BARRIER_BIT)
+	gl.finish()
 end
 
 return Compute

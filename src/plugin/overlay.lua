@@ -119,6 +119,42 @@ end
 ---@param color {r: number, g: number, b: number, a: number}
 ---@param thickness number?
 ---@param z number?
+function OverlayPlugin:addEllipse(window, x1, y1, x2, y2, color, thickness, z)
+	local ctx = self:getContext(window)
+	if not ctx then return end
+
+	thickness = thickness or 1
+	z = z or 99999
+
+	local centerX = (x1 + x2) / 2
+	local centerY = (y1 + y2) / 2
+	local radiusX = math.abs(x2 - x1) / 2
+	local radiusY = math.abs(y2 - y1) / 2
+
+	local avgRadius = (radiusX + radiusY) / 2
+	local segments = math.max(16, math.floor(avgRadius / 2))
+
+	for i = 0, segments - 1 do
+		local angle1 = (i / segments) * 2 * math.pi
+		local angle2 = ((i + 1) / segments) * 2 * math.pi
+
+		local px1 = centerX + math.cos(angle1) * radiusX
+		local py1 = centerY + math.sin(angle1) * radiusY
+		local px2 = centerX + math.cos(angle2) * radiusX
+		local py2 = centerY + math.sin(angle2) * radiusY
+
+		self:addLine(window, px1, py1, px2, py2, color, thickness, z)
+	end
+end
+
+---@param window Window
+---@param x1 number
+---@param y1 number
+---@param x2 number
+---@param y2 number
+---@param color {r: number, g: number, b: number, a: number}
+---@param thickness number?
+---@param z number?
 function OverlayPlugin:addLine(window, x1, y1, x2, y2, color, thickness, z)
 	local ctx = self:getContext(window)
 	if not ctx then return end
