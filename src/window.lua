@@ -14,41 +14,10 @@ local windowBackend = util.isWindows() and require("window.win32") or require("w
 ---@field resetCursor fun(self: Window)
 local Window = windowBackend.Window
 
---- @class WindowBuilder
---- @field width number
---- @field height number
---- @field title string
---- @field icon Image|nil
-local WindowBuilder = {}
-WindowBuilder.__index = WindowBuilder
-
-function WindowBuilder.new()
-	return setmetatable({ width = 800, height = 600, title = "Untitled Window" }, WindowBuilder)
-end
-
-function WindowBuilder:withTitle(title)
-	self.title = title
-	return self
-end
-
-function WindowBuilder:withSize(width, height)
-	self.width = width
-	self.height = height
-	return self
-end
-
-function WindowBuilder:withIcon(iconData)
-	self.icon = iconData
-	return self
-end
-
 ---@param eventLoop EventLoop
-function WindowBuilder:build(eventLoop) ---@return Window
-	local window = Window.new(eventLoop, self.width, self.height)
-	window:setTitle(self.title)
-	window:setIcon(self.icon)
+function Window.fromEventLoop(eventLoop) ---@return Window
+	local window = Window.new(eventLoop, 800, 600)
 	eventLoop:register(window)
-
 	return window
 end
 
@@ -81,7 +50,6 @@ end
 local EventLoop = windowBackend.EventLoop
 
 return {
-	WindowBuilder = WindowBuilder,
 	EventLoop = EventLoop,
 	Window = Window,
 }

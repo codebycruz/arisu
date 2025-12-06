@@ -3,33 +3,33 @@ local gl = require("bindings.gl")
 
 local Element = require("ui.element")
 
----@class WindowContext
----@field window Window
----@field renderCtx Context
----@field quadVAO VAO
----@field quadPipeline Pipeline
----@field quadVertex Buffer
----@field quadIndex Buffer
----@field overlayVAO VAO
----@field overlayPipeline Pipeline
----@field overlayVertex Buffer
----@field overlayIndex Buffer
----@field ui Element
----@field layoutTree Layout
----@field computedLayout ComputedLayout
----@field nIndices number
+-- @class WindowContext
+-- @field window Window
+-- @field renderCtx Context
+-- @field quadVAO VAO
+-- @field quadPipeline Pipeline
+-- @field quadVertex Buffer
+-- @field quadIndex Buffer
+-- @field overlayVAO VAO
+-- @field overlayPipeline Pipeline
+-- @field overlayVertex Buffer
+-- @field overlayIndex Buffer
+-- @field ui Element
+-- @field layoutTree Layout
+-- @field computedLayout ComputedLayout
+-- @field nIndices number
 
 ---@class QuadPlugin
 ---@field windowContexts table<Window, WindowContext>
 ---@field mainWindow Window
 ---@field textureManager TextureManager
----@field view fun(window: Window): Element
----@field update fun(message: Message): Task
+---@field app arisu.App
 local QuadPlugin = {}
 QuadPlugin.__index = QuadPlugin
 
-function QuadPlugin.new()
-	return setmetatable({}, QuadPlugin)
+---@param app arisu.App<any>
+function QuadPlugin.new(app)
+	return setmetatable({ app = app }, QuadPlugin)
 end
 
 ---@param ctx WindowContext
