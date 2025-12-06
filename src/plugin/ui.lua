@@ -143,9 +143,4 @@ function UI:refreshView(window)
 	window.shouldRedraw = true -- shh. I'll figure out a way to make this use the eventhandler later.
 end
 
----@param event Event
----@param handler EventHandler
-function UI:event(event, handler)
-end
-
 return UI

@@ -16,6 +16,7 @@ local UIPlugin = require("plugin.ui")
 --- | { type: "StartDrawing" }
 --- | { type: "StopDrawing" }
 --- | { type: "Hovered", x: number, y: number, elementWidth: number, elementHeight: number }
+--- | { type: "ColorSelected", color: { r: number, g: number, b: number, a: number } }
 --- | { type: "clicked" }
 
 ---@class App.Resources.Icons
@@ -57,10 +58,18 @@ local UIPlugin = require("plugin.ui")
 ---@field ui plugin.UI
 ---@field layout plugin.Layout
 
+---@alias App.Tool "brush" | "eraser" | "fill" | "pencil" | "text" | "select" | "square" | "circle" | "line" | "curve"
+
+---@alias App.Action
+--- | { tool: "select", start: { x: number, y: number }?, finish: { x: number, y: number }? }
+--- | { tool: "line", start: { x: number, y: number }?, finish: { x: number, y: number }? }
+--- | { tool: App.Tool }
+
 ---@class App
 ---@field plugins App.Plugins
 ---@field resources App.Resources
 ---@field isDrawing boolean
+---@field currentColor { r: number, g: number, b: number, a: number }
 local App = {}
 App.__index = App
 
@@ -71,6 +80,9 @@ function App.new()
 	self.plugins.text = TextPlugin.new(self.plugins.render)
 	self.plugins.layout = LayoutPlugin.new(function(w) return self:view(w) end, self.plugins.text)
 	self.plugins.ui = UIPlugin.new(self.plugins.layout, self.plugins.render)
+
+	self.isDrawing = false
+	self.currentColor = { r = 1, g = 0, b = 0, a = 1 }
 
 	return self
 end
@@ -120,11 +132,83 @@ function App:makeResources() ---@return App.Resources
 	}
 end
 
+---@generic T, V
+---@param list T[]
+---@param fn fun(item: T): V
+---@return V[]
+local function map(list, fn)
+	local result = {}
+	for i, item in ipairs(list) do
+		result[i] = fn(item)
+	end
+	return result
+end
+
+---@generic T
+---@param list T[]
+---@param size number
+---@return T[][]
+local function chunks(list, size)
+	local result = {}
+
+	for i = 1, #list, size do
+		local chunk = {}
+		for j = i, math.min(i + size - 1, #list) do
+			chunk[#chunk + 1] = list[j]
+		end
+
+		result[#result + 1] = chunk
+	end
+
+	return result
+end
+
 ---@param window Window
 function App:view(window)
-	return Element.new("div")
+	local disabledColor = { r = 0.7, g = 0.7, b = 0.7, a = 1.0 }
+	local selectedColor = { r = 0.7, g = 0.7, b = 1.0, a = 1.0 }
+	local borderColor = { r = 0.8, g = 0.8, b = 0.8, a = 1 }
+	local squareBorder = {
+		top = { width = 1, color = borderColor },
+		bottom = { width = 1, color = borderColor },
+		left = { width = 1, color = borderColor },
+		right = { width = 1, color = borderColor },
+	}
+
+	local colorGridValues = {
+		{ r = 1, g = 0, b = 0, a = 1 }, { r = 0, g = 1, b = 0, a = 1 }, { r = 0, g = 0, b = 1, a = 1 },
+		{ r = 1, g = 1, b = 0, a = 1 }, { r = 1, g = 0, b = 1, a = 1 }, { r = 0, g = 1, b = 1, a = 1 },
+	}
+
+	local colorGrid = Element.new("div")
 		:withStyle({
-			bg = { r = 1, g = 1, b = 0, a = 1 },
+			left = 0,
+			top = 0,
+			position = "relative",
+			direction = "column",
+			border = squareBorder,
+			height = { abs = 50 * 2 },
+			width = { abs = 50 * 3 }
+		})
+		:withChildren(map(chunks(colorGridValues, 3), function(row)
+			return Element.new("div")
+				:withStyle({
+					direction = "row",
+					height = { abs = 50 }
+				})
+				:withChildren(map(row, function(color)
+					return Element.new("div")
+						:withStyle({
+							bg = color,
+							width = { abs = 50 },
+							height = { abs = 50 },
+						})
+						:onClick({ type = "ColorSelected", color = color })
+				end))
+		end))
+
+	local canvasElement = Element.new("div")
+		:withStyle({
 			bgImage = self.resources.textures.canvas,
 			margin = { top = 5, right = 5, bottom = 5, left = 5 },
 			direction = "column",
@@ -156,6 +240,14 @@ function App:view(window)
 				elementHeight = elementHeight,
 			}
 		end)
+
+	return Element.new("div")
+		:withStyle({
+			direction = "column",
+			width = { rel = 1 },
+			height = { rel = 1 },
+		})
+		:withChildren({ colorGrid, canvasElement })
 end
 
 ---@param event Event
@@ -183,7 +275,11 @@ function App:update(message, window)
 	if message.type == "onWindowCreate" then
 		-- Now we can initialize assets for a specific window
 		self.plugins.render:register(window)
-		self.resources = self:makeResources()
+
+		if window == self.plugins.window.mainCtx.window then
+			self.resources = self:makeResources()
+		end
+
 		self.plugins.layout:register(window)
 		self.plugins.ui:refreshView(window)
 	elseif message.type == "StartDrawing" then
@@ -196,11 +292,13 @@ function App:update(message, window)
 				(message.x / message.elementWidth) * 800,
 				(message.y / message.elementHeight) * 600,
 				10,
-				{ r = 1, g = 0, b = 0, a = 1 }
+				self.currentColor
 			)
 
 			self.plugins.ui:refreshView(window)
 		end
+	elseif message.type == "ColorSelected" then
+		self.currentColor = message.color
 	else
 		print("??", message.type)
 	end

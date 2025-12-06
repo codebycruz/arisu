@@ -1,3 +1,4 @@
+local util = require("util")
 local gl = require("bindings.gl")
 local Pipeline = require("gl.pipeline")
 local Program = require("gl.program")
@@ -184,6 +185,14 @@ function RenderPlugin:event(event, handler)
 	if event.name == "redraw" then
 		local ctx = self:getContext(event.window)
 		self:draw(ctx)
+	elseif event.name == "resize" then
+		local ctx = self:getContext(event.window)
+		ctx.renderCtx:makeCurrent()
+		gl.viewport(0, 0, ctx.window.width, ctx.window.height)
+
+		if util.isWindows() then
+			handler:requestRedraw(event.window)
+		end
 	end
 end
 
