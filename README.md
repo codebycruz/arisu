@@ -23,13 +23,15 @@ There are no dependencies used by the library. Pure X11/Win32 and OpenGL.
 
 ## Running
 
-Set up LuaJIT on your system, clone the repository and run this from the top level.
+1. Set up LuaJIT on your system
+	- Windows: `winget install -e --id DEVCOM.LuaJIT`
+	- Linux: `dnf install luajit` or `apt install luajit`
+2. Clone the repository
+	- `git clone https://github.com/codebycruz/arisu`
+3. Run this inside the repo folder
+	- `luajit ./src/main.lua`
 
-```bash
-luajit ./src/main.lua
-```
-
-It should work.
+And yes, it needs to be LuaJIT, not Lua! FFI is extensively used. This repo basically uses C.
 
 ## Attributions
 
