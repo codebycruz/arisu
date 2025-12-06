@@ -104,9 +104,10 @@ else
 	function fetchNonCoreFn(name)
 		local cached
 
-		return function(a, b, c, d, e, f, g, h, i, j)
+		-- todo: investigate if using varargs here will cause jit to fail
+		return function(...)
 			if cached then
-				return cached(a, b, c, d, e, f, g, h, i, j)
+				return cached(...)
 			end
 
 			local fn = ffi.cast(nonCoreFnDefs[name], wgl.getProcAddress(name))
@@ -115,7 +116,7 @@ else
 			end
 
 			cached = fn
-			return fn(a, b, c, d, e, f, g, h, i, j)
+			return fn(...)
 		end
 	end
 end

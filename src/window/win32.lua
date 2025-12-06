@@ -86,7 +86,6 @@ end
 ---@field currentMode "poll" | "wait"
 ---@field handler EventHandler
 ---@field callback fun(event: Event, handler: EventHandler)
----@field pendingCreates table<number, boolean>
 local Win32EventLoop = {}
 Win32EventLoop.__index = Win32EventLoop
 
@@ -97,21 +96,12 @@ function Win32EventLoop.new()
 	end
 
 	local class = user32.newWndClassEx()
-	local self = setmetatable({
-		class = class,
-		windows = {},
-		pendingCreates = {},
-	}, Win32EventLoop)
+	local self = setmetatable({ class = class, windows = {} }, Win32EventLoop)
 
 	class.lpszClassName = "ArisuWindow"
 	class.lpfnWndProc = user32.newWndProc(function(hwnd, msg, wParam, lParam)
 		if not self.callback then
 			return user32.defWindowProc(hwnd, msg, wParam, lParam)
-		end
-
-		if msg == user32.WM_CREATE then
-			self.pendingCreates[util.toPointer(hwnd)] = true
-			return 0
 		end
 
 		local window = self.windows[util.toPointer(hwnd)]
@@ -199,13 +189,6 @@ end
 ---@param window Win32Window
 function Win32EventLoop:register(window)
 	self.windows[window.id] = window
-
-	if self.pendingCreates[window.id] then
-		self.callback({ name = "create", window = window }, self.handler)
-		self.callback({ name = "map", window = window }, self.handler)
-
-		self.pendingCreates[window.id] = nil
-	end
 end
 
 ---@param window Win32Window
@@ -226,6 +209,10 @@ function Win32EventLoop:run(callback)
 		end
 
 		return ok
+	end
+
+	for _, window in pairs(self.windows) do
+		self.callback({ name = "create", window = window }, self.handler)
 	end
 
 	local msg = user32.newMsg()
