@@ -658,7 +658,7 @@ function App:view(window)
 					width = "auto",
 				})
 				:withChildren({
-					Element.from("arisu v0.3.0"):withStyle({
+					Element.from("arisu v0.4.0"):withStyle({
 						align = "center",
 						padding = { left = 10 },
 					}),
@@ -714,6 +714,7 @@ function App:update(message, window)
 				self.currentColor
 			)
 			self.isDrawing = true
+			self.plugins.ui:refreshView(window)
 		elseif self.currentAction.tool == "select" then
 			local x = (message.x / message.elementWidth) * 800
 			local y = (message.y / message.elementHeight) * 600
@@ -726,6 +727,7 @@ function App:update(message, window)
 				self.currentColor
 			)
 			self.isDrawing = true
+			self.plugins.ui:refreshView(window)
 		elseif self.currentAction.tool == "eraser" then
 			self.resources.compute:erase(
 				(message.x / message.elementWidth) * 800,
@@ -733,6 +735,7 @@ function App:update(message, window)
 				10
 			)
 			self.isDrawing = true
+			self.plugins.ui:refreshView(window)
 		end
 	elseif message.type == "StopDrawing" then
 		if self.currentAction.tool == "select" and self.currentAction.start then
