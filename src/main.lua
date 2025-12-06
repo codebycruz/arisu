@@ -2,6 +2,8 @@ package.path = package.path .. ";./src/?.lua"
 
 local Arisu = require("arisu")
 local Element = require("ui.element")
+local Compute = require("tools.compute")
+local Image = require("image")
 
 local WindowPlugin = require("plugin.window")
 local RenderPlugin = require("plugin.render")
@@ -11,26 +13,111 @@ local UIPlugin = require("plugin.ui")
 
 ---@alias Message
 --- | { type: "onWindowCreate", window: Window }
+--- | { type: "StartDrawing" }
+--- | { type: "StopDrawing" }
+--- | { type: "Hovered", x: number, y: number, elementWidth: number, elementHeight: number }
 --- | { type: "clicked" }
 
+---@class App.Resources.Icons
+---@field brush Texture
+---@field eraser Texture
+---@field pencil Texture
+---@field bucket Texture
+---@field text Texture
+---@field palette Texture
+---@field select Texture
+---@field paste Texture
+---@field magnifier Texture
+---@field sound Texture
+---@field soundMute Texture
+---@field vector Texture
+---@field copy Texture
+---@field cut Texture
+---@field crop Texture
+---@field resize Texture
+---@field rotate Texture
+---@field brushes Texture
+---@field square Texture
+---@field circle Texture
+---@field line Texture
+---@field curve Texture
+
+---@class App.Resources.Textures
+---@field canvas Texture
+
+---@class App.Resources
+---@field textures App.Resources.Textures
+---@field icons App.Resources.Icons
+---@field compute Compute
+
+---@class App.Plugins
+---@field window plugin.Window
+---@field render plugin.Render
+---@field text plugin.Text
+---@field ui plugin.UI
+---@field layout plugin.Layout
+
 ---@class App
----@field windowPlugin plugin.Window
----@field renderPlugin plugin.Render
----@field textPlugin plugin.Text
----@field uiPlugin plugin.UI
----@field layoutPlugin plugin.Layout
+---@field plugins App.Plugins
+---@field resources App.Resources
+---@field isDrawing boolean
 local App = {}
 App.__index = App
 
 function App.new()
-	local self = setmetatable({}, App)
-	self.windowPlugin = WindowPlugin.new({ type = "onWindowCreate" })
-	self.renderPlugin = RenderPlugin.new(self.windowPlugin)
-	self.textPlugin = TextPlugin.new(self.renderPlugin)
-	self.layoutPlugin = LayoutPlugin.new(function(w) return self:view(w) end, self.textPlugin)
-	self.uiPlugin = UIPlugin.new(self.layoutPlugin, self.renderPlugin)
+	local self = setmetatable({ plugins = {} }, App)
+	self.plugins.window = WindowPlugin.new({ type = "onWindowCreate" })
+	self.plugins.render = RenderPlugin.new(self.plugins.window)
+	self.plugins.text = TextPlugin.new(self.plugins.render)
+	self.plugins.layout = LayoutPlugin.new(function(w) return self:view(w) end, self.plugins.text)
+	self.plugins.ui = UIPlugin.new(self.plugins.layout, self.plugins.render)
 
 	return self
+end
+
+function App:makeResources() ---@return App.Resources
+	local textureManager = self.plugins.render.sharedResources.textureManager
+	local canvas = textureManager:allocate(800, 600)
+
+	return {
+		---@type App.Resources.Icons
+		icons = {
+			brush = textureManager:upload(assert(Image.fromPath("assets/icons/brush.qoi"), "Brush icon not found")),
+			eraser = textureManager:upload(assert(Image.fromPath("assets/icons/david/eraser.qoi"),
+				"Eraser icon not found")),
+			pencil = textureManager:upload(assert(Image.fromPath("assets/icons/pencil.qoi"), "Pencil icon not found")),
+			bucket = textureManager:upload(assert(Image.fromPath("assets/icons/bucket.qoi"), "Bucket icon not found")),
+			text = textureManager:upload(assert(Image.fromPath("assets/icons/text.qoi"), "Text icon not found")),
+			palette = textureManager:upload(assert(Image.fromPath("assets/icons/palette.qoi"), "Palette icon not found")),
+			select = textureManager:upload(assert(Image.fromPath("assets/icons/select.qoi"), "Select icon not found")),
+			paste = textureManager:upload(assert(Image.fromPath("assets/icons/paste.qoi"), "Paste icon not found")),
+			magnifier = textureManager:upload(assert(Image.fromPath("assets/icons/magnifier.qoi"),
+				"Magnifier icon not found")),
+			sound = textureManager:upload(assert(Image.fromPath("assets/icons/sound.qoi"), "Sound icon not found")),
+			soundMute = textureManager:upload(assert(Image.fromPath("assets/icons/sound_mute.qoi"),
+				"Sound mute icon not found")),
+			vector = textureManager:upload(assert(Image.fromPath("assets/icons/vector.qoi"), "Vector icon not found")),
+			copy = textureManager:upload(assert(Image.fromPath("assets/icons/copy.qoi"), "Copy icon not found")),
+			cut = textureManager:upload(assert(Image.fromPath("assets/icons/cut.qoi"), "Cut icon not found")),
+			crop = textureManager:upload(assert(Image.fromPath("assets/icons/crop.qoi"), "Crop icon not found")),
+			resize = textureManager:upload(assert(Image.fromPath("assets/icons/resize.qoi"), "Resize icon not found")),
+			rotate = textureManager:upload(assert(Image.fromPath("assets/icons/rotate.qoi"), "Rotate icon not found")),
+			brushes = textureManager:upload(assert(Image.fromPath("assets/icons/brushes.qoi"), "Brushes icon not found")),
+			square = textureManager:upload(assert(Image.fromPath("assets/icons/david/square.qoi"),
+				"Square icon not found")),
+			circle = textureManager:upload(assert(Image.fromPath("assets/icons/david/circle.qoi"),
+				"Circle icon not found")),
+			line = textureManager:upload(assert(Image.fromPath("assets/icons/david/line.qoi"), "Line icon not found")),
+			curve = textureManager:upload(assert(Image.fromPath("assets/icons/david/curve.qoi"), "Curve icon not found")),
+		},
+
+		---@type App.Resources.Textures
+		textures = {
+			canvas = canvas
+		},
+
+		compute = Compute.new(textureManager, canvas)
+	}
 end
 
 ---@param window Window
@@ -38,39 +125,53 @@ function App:view(window)
 	return Element.new("div")
 		:withStyle({
 			bg = { r = 1, g = 1, b = 0, a = 1 },
+			bgImage = self.resources.textures.canvas,
+			margin = { top = 5, right = 5, bottom = 5, left = 5 },
 			direction = "column",
 		})
-		:withChildren(
-			Element.new("div")
-			:withStyle({
-				bg = { r = 0, g = 1, b = 0, a = 1 },
-				width = { abs = 200 },
-				height = { abs = 200 },
-			})
-			:withChildren(
-				Element.new("text")
-				:withStyle({
-					fg = { r = 1, g = 1, b = 1, a = 1 },
-				})
-			)
-		)
-		:onClick({ type = "clicked" })
+		:onMouseDown(function(x, y, elementWidth, elementHeight)
+			return {
+				type = "StartDrawing",
+				x = x,
+				y = y,
+				elementWidth = elementWidth,
+				elementHeight = elementHeight,
+			}
+		end)
+		:onMouseUp(function(x, y, elementWidth, elementHeight)
+			return {
+				type = "StopDrawing",
+				x = x,
+				y = y,
+				elementWidth = elementWidth,
+				elementHeight = elementHeight,
+			}
+		end)
+		:onMouseMove(function(x, y, elementWidth, elementHeight)
+			return {
+				type = "Hovered",
+				x = x,
+				y = y,
+				elementWidth = elementWidth,
+				elementHeight = elementHeight,
+			}
+		end)
 end
 
 ---@param event Event
 ---@param handler EventHandler
 function App:event(event, handler)
-	local windowUpdate = self.windowPlugin:event(event, handler)
+	local windowUpdate = self.plugins.window:event(event, handler)
 	if windowUpdate then
 		return windowUpdate
 	end
 
-	local renderUpdate = self.renderPlugin:event(event, handler)
+	local renderUpdate = self.plugins.render:event(event, handler)
 	if renderUpdate then
 		return renderUpdate
 	end
 
-	local layoutUpdate = self.layoutPlugin:event(event, handler)
+	local layoutUpdate = self.plugins.layout:event(event, handler)
 	if layoutUpdate then
 		return layoutUpdate
 	end
@@ -81,9 +182,25 @@ end
 function App:update(message, window)
 	if message.type == "onWindowCreate" then
 		-- Now we can initialize assets for a specific window
-		self.renderPlugin:register(window)
-		self.layoutPlugin:register(window)
-		self.uiPlugin:refreshView(window)
+		self.plugins.render:register(window)
+		self.resources = self:makeResources()
+		self.plugins.layout:register(window)
+		self.plugins.ui:refreshView(window)
+	elseif message.type == "StartDrawing" then
+		self.isDrawing = true
+	elseif message.type == "StopDrawing" then
+		self.isDrawing = false
+	elseif message.type == "Hovered" then
+		if self.isDrawing then
+			self.resources.compute:stamp(
+				(message.x / message.elementWidth) * 800,
+				(message.y / message.elementHeight) * 600,
+				10,
+				{ r = 1, g = 0, b = 0, a = 1 }
+			)
+
+			self.plugins.ui:refreshView(window)
+		end
 	else
 		print("??", message.type)
 	end
