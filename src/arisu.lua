@@ -46,6 +46,8 @@ function Arisu.run(appStatic)
 	window.Window.fromEventLoop(eventLoop)
 
 	eventLoop:run(function(event, handler)
+		handler:setMode("wait")
+
 		local message = app:event(event, handler)
 		if message then
 			local task = app:update(message, event.window)

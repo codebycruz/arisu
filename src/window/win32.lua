@@ -77,10 +77,11 @@ function Win32Window:setTitle(title)
 end
 
 function Win32Window:destroy()
-	print("Warning: Win32Window:destroy is unimplemented")
+	user32.destroyWindow(self.hwnd)
 end
 
 ---@class Win32EventLoop: EventLoop
+---@field windows table<string, Win32Window>
 ---@field class user32.WNDCLASSEXA
 ---@field isActive boolean
 ---@field currentMode "poll" | "wait"
@@ -105,7 +106,6 @@ function Win32EventLoop.new()
 		end
 
 		local window = self.windows[util.toPointer(hwnd)]
-
 		if not window then
 			return user32.defWindowProc(hwnd, msg, wParam, lParam)
 		end
@@ -218,7 +218,7 @@ function Win32EventLoop:run(callback)
 	local msg = user32.newMsg()
 	while self.isActive do
 		if self.currentMode == "poll" then
-			while user32.peekMessage(msg, nil, 0, 0, user32.PM_REMOVE) do
+			if user32.peekMessage(msg, nil, 0, 0, user32.PM_REMOVE) then
 				user32.translateMessage(msg)
 				user32.dispatchMessage(msg)
 			end
@@ -236,6 +236,10 @@ function Win32EventLoop:run(callback)
 		end
 
 		callback({ name = "aboutToWait" }, self.handler)
+	end
+
+	for _, window in pairs(self.windows) do
+		self:close(window)
 	end
 end
 

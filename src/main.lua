@@ -795,6 +795,8 @@ end
 ---@param window Window
 function App:update(message, window)
 	if message.type == "onWindowCreate" then
+		window:setTitle("Arisu")
+
 		-- Now we can initialize assets for a specific window
 		self.plugins.render:register(window)
 		self.plugins.overlay:register(window)

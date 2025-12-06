@@ -18,9 +18,18 @@ There are no dependencies used by the library. Pure X11/Win32 and OpenGL.
 
 ## Showcase
 
-![showcase](./showcase.png)
+![v4](./assets/showcase/v0.4.0.png)
+![v1](./assets/showcase/v0.1.0.png)
 
-![windows](./windows.png)
+## Running
+
+Set up LuaJIT on your system, clone the repository and run this from the top level.
+
+```bash
+luajit ./src/main.lua
+```
+
+It should work.
 
 ## Attributions
 
