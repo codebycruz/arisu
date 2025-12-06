@@ -13,11 +13,14 @@ local UIPlugin = require("plugin.ui")
 
 ---@alias Message
 --- | { type: "onWindowCreate", window: Window }
---- | { type: "StartDrawing" }
---- | { type: "StopDrawing" }
+--- | { type: "ToolClicked", tool: App.Tool }
+--- | { type: "ClearClicked" }
+--- | { type: "SaveClicked" }
+--- | { type: "OpenClicked" }
+--- | { type: "StartDrawing", x: number, y: number, elementWidth: number, elementHeight: number }
+--- | { type: "StopDrawing", x: number, y: number, elementWidth: number, elementHeight: number }
 --- | { type: "Hovered", x: number, y: number, elementWidth: number, elementHeight: number }
---- | { type: "ColorSelected", color: { r: number, g: number, b: number, a: number } }
---- | { type: "clicked" }
+--- | { type: "ColorClicked", r: number, g: number, b: number }
 
 ---@class App.Resources.Icons
 ---@field brush Texture
@@ -70,6 +73,7 @@ local UIPlugin = require("plugin.ui")
 ---@field resources App.Resources
 ---@field isDrawing boolean
 ---@field currentColor { r: number, g: number, b: number, a: number }
+---@field currentAction App.Action
 local App = {}
 App.__index = App
 
@@ -82,7 +86,8 @@ function App.new()
 	self.plugins.ui = UIPlugin.new(self.plugins.layout, self.plugins.render)
 
 	self.isDrawing = false
-	self.currentColor = { r = 1, g = 0, b = 0, a = 1 }
+	self.currentColor = { r = 0, g = 0, b = 0, a = 1 }
+	self.currentAction = { tool = "brush" }
 
 	return self
 end
@@ -175,79 +180,490 @@ function App:view(window)
 		right = { width = 1, color = borderColor },
 	}
 
-	local colorGridValues = {
-		{ r = 1, g = 0, b = 0, a = 1 }, { r = 0, g = 1, b = 0, a = 1 }, { r = 0, g = 0, b = 1, a = 1 },
-		{ r = 1, g = 1, b = 0, a = 1 }, { r = 1, g = 0, b = 1, a = 1 }, { r = 0, g = 1, b = 1, a = 1 },
+	local function toolBg(tool)
+		if tool == "text" then
+			return disabledColor
+		end
+
+		if self.currentAction.tool == tool then
+			return selectedColor
+		else
+			return { r = 0.9, g = 0.9, b = 0.9, a = 1.0 }
+		end
+	end
+
+	local colorPalette1 = {
+		{ r = 0.0, g = 0.0, b = 0.0 }, { r = 1.0, g = 0.0, b = 0.0 }, { r = 0.0, g = 1.0, b = 0.0 },
+		{ r = 0.0, g = 0.0, b = 1.0 }, { r = 1.0, g = 1.0, b = 0.0 }, { r = 1.0, g = 0.0, b = 1.0 },
+		{ r = 0.0, g = 1.0, b = 1.0 },
 	}
 
-	local colorGrid = Element.new("div")
-		:withStyle({
-			left = 0,
-			top = 0,
-			position = "relative",
-			direction = "column",
-			border = squareBorder,
-			height = { abs = 50 * 2 },
-			width = { abs = 50 * 3 }
-		})
-		:withChildren(map(chunks(colorGridValues, 3), function(row)
-			return Element.new("div")
-				:withStyle({
-					direction = "row",
-					height = { abs = 50 }
-				})
-				:withChildren(map(row, function(color)
-					return Element.new("div")
-						:withStyle({
-							bg = color,
-							width = { abs = 50 },
-							height = { abs = 50 },
-						})
-						:onClick({ type = "ColorSelected", color = color })
-				end))
-		end))
+	local colorPalette2 = {
+		{ r = 0.5, g = 0.5, b = 0.5 }, { r = 0.5, g = 0.0, b = 0.0 }, { r = 0.0, g = 0.5, b = 0.0 },
+		{ r = 0.0, g = 0.0, b = 0.5 }, { r = 0.5, g = 0.5, b = 0.0 }, { r = 0.5, g = 0.0, b = 0.5 },
+		{ r = 0.0, g = 0.5, b = 0.5 },
+	}
 
-	local canvasElement = Element.new("div")
-		:withStyle({
-			bgImage = self.resources.textures.canvas,
-			margin = { top = 5, right = 5, bottom = 5, left = 5 },
-			direction = "column",
-		})
-		:onMouseDown(function(x, y, elementWidth, elementHeight)
-			return {
-				type = "StartDrawing",
-				x = x,
-				y = y,
-				elementWidth = elementWidth,
-				elementHeight = elementHeight,
-			}
-		end)
-		:onMouseUp(function(x, y, elementWidth, elementHeight)
-			return {
-				type = "StopDrawing",
-				x = x,
-				y = y,
-				elementWidth = elementWidth,
-				elementHeight = elementHeight,
-			}
-		end)
-		:onMouseMove(function(x, y, elementWidth, elementHeight)
-			return {
-				type = "Hovered",
-				x = x,
-				y = y,
-				elementWidth = elementWidth,
-				elementHeight = elementHeight,
-			}
-		end)
+	local function makeColorRow(colors)
+		return Element.new("div")
+			:withStyle({ direction = "row", height = { rel = 0.5 } })
+			:withChildren(map(colors, function(color)
+				return Element.new("div")
+					:withStyle({
+						width = { abs = 30 },
+						height = { abs = 30 },
+						bg = { r = color.r, g = color.g, b = color.b, a = 1.0 },
+						border = squareBorder,
+						margin = { all = 1 },
+					})
+					:onClick({ type = "ColorClicked", r = color.r, g = color.g, b = color.b })
+			end))
+	end
+
+	local function makeIconButton(icon, label, msg)
+		return Element.new("div")
+			:withStyle({
+				direction = "row",
+				gap = 5,
+				height = { rel = 1 / 3 },
+			})
+			:withChildren({
+				Element.new("div"):withStyle({
+					bgImage = icon,
+					width = { abs = 15 },
+					height = { abs = 15 },
+					margin = { right = 2 },
+				}),
+				Element.from(label):withStyle({ fg = disabledColor, height = { rel = 1.0 } }),
+			})
+	end
 
 	return Element.new("div")
 		:withStyle({
 			direction = "column",
-			width = { rel = 1 },
-			height = { rel = 1 },
+			bg = { r = 0.95, g = 0.95, b = 0.95, a = 1.0 },
 		})
-		:withChildren({ colorGrid, canvasElement })
+		:withChildren({
+			Element.new("div")
+				:withStyle({
+					height = { abs = 30 },
+					direction = "row",
+					align = "center",
+					gap = 5,
+					padding = { left = 5, top = 5 },
+					border = { bottom = { width = 1, color = borderColor } },
+				})
+				:withChildren({
+					Element.from("Open"):withStyle({ width = { abs = 50 } }):onClick({ type = "OpenClicked" }),
+					Element.from("Save"):withStyle({ width = { abs = 50 } }):onClick({ type = "SaveClicked" }),
+					Element.from("Edit"):withStyle({ fg = disabledColor, width = { abs = 50 } }),
+					Element.from("View"):withStyle({ fg = disabledColor, width = { abs = 50 } }),
+					Element.from("Clear"):withStyle({ width = { abs = 50 } }):onClick({ type = "ClearClicked" }),
+				}),
+
+			Element.new("div")
+				:withStyle({
+					height = { abs = 100 },
+					direction = "row",
+					align = "center",
+					padding = { bottom = 2 },
+				})
+				:withChildren({
+					Element.new("div")
+						:withStyle({
+							direction = "column",
+							width = { abs = 150 },
+							height = { rel = 1.0 },
+							border = { right = { width = 1, color = borderColor } },
+						})
+						:withChildren({
+							Element.new("div")
+								:withStyle({
+									padding = { top = 6, bottom = 6, left = 6, right = 6 },
+									height = { rel = 0.7 },
+									gap = 16,
+									direction = "row",
+								})
+								:withChildren({
+									Element.new("div")
+										:withStyle({
+											direction = "column",
+											width = { rel = 1 / 3 },
+											height = { rel = 1.0 },
+											gap = 8,
+										})
+										:withChildren({
+											Element.new("div"):withStyle({
+												bgImage = self.resources.icons.paste,
+												height = { rel = 2 / 3 },
+											}),
+											Element.from("Paste"):withStyle({ fg = disabledColor, height = { rel = 1 / 3 } }),
+										}),
+									Element.new("div")
+										:withStyle({
+											direction = "column",
+											width = { rel = 1 / 2 },
+											height = { rel = 1 },
+											gap = 2,
+										})
+										:withChildren({
+											makeIconButton(self.resources.icons.cut, "Cut"),
+											makeIconButton(self.resources.icons.copy, "Copy"),
+										}),
+								}),
+							Element.from("Clipboard"):withStyle({
+								align = "center",
+								justify = "center",
+								fg = disabledColor,
+								height = { rel = 0.3 },
+							}),
+						}),
+
+					Element.new("div")
+						:withStyle({
+							direction = "column",
+							width = { abs = 180 },
+							height = { rel = 1.0 },
+							border = { right = { width = 1, color = borderColor } },
+						})
+						:withChildren({
+							Element.new("div")
+								:withStyle({
+									padding = { top = 3, bottom = 3, left = 3, right = 3 },
+									height = { rel = 0.7 },
+									gap = 16,
+									direction = "row",
+								})
+								:withChildren({
+									Element.new("div")
+										:withStyle({
+											direction = "column",
+											width = { rel = 1 / 3 },
+											height = { rel = 1.0 },
+											gap = 8,
+										})
+										:withChildren({
+											Element.new("div")
+												:withStyle({
+													border = squareBorder,
+													bgImage = self.resources.icons.select,
+													height = { rel = 2 / 3 },
+												})
+												:onClick({ type = "ToolClicked", tool = "select" }),
+											Element.from("Select"):withStyle({ height = { rel = 1 / 3 } }),
+										}),
+									Element.new("div")
+										:withStyle({
+											direction = "column",
+											width = { rel = 1 / 2 },
+											height = { rel = 1.0 },
+											gap = 2,
+										})
+										:withChildren({
+											makeIconButton(self.resources.icons.crop, "Crop"),
+											makeIconButton(self.resources.icons.resize, "Resize"),
+											makeIconButton(self.resources.icons.rotate, "Rotate"),
+										}),
+								}),
+							Element.from("Image"):withStyle({
+								align = "center",
+								justify = "center",
+								height = { rel = 0.3 },
+							}),
+						}),
+
+					Element.new("div")
+						:withStyle({
+							direction = "column",
+							width = { abs = 120 },
+							height = { rel = 1.0 },
+							border = { right = { width = 1, color = borderColor } },
+						})
+						:withChildren({
+							Element.new("div")
+								:withStyle({
+									padding = { top = 3, bottom = 3, left = 3, right = 3 },
+									height = { rel = 0.7 },
+									direction = "column",
+								})
+								:withChildren({
+									Element.new("div")
+										:withStyle({
+											direction = "row",
+											height = { rel = 0.5 },
+											padding = { bottom = 1 },
+										})
+										:withChildren({
+											Element.new("div")
+												:withStyle({
+													width = { abs = 35 },
+													height = { abs = 35 },
+													bg = toolBg("brush"),
+													bgImage = self.resources.icons.brush,
+													margin = { right = 1 },
+												})
+												:onClick({ type = "ToolClicked", tool = "brush" }),
+											Element.new("div")
+												:withStyle({
+													width = { abs = 35 },
+													height = { abs = 35 },
+													bg = toolBg("eraser"),
+													bgImage = self.resources.icons.eraser,
+													margin = { right = 1 },
+												})
+												:onClick({ type = "ToolClicked", tool = "eraser" }),
+											Element.new("div")
+												:withStyle({
+													width = { abs = 35 },
+													height = { abs = 35 },
+													bg = toolBg("fill"),
+													bgImage = self.resources.icons.bucket,
+												})
+												:onClick({ type = "ToolClicked", tool = "fill" }),
+										}),
+									Element.new("div")
+										:withStyle({
+											direction = "row",
+											height = { rel = 0.5 },
+											gap = 3,
+										})
+										:withChildren({
+											Element.new("div")
+												:withStyle({
+													width = { abs = 35 },
+													height = { abs = 35 },
+													bg = toolBg("pencil"),
+													bgImage = self.resources.icons.pencil,
+												})
+												:onClick({ type = "ToolClicked", tool = "pencil" }),
+											Element.new("div"):withStyle({
+												width = { abs = 35 },
+												height = { abs = 35 },
+												bg = toolBg("text"),
+												bgImage = self.resources.icons.text,
+											}),
+											Element.new("div"):withStyle({
+												width = { abs = 35 },
+												height = { abs = 35 },
+												bg = disabledColor,
+												bgImage = self.resources.icons.magnifier,
+											}),
+										}),
+								}),
+							Element.from("Tools"):withStyle({
+								align = "center",
+								justify = "center",
+								height = { rel = 0.3 },
+							}),
+						}),
+
+					Element.new("div")
+						:withStyle({
+							direction = "column",
+							width = { abs = 100 },
+							height = { rel = 1.0 },
+							border = { right = { width = 1, color = borderColor } },
+						})
+						:withChildren({
+							Element.new("div")
+								:withStyle({
+									align = "center",
+									justify = "center",
+									padding = { top = 3, bottom = 3, left = 3, right = 3 },
+									height = { rel = 0.7 },
+								})
+								:withChildren({
+									Element.new("div"):withStyle({
+										width = { abs = 50 },
+										height = { abs = 50 },
+										bgImage = self.resources.icons.brushes,
+									}),
+								}),
+							Element.from("Brushes"):withStyle({
+								align = "center",
+								justify = "center",
+								fg = disabledColor,
+								height = { rel = 0.3 },
+							}),
+						}),
+
+					Element.new("div")
+						:withStyle({
+							direction = "column",
+							width = { abs = 230 },
+							height = { rel = 1.0 },
+							border = { right = { width = 1, color = borderColor } },
+						})
+						:withChildren({
+							Element.new("div")
+								:withStyle({
+									direction = "column",
+									margin = { top = 3, bottom = 3, left = 3, right = 3 },
+									border = squareBorder,
+									height = { rel = 0.7 },
+								})
+								:withChildren({
+									Element.new("div")
+										:withStyle({
+											direction = "row",
+											height = { abs = 28 },
+										})
+										:withChildren({
+											Element.new("div")
+												:withStyle({
+													width = { abs = 28 },
+													height = { abs = 28 },
+													bgImage = self.resources.icons.line,
+													bg = toolBg("line"),
+												})
+												:onClick({ type = "ToolClicked", tool = "line" }),
+											Element.new("div")
+												:withStyle({
+													width = { abs = 28 },
+													height = { abs = 28 },
+													bgImage = self.resources.icons.curve,
+													bg = toolBg("curve"),
+												})
+												:onClick({ type = "ToolClicked", tool = "curve" }),
+										}),
+									Element.new("div")
+										:withStyle({
+											direction = "row",
+											height = { abs = 28 },
+										})
+										:withChildren({
+											Element.new("div")
+												:withStyle({
+													width = { abs = 28 },
+													height = { abs = 28 },
+													bgImage = self.resources.icons.square,
+													bg = toolBg("square"),
+												})
+												:onClick({ type = "ToolClicked", tool = "square" }),
+											Element.new("div")
+												:withStyle({
+													width = { abs = 28 },
+													height = { abs = 28 },
+													bgImage = self.resources.icons.circle,
+													bg = toolBg("circle"),
+												})
+												:onClick({ type = "ToolClicked", tool = "circle" }),
+										}),
+								}),
+							Element.from("Shapes"):withStyle({
+								align = "center",
+								justify = "center",
+								height = { rel = 0.3 },
+							}),
+						}),
+
+					Element.new("div")
+						:withStyle({
+							direction = "column",
+							width = { abs = 300 },
+							height = { rel = 1.0 },
+							border = { right = { width = 1, color = borderColor } },
+						})
+						:withChildren({
+							Element.new("div")
+								:withStyle({
+									padding = { top = 3, bottom = 3, left = 3, right = 3 },
+									height = { rel = 0.7 },
+									direction = "row",
+									align = "center",
+									gap = 5,
+								})
+								:withChildren({
+									Element.new("div"):withStyle({
+										width = { abs = 40 },
+										height = { abs = 40 },
+										bg = self.currentColor,
+										border = squareBorder,
+										margin = { right = 5 },
+									}),
+									Element.new("div")
+										:withStyle({
+											direction = "column",
+											justify = "center",
+										})
+										:withChildren({
+											makeColorRow(colorPalette1),
+											makeColorRow(colorPalette2),
+										}),
+								}),
+							Element.from("Colors"):withStyle({
+								align = "center",
+								justify = "center",
+								height = { rel = 0.3 },
+							}),
+						}),
+				}),
+
+			Element.new("div")
+				:withStyle({
+					height = "auto",
+					align = "center",
+					justify = "center",
+					bg = { r = 0.7, g = 0.7, b = 0.8, a = 1.0 },
+				})
+				:withChildren({
+					-- White background for canvas
+					Element.new("div")
+						:withStyle({
+							bg = { r = 1, g = 1, b = 1, a = 1 },
+							width = { rel = 1 },
+							height = { rel = 1 },
+							position = "relative",
+							margin = { right = 20, left = 20, top = 20, bottom = 20 }
+						}),
+					Element.new("div")
+						:withStyle({
+							bgImage = self.resources.textures.canvas,
+							width = { rel = 1 },
+							height = { rel = 1 },
+							margin = { right = 20, left = 20, top = 20, bottom = 20 },
+						})
+						:onMouseDown(function(x, y, elementWidth, elementHeight)
+							return {
+								type = "StartDrawing",
+								x = x,
+								y = y,
+								elementWidth = elementWidth,
+								elementHeight = elementHeight,
+							}
+						end)
+						:onMouseUp(function(x, y, elementWidth, elementHeight)
+							return {
+								type = "StopDrawing",
+								x = x,
+								y = y,
+								elementWidth = elementWidth,
+								elementHeight = elementHeight,
+							}
+						end)
+						:onMouseMove(function(x, y, elementWidth, elementHeight)
+							return {
+								type = "Hovered",
+								x = x,
+								y = y,
+								elementWidth = elementWidth,
+								elementHeight = elementHeight,
+							}
+						end),
+				}),
+
+			Element.new("div")
+				:withStyle({
+					height = { abs = 30 },
+					width = "auto",
+				})
+				:withChildren({
+					Element.from("arisu v0.3.0"):withStyle({
+						align = "center",
+						padding = { left = 10 },
+					}),
+				}),
+		})
 end
 
 ---@param event Event
@@ -283,24 +699,102 @@ function App:update(message, window)
 		self.plugins.layout:register(window)
 		self.plugins.ui:refreshView(window)
 	elseif message.type == "StartDrawing" then
-		self.isDrawing = true
-	elseif message.type == "StopDrawing" then
-		self.isDrawing = false
-	elseif message.type == "Hovered" then
-		if self.isDrawing then
+		if self.currentAction.tool == "fill" then
+			self.resources.compute:fill(
+				(message.x / message.elementWidth) * 800,
+				(message.y / message.elementHeight) * 600,
+				self.currentColor
+			)
+			self.plugins.ui:refreshView(window)
+		elseif self.currentAction.tool == "brush" then
 			self.resources.compute:stamp(
 				(message.x / message.elementWidth) * 800,
 				(message.y / message.elementHeight) * 600,
 				10,
 				self.currentColor
 			)
+			self.isDrawing = true
+		elseif self.currentAction.tool == "select" then
+			local x = (message.x / message.elementWidth) * 800
+			local y = (message.y / message.elementHeight) * 600
+			self.currentAction.start = { x = x, y = y }
+		elseif self.currentAction.tool == "pencil" then
+			self.resources.compute:stamp(
+				(message.x / message.elementWidth) * 800,
+				(message.y / message.elementHeight) * 600,
+				1,
+				self.currentColor
+			)
+			self.isDrawing = true
+		elseif self.currentAction.tool == "eraser" then
+			self.resources.compute:erase(
+				(message.x / message.elementWidth) * 800,
+				(message.y / message.elementHeight) * 600,
+				10
+			)
+			self.isDrawing = true
+		end
+	elseif message.type == "StopDrawing" then
+		if self.currentAction.tool == "select" and self.currentAction.start then
+			local x = (message.x / message.elementWidth) * 800
+			local y = (message.y / message.elementHeight) * 600
 
+			local start = self.currentAction.start
+			if start.x == x and start.y == y then
+				self.resources.compute:resetSelection()
+				self.currentAction.start = nil
+				self.currentAction.finish = nil
+			else
+				local startPos = { x = math.min(start.x, x), y = math.min(start.y, y) }
+				local finishPos = { x = math.max(start.x, x), y = math.max(start.y, y) }
+				self.resources.compute:setSelection(startPos.x, startPos.y, finishPos.x, finishPos.y)
+			end
+		end
+		self.isDrawing = false
+	elseif message.type == "Hovered" then
+		if self.isDrawing then
+			if self.currentAction.tool == "eraser" then
+				self.resources.compute:erase(
+					(message.x / message.elementWidth) * 800,
+					(message.y / message.elementHeight) * 600,
+					10
+				)
+			elseif self.currentAction.tool == "brush" then
+				self.resources.compute:stamp(
+					(message.x / message.elementWidth) * 800,
+					(message.y / message.elementHeight) * 600,
+					10,
+					self.currentColor
+				)
+			elseif self.currentAction.tool == "pencil" then
+				self.resources.compute:stamp(
+					(message.x / message.elementWidth) * 800,
+					(message.y / message.elementHeight) * 600,
+					1,
+					self.currentColor
+				)
+			end
 			self.plugins.ui:refreshView(window)
 		end
-	elseif message.type == "ColorSelected" then
-		self.currentColor = message.color
-	else
-		print("??", message.type)
+	elseif message.type == "ColorClicked" then
+		self.currentColor = { r = message.r, g = message.g, b = message.b, a = 1.0 }
+		self.plugins.ui:refreshView(window)
+	elseif message.type == "ToolClicked" then
+		if message.tool == "select" then
+			self.resources.compute:resetSelection()
+		end
+		self.currentAction = { tool = message.tool }
+		self.plugins.ui:refreshView(window)
+	elseif message.type == "ClearClicked" then
+		local textureManager = self.plugins.render.sharedResources.textureManager
+		local canvas = textureManager:allocate(800, 600)
+		self.resources.textures.canvas = canvas
+		self.resources.compute = Compute.new(textureManager, canvas)
+		self.plugins.ui:refreshView(window)
+	elseif message.type == "OpenClicked" then
+		print("Open clicked - not implemented")
+	elseif message.type == "SaveClicked" then
+		print("Save clicked - not implemented")
 	end
 end
 

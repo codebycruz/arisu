@@ -16,7 +16,7 @@ local Window = windowBackend.Window
 
 ---@param eventLoop EventLoop
 function Window.fromEventLoop(eventLoop) ---@return Window
-	local window = Window.new(eventLoop, 800, 600)
+	local window = Window.new(eventLoop, 1200, 720)
 	eventLoop:register(window)
 	return window
 end
