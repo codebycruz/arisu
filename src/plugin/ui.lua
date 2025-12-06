@@ -132,6 +132,10 @@ local function generateLayoutQuads(layout, parentX, parentY, vertices, indices, 
 	end
 end
 
+function UI:requestRedraw(window)
+	window.shouldRedraw = true -- shh. I'll figure out a way to make this use the eventhandler later.
+end
+
 ---@param window Window
 function UI:refreshView(window)
 	local computedLayout = self.layoutPlugin:refreshView(window)
@@ -140,7 +144,7 @@ function UI:refreshView(window)
 	generateLayoutQuads(computedLayout, 0, 0, vertices, indices, window.width, window.height)
 
 	self.renderPlugin:setRenderData(window, vertices, indices)
-	window.shouldRedraw = true -- shh. I'll figure out a way to make this use the eventhandler later.
+	self:requestRedraw(window)
 end
 
 return UI

@@ -77,6 +77,7 @@ local OverlayPlugin = require("plugin.overlay")
 ---@field currentColor { r: number, g: number, b: number, a: number }
 ---@field currentAction App.Action
 ---@field startTime number
+---@field overlaySelection { start: { x: number, y: number }?, finish: { x: number, y: number }? }?
 local App = {}
 App.__index = App
 
@@ -93,6 +94,7 @@ function App.new()
 	self.currentColor = { r = 0, g = 0, b = 0, a = 1 }
 	self.currentAction = { tool = "brush" }
 	self.startTime = os.clock()
+	self.overlaySelection = nil
 
 	return self
 end
@@ -693,9 +695,9 @@ function App:event(event, handler)
 
 		self.plugins.overlay:clear(event.window)
 
-		if self.currentAction.tool == "select" and self.currentAction.start then
-			local start = self.currentAction.start
-			local finish = self.currentAction.finish or start
+		if self.overlaySelection then
+			local start = self.overlaySelection.start
+			local finish = self.overlaySelection.finish or start
 
 			local x1 = start.x
 			local y1 = start.y
@@ -720,7 +722,7 @@ function App:event(event, handler)
 
 		ctx.renderCtx:swapBuffers()
 
-		if self.currentAction.tool == "select" and (self.currentAction.start or self.isDrawing) then
+		if self.overlaySelection then
 			handler:requestRedraw(event.window)
 		end
 
@@ -772,8 +774,8 @@ function App:update(message, window)
 		elseif self.currentAction.tool == "select" then
 			local x = (message.x / message.elementWidth) * 800
 			local y = (message.y / message.elementHeight) * 600
-			self.currentAction.start = { x = x, y = y }
-			self.currentAction.finish = nil
+			self.overlaySelection = { start = { x = x, y = y }, finish = nil }
+			self.isDrawing = true
 		elseif self.currentAction.tool == "pencil" then
 			self.resources.compute:stamp(
 				(message.x / message.elementWidth) * 800,
@@ -793,20 +795,19 @@ function App:update(message, window)
 			self.plugins.ui:refreshView(window)
 		end
 	elseif message.type == "StopDrawing" then
-		if self.currentAction.tool == "select" and self.currentAction.start then
+		if self.currentAction.tool == "select" and self.overlaySelection then
 			local x = (message.x / message.elementWidth) * 800
 			local y = (message.y / message.elementHeight) * 600
 
-			local start = self.currentAction.start
+			local start = self.overlaySelection.start
 			if start.x == x and start.y == y then
 				self.resources.compute:resetSelection()
-				self.currentAction.start = nil
-				self.currentAction.finish = nil
+				self.overlaySelection = nil
 			else
 				local startPos = { x = math.min(start.x, x), y = math.min(start.y, y) }
 				local finishPos = { x = math.max(start.x, x), y = math.max(start.y, y) }
 				self.resources.compute:setSelection(startPos.x, startPos.y, finishPos.x, finishPos.y)
-				self.currentAction.finish = { x = x, y = y }
+				self.overlaySelection.finish = { x = x, y = y }
 			end
 		end
 		self.isDrawing = false
@@ -833,23 +834,19 @@ function App:update(message, window)
 					1,
 					self.currentColor
 				)
-			elseif self.currentAction.tool == "select" and self.currentAction.start then
+			elseif self.currentAction.tool == "select" and self.overlaySelection then
 				local x = (message.x / message.elementWidth) * 800
 				local y = (message.y / message.elementHeight) * 600
-				self.currentAction.finish = { x = x, y = y }
+				self.overlaySelection.finish = { x = x, y = y }
+				window.shouldRedraw = true
 			end
-			self.plugins.ui:refreshView(window)
+			self.plugins.ui:requestRedraw(window)
 		end
 	elseif message.type == "ColorClicked" then
 		self.currentColor = { r = message.r, g = message.g, b = message.b, a = 1.0 }
 		self.plugins.ui:refreshView(window)
 	elseif message.type == "ToolClicked" then
-		if message.tool == "select" then
-			self.resources.compute:resetSelection()
-			self.currentAction = { tool = message.tool }
-		else
-			self.currentAction = { tool = message.tool }
-		end
+		self.currentAction = { tool = message.tool }
 		self.plugins.ui:refreshView(window)
 	elseif message.type == "ClearClicked" then
 		local textureManager = self.plugins.render.sharedResources.textureManager

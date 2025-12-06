@@ -189,8 +189,6 @@ function OverlayPlugin:draw(window, pattern, time)
 	local ctx = self:getContext(window)
 	if not ctx then return end
 
-	if ctx.nIndices == 0 then return end
-
 	local renderCtx = self.renderPlugin:getContext(window)
 	if not renderCtx then return end
 
@@ -211,19 +209,21 @@ function OverlayPlugin:draw(window, pattern, time)
 	gl.clearColor(0, 0, 0, 0)
 	gl.clear(gl.COLOR_BUFFER_BIT)
 
-	gl.enable(gl.BLEND)
-	gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
+	if ctx.nIndices > 0 then
+		gl.enable(gl.BLEND)
+		gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
 
-	renderCtx.overlayVertex:setData("f32", ctx.vertices)
-	renderCtx.overlayIndex:setData("u32", ctx.indices)
+		renderCtx.overlayVertex:setData("f32", ctx.vertices)
+		renderCtx.overlayIndex:setData("u32", ctx.indices)
 
-	renderCtx.overlayPipeline:bind()
+		renderCtx.overlayPipeline:bind()
 
-	ctx.timeUniform:set(time)
-	ctx.patternTypeUniform:set(patternType)
+		ctx.timeUniform:set(time)
+		ctx.patternTypeUniform:set(patternType)
 
-	renderCtx.overlayVAO:bind()
-	gl.drawElements(gl.TRIANGLES, ctx.nIndices, gl.UNSIGNED_INT, nil)
+		renderCtx.overlayVAO:bind()
+		gl.drawElements(gl.TRIANGLES, ctx.nIndices, gl.UNSIGNED_INT, nil)
+	end
 
 	gl.bindFramebuffer(gl.FRAMEBUFFER, 0)
 end
