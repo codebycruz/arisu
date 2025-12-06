@@ -131,8 +131,8 @@ function RenderPlugin:register(window)
 	quadPipeline:setProgram(gl.ShaderType.FRAGMENT, self.sharedResources.mainFragmentProgram)
 
 	local overlayPipeline = Pipeline.new()
-	overlayPipeline:setProgram(gl.ShaderType.VERTEX, self.sharedResources.overlayFragmentProgram)
-	overlayPipeline:setProgram(gl.ShaderType.FRAGMENT, self.sharedResources.overlayVertexProgram)
+	overlayPipeline:setProgram(gl.ShaderType.VERTEX, self.sharedResources.overlayVertexProgram)
+	overlayPipeline:setProgram(gl.ShaderType.FRAGMENT, self.sharedResources.overlayFragmentProgram)
 
 	---@type plugin.render.Context
 	local ctx = {
@@ -175,17 +175,12 @@ function RenderPlugin:draw(ctx)
 	self.sharedResources.textureManager:bind()
 	ctx.quadVAO:bind()
 	gl.drawElements(gl.TRIANGLES, ctx.nIndices, gl.UNSIGNED_INT, nil)
-
-	ctx.renderCtx:swapBuffers()
 end
 
 ---@param event Event
 ---@param handler EventHandler
 function RenderPlugin:event(event, handler)
-	if event.name == "redraw" then
-		local ctx = self:getContext(event.window)
-		self:draw(ctx)
-	elseif event.name == "resize" then
+	if event.name == "resize" then
 		local ctx = self:getContext(event.window)
 		ctx.renderCtx:makeCurrent()
 		gl.viewport(0, 0, ctx.window.width, ctx.window.height)

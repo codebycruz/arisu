@@ -10,6 +10,7 @@ local RenderPlugin = require("plugin.render")
 local LayoutPlugin = require("plugin.layout")
 local TextPlugin = require("plugin.text")
 local UIPlugin = require("plugin.ui")
+local OverlayPlugin = require("plugin.overlay")
 
 ---@alias Message
 --- | { type: "onWindowCreate", window: Window }
@@ -60,6 +61,7 @@ local UIPlugin = require("plugin.ui")
 ---@field text plugin.Text
 ---@field ui plugin.UI
 ---@field layout plugin.Layout
+---@field overlay plugin.Overlay
 
 ---@alias App.Tool "brush" | "eraser" | "fill" | "pencil" | "text" | "select" | "square" | "circle" | "line" | "curve"
 
@@ -74,6 +76,7 @@ local UIPlugin = require("plugin.ui")
 ---@field isDrawing boolean
 ---@field currentColor { r: number, g: number, b: number, a: number }
 ---@field currentAction App.Action
+---@field startTime number
 local App = {}
 App.__index = App
 
@@ -84,10 +87,12 @@ function App.new()
 	self.plugins.text = TextPlugin.new(self.plugins.render)
 	self.plugins.layout = LayoutPlugin.new(function(w) return self:view(w) end, self.plugins.text)
 	self.plugins.ui = UIPlugin.new(self.plugins.layout, self.plugins.render)
+	self.plugins.overlay = OverlayPlugin.new(self.plugins.render)
 
 	self.isDrawing = false
 	self.currentColor = { r = 0, g = 0, b = 0, a = 1 }
 	self.currentAction = { tool = "brush" }
+	self.startTime = os.clock()
 
 	return self
 end
@@ -650,6 +655,14 @@ function App:view(window)
 								elementHeight = elementHeight,
 							}
 						end),
+					Element.new("div")
+						:withStyle({
+							bgImage = self.plugins.overlay:getTexture(window),
+							width = { rel = 1 },
+							height = { rel = 1 },
+							margin = { right = 20, left = 20, top = 20, bottom = 20 },
+							position = "relative",
+						}),
 				}),
 
 			Element.new("div")
@@ -674,6 +687,46 @@ function App:event(event, handler)
 		return windowUpdate
 	end
 
+	if event.name == "redraw" then
+		local ctx = self.plugins.render:getContext(event.window)
+		self.plugins.render:draw(ctx)
+
+		self.plugins.overlay:clear(event.window)
+
+		if self.currentAction.tool == "select" and self.currentAction.start then
+			local start = self.currentAction.start
+			local finish = self.currentAction.finish or start
+
+			local x1 = start.x
+			local y1 = start.y
+			local x2 = finish.x
+			local y2 = finish.y
+
+			local boxX = math.min(x1, x2)
+			local boxY = math.min(y1, y2)
+			local boxW = math.abs(x2 - x1)
+			local boxH = math.abs(y2 - y1)
+
+			self.plugins.overlay:addBox(
+				event.window,
+				boxX, boxY, boxW, boxH,
+				{ r = 0, g = 0, b = 0, a = 1 },
+				2
+			)
+		end
+
+		local time = os.clock() - self.startTime
+		self.plugins.overlay:draw(event.window, "marching_ants", time)
+
+		ctx.renderCtx:swapBuffers()
+
+		if self.currentAction.tool == "select" and (self.currentAction.start or self.isDrawing) then
+			handler:requestRedraw(event.window)
+		end
+
+		return nil
+	end
+
 	local renderUpdate = self.plugins.render:event(event, handler)
 	if renderUpdate then
 		return renderUpdate
@@ -691,6 +744,7 @@ function App:update(message, window)
 	if message.type == "onWindowCreate" then
 		-- Now we can initialize assets for a specific window
 		self.plugins.render:register(window)
+		self.plugins.overlay:register(window)
 
 		if window == self.plugins.window.mainCtx.window then
 			self.resources = self:makeResources()
@@ -719,6 +773,7 @@ function App:update(message, window)
 			local x = (message.x / message.elementWidth) * 800
 			local y = (message.y / message.elementHeight) * 600
 			self.currentAction.start = { x = x, y = y }
+			self.currentAction.finish = nil
 		elseif self.currentAction.tool == "pencil" then
 			self.resources.compute:stamp(
 				(message.x / message.elementWidth) * 800,
@@ -751,9 +806,11 @@ function App:update(message, window)
 				local startPos = { x = math.min(start.x, x), y = math.min(start.y, y) }
 				local finishPos = { x = math.max(start.x, x), y = math.max(start.y, y) }
 				self.resources.compute:setSelection(startPos.x, startPos.y, finishPos.x, finishPos.y)
+				self.currentAction.finish = { x = x, y = y }
 			end
 		end
 		self.isDrawing = false
+		window.shouldRedraw = true
 	elseif message.type == "Hovered" then
 		if self.isDrawing then
 			if self.currentAction.tool == "eraser" then
@@ -776,6 +833,10 @@ function App:update(message, window)
 					1,
 					self.currentColor
 				)
+			elseif self.currentAction.tool == "select" and self.currentAction.start then
+				local x = (message.x / message.elementWidth) * 800
+				local y = (message.y / message.elementHeight) * 600
+				self.currentAction.finish = { x = x, y = y }
 			end
 			self.plugins.ui:refreshView(window)
 		end
@@ -785,8 +846,10 @@ function App:update(message, window)
 	elseif message.type == "ToolClicked" then
 		if message.tool == "select" then
 			self.resources.compute:resetSelection()
+			self.currentAction = { tool = message.tool }
+		else
+			self.currentAction = { tool = message.tool }
 		end
-		self.currentAction = { tool = message.tool }
 		self.plugins.ui:refreshView(window)
 	elseif message.type == "ClearClicked" then
 		local textureManager = self.plugins.render.sharedResources.textureManager

@@ -80,6 +80,13 @@ local nonCoreFnDefs = {
 	glDispatchCompute = "void(*)(GLuint, GLuint, GLuint)",
 	glMemoryBarrier = "void(*)(unsigned int)",
 	glBindImageTexture = "void(*)(GLuint, GLuint, GLint, unsigned char, GLint, GLenum, GLenum)",
+
+	glCreateFramebuffers = "void(*)(GLsizei, GLuint*)",
+	glBindFramebuffer = "void(*)(GLenum, GLuint)",
+	glNamedFramebufferTexture = "void(*)(GLuint, GLenum, GLuint, GLint)",
+	glNamedFramebufferTextureLayer = "void(*)(GLuint, GLenum, GLuint, GLint, GLint)",
+	glCheckNamedFramebufferStatus = "GLenum(*)(GLuint, GLenum)",
+	glDeleteFramebuffers = "void(*)(GLsizei, const GLuint*)",
 }
 
 ---@type fun(name: string): function
@@ -187,9 +194,14 @@ return {
 	SYNC_FLUSH_COMMANDS_BIT = 0x00000001,
 
 	LESS = 0x0201,
+	LESS = 0x0201,
 	LESS_EQUAL = 0x0203,
 	GREATER = 0x0204,
 	GREATER_EQUAL = 0x0206,
+
+	FRAMEBUFFER = 0x8D40,
+	COLOR_ATTACHMENT0 = 0x8CE0,
+	FRAMEBUFFER_COMPLETE = 0x8CD5,
 
 	--- @param type ShaderType
 	--- @param src string
@@ -356,4 +368,29 @@ return {
 
 	---@type fun(func: number)
 	depthFunc = C.glDepthFunc,
+
+	---@return number
+	createFramebuffer = function()
+		local fboId = ffi.new("GLuint[1]")
+		C.glCreateFramebuffers(1, fboId)
+		return fboId[0]
+	end,
+
+	---@type fun(n: number, framebuffers: userdata)
+	createFramebuffers = C.glCreateFramebuffers,
+
+	---@type fun(framebuffer: number, attachment: number, texture: number, level: number)
+	namedFramebufferTexture = C.glNamedFramebufferTexture,
+
+	---@type fun(framebuffer: number, attachment: number, texture: number, level: number, layer: number)
+	namedFramebufferTextureLayer = C.glNamedFramebufferTextureLayer,
+
+	---@type fun(framebuffer: number, target: number): number
+	checkNamedFramebufferStatus = C.glCheckNamedFramebufferStatus,
+
+	---@type fun(target: number, framebuffer: number)
+	bindFramebuffer = C.glBindFramebuffer,
+
+	---@type fun(n: number, framebuffers: userdata)
+	deleteFramebuffers = C.glDeleteFramebuffers,
 }
