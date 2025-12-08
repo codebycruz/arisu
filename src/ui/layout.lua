@@ -71,6 +71,31 @@ end
 ---@type Border
 local DEFAULT_BORDER = { width = 0, style = "none", color = { r = 0, g = 0, b = 0, a = 1 } }
 
+
+local function mainSize(result, isRow)
+	return isRow and result.width or result.height
+end
+
+local function crossSize(result, isRow)
+	return isRow and result.height or result.width
+end
+
+local function setMainPos(result, value, isRow)
+	if isRow then
+		result.x = value
+	else
+		result.y = value
+	end
+end
+
+local function setCrossPos(result, value, isRow)
+	if isRow then
+		result.y = value
+	else
+		result.x = value
+	end
+end
+
 ---@param parentWidth number
 ---@param parentHeight number
 ---@return ComputedLayout
@@ -85,7 +110,6 @@ function Layout:solve(parentWidth, parentHeight)
 			y = 0,
 			style = self.style,
 			border = self.border,
-			margin = margin,
 			children = {},
 			visible = false,
 		}
@@ -138,26 +162,6 @@ function Layout:solve(parentWidth, parentHeight)
 	local contentHeight = height - padding.top - padding.bottom - borderHeight
 
 	local isRow = self.direction == "row"
-	local function mainSize(result)
-		return isRow and result.width or result.height
-	end
-	local function crossSize(result)
-		return isRow and result.height or result.width
-	end
-	local function setMainPos(result, value)
-		if isRow then
-			result.x = value
-		else
-			result.y = value
-		end
-	end
-	local function setCrossPos(result, value)
-		if isRow then
-			result.y = value
-		else
-			result.x = value
-		end
-	end
 	local containerMainSize = isRow and contentWidth or contentHeight
 	local containerCrossSize = isRow and contentHeight or contentWidth
 
@@ -235,8 +239,9 @@ function Layout:solve(parentWidth, parentHeight)
 		local childPosition = childResults[i].position or "static"
 		if (childResults[i].width > 0 or childResults[i].height > 0) and childPosition ~= "relative" then
 			local childMargin = childResults[i].margin
-			local childMainMargin = isRow and (childMargin.left + childMargin.right) or (childMargin.top + childMargin.bottom)
-			totalMainSize = totalMainSize + mainSize(childResults[i]) + childMainMargin
+			local childMainMargin = isRow and (childMargin.left + childMargin.right) or
+				(childMargin.top + childMargin.bottom)
+			totalMainSize = totalMainSize + mainSize(childResults[i], isRow) + childMainMargin
 			visibleChildCount = visibleChildCount + 1
 		end
 	end
@@ -270,25 +275,30 @@ function Layout:solve(parentWidth, parentHeight)
 
 		if isVisible and childPosition == "relative" then
 			-- Relative positioned elements are positioned at (0, 0) of parent's content area
-			setMainPos(childResult, (isRow and padding.left or padding.top) + (isRow and childResult.x or childResult.y))
-			setCrossPos(childResult, (isRow and padding.top or padding.left) + (isRow and childResult.y or childResult.x))
+			setMainPos(childResult, (isRow and padding.left or padding.top) + (isRow and childResult.x or childResult.y),
+				isRow)
+			setCrossPos(childResult, (isRow and padding.top or padding.left) + (isRow and childResult.y or childResult.x),
+				isRow)
 		elseif isVisible then
 			processedVisible = processedVisible + 1
 			local isLastVisible = processedVisible == visibleChildCount
 
 			local mainPos = offset + (isRow and padding.left or padding.top)
-			setMainPos(childResult, mainPos + (isRow and childResult.x or childResult.y))
-			offset = offset + mainSize(childResult) + (isLastVisible and 0 or spacing)
+			setMainPos(childResult, mainPos + (isRow and childResult.x or childResult.y), isRow)
+			offset = offset + mainSize(childResult, isRow) + (isLastVisible and 0 or spacing)
 
 			local crossOffset = (isRow and padding.top or padding.left) + (isRow and childResult.y or childResult.x)
 			local childMargin = childResult.margin
-			local childCrossMargin = isRow and (childMargin.top + childMargin.bottom) or (childMargin.left + childMargin.right)
+			local childCrossMargin = isRow and (childMargin.top + childMargin.bottom) or
+				(childMargin.left + childMargin.right)
 			if align == "center" then
-				setCrossPos(childResult, crossOffset + (containerCrossSize - crossSize(childResult) - childCrossMargin) / 2)
+				setCrossPos(childResult,
+					crossOffset + (containerCrossSize - crossSize(childResult, isRow) - childCrossMargin) / 2, isRow)
 			elseif align == "end" then
-				setCrossPos(childResult, crossOffset + containerCrossSize - crossSize(childResult) - childCrossMargin)
+				setCrossPos(childResult,
+					crossOffset + containerCrossSize - crossSize(childResult, isRow) - childCrossMargin, isRow)
 			else
-				setCrossPos(childResult, crossOffset)
+				setCrossPos(childResult, crossOffset, isRow)
 			end
 		end
 	end
