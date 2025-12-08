@@ -73,9 +73,7 @@ end
 ---@generic T
 ---@param message T
 function Element:onClick(message)
-	self.onmousedown = function()
-		return message
-	end
+	self.onclick = message
 	return self
 end
 

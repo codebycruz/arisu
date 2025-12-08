@@ -76,6 +76,14 @@ function Layout:refreshView(window)
 	return ctx.computedLayout
 end
 
+local function hasMouseUp(e) ---@param e Element
+	return e.onmouseup ~= nil
+end
+
+local function hasMouseDownOrClick(e) ---@param e Element
+	return e.onmousedown ~= nil or e.onclick ~= nil
+end
+
 ---@param event Event
 ---@param handler EventHandler
 ---@return Message?
@@ -90,7 +98,7 @@ function Layout:event(event, handler)
 
 		local anyWithMouseDown = false
 		for el, _ in pairs(hoveredElements) do
-			if el.onmousedown then
+			if el.onmousedown or el.onclick then
 				anyWithMouseDown = true
 				break
 			end
@@ -111,20 +119,21 @@ function Layout:event(event, handler)
 		end
 	elseif event.name == "mousePress" then
 		local ctx = self.contexts[event.window]
-		local info = findElementAtPosition(ctx.ui, ctx.computedLayout, event.x, event.y, 0, 0, function(el)
-			return el.onmousedown ~= nil
-		end)
+		local info = findElementAtPosition(ctx.ui, ctx.computedLayout, event.x, event.y, 0, 0, hasMouseDownOrClick)
 
 		if info then
+			if info.element.onclick then
+				return info.element.onclick
+			end
+
 			local relX = event.x - info.absX
 			local relY = event.y - info.absY
+
 			return info.element.onmousedown(relX, relY, info.layout.width, info.layout.height)
 		end
 	elseif event.name == "mouseRelease" then
 		local ctx = self.contexts[event.window]
-		local info = findElementAtPosition(ctx.ui, ctx.computedLayout, event.x, event.y, 0, 0, function(el)
-			return el.onmouseup ~= nil
-		end)
+		local info = findElementAtPosition(ctx.ui, ctx.computedLayout, event.x, event.y, 0, 0, hasMouseUp)
 
 		if info then
 			local relX = event.x - info.absX
