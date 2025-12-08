@@ -21,10 +21,18 @@ local typeSizes = {
 
 local typeConstructors = {
 	u32 = function(data)
-		return ffi.new("uint32_t[?]", #data, data)
+		local arr = ffi.new("uint32_t[?]", #data)
+		for i = 1, #data do
+			arr[i - 1] = data[i]
+		end
+		return arr
 	end,
 	f32 = function(data)
-		return ffi.new("float[?]", #data, data)
+		local arr = ffi.new("float[?]", #data)
+		for i = 1, #data do
+			arr[i - 1] = data[i]
+		end
+		return arr
 	end,
 }
 
