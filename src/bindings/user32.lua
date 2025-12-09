@@ -137,13 +137,14 @@ ffi.cdef([[
 ---@field right number
 ---@field bottom number
 
+---@class user32.LPCSTR: ffi.cdata*
+
 local C = ffi.load("user32")
 
 return {
-	IDC_ARROW = ffi.cast("LPCSTR", 32512),
-	IDC_HAND = ffi.cast("LPCSTR", 32649),
-
-	IDI_APPLICATION = ffi.cast("LPCSTR", 32512),
+	IDC_ARROW = ffi.cast("LPCSTR", 32512) --[[@as user32.LPCSTR]],
+	IDC_HAND = ffi.cast("LPCSTR", 32649) --[[@as user32.LPCSTR]],
+	IDI_APPLICATION = ffi.cast("LPCSTR", 32512) --[[@as user32.LPCSTR]],
 
 	COLOR_WINDOW = 5,
 
@@ -280,6 +281,7 @@ return {
 
 	---@type fun(): user32.WNDCLASSEXA
 	newWndClassEx = function()
+		---@diagnostic disable-next-line: missing-return-value # ffi.new isn't typed properly for some reason
 		return ffi.new("WNDCLASSEXA", { cbSize = ffi.sizeof("WNDCLASSEXA") })
 	end,
 
@@ -294,10 +296,10 @@ return {
 	---@type fun(hwnd: user32.HWND, Msg: number, wParam: number, lParam: number): number
 	defWindowProc = C.DefWindowProcA,
 
-	---@type fun(hInstance: userdata, lpCursorName: string): userdata
+	---@type fun(hInstance: userdata?, lpCursorName: string | user32.LPCSTR): userdata
 	loadCursor = C.LoadCursorA,
 
-	---@type fun(hInstance: userdata, lpIconName: string): userdata
+	---@type fun(hInstance: userdata?, lpIconName: string | user32.LPCSTR): userdata
 	loadIcon = C.LoadIconA,
 
 	---@type fun(nIndex: number): userdata
@@ -308,8 +310,8 @@ return {
 		return C.AdjustWindowRect(lpRect, dwStyle, bMenu and 1 or 0) ~= 0
 	end,
 
-	---@type fun(): user32.RECT
 	newRect = function()
+		---@type user32.RECT
 		return ffi.new("RECT")
 	end,
 }

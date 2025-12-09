@@ -46,14 +46,11 @@ function Arisu.run(appStatic)
 	window.Window.fromEventLoop(eventLoop)
 
 	eventLoop:run(function(event, handler)
-		handler:setMode("wait")
+		handler:setMode("poll")
 
 		local message = app:event(event, handler)
 		if message then
-			local task = app:update(message, event.window)
-			if task then
-				print("i have a task and i must run")
-			end
+			app:update(message, event.window)
 		end
 	end)
 end

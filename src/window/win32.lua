@@ -207,8 +207,6 @@ function Win32EventLoop:run(callback)
 			print("Error in event loop callback: " .. tostring(err))
 			os.exit(1)
 		end
-
-		return ok
 	end
 
 	for _, window in pairs(self.windows) do

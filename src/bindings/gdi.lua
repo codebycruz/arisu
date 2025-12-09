@@ -80,6 +80,7 @@ return {
 
 	---@type fun(): gdi.PIXELFORMATDESCRIPTOR
 	newPFD = function()
+		---@diagnostic disable-next-line: missing-return-value # ffi.new isn't typed properly for some reason
 		return ffi.new("PIXELFORMATDESCRIPTOR", {
 			nSize = ffi.sizeof("PIXELFORMATDESCRIPTOR"),
 			nVersion = 1,

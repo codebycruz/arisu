@@ -96,6 +96,7 @@ if util.isUnix() then
 	local glx = require("bindings.glx")
 
 	function fetchNonCoreFn(name)
+		---@type function: We ensure nonCoreFnDefs has only function types
 		return ffi.cast(nonCoreFnDefs[name], glx.getProcAddress(name))
 	end
 else
@@ -194,7 +195,6 @@ return {
 	SYNC_GPU_COMMANDS_COMPLETE = 0x9117,
 	SYNC_FLUSH_COMMANDS_BIT = 0x00000001,
 
-	LESS = 0x0201,
 	LESS = 0x0201,
 	LESS_EQUAL = 0x0203,
 	GREATER = 0x0204,

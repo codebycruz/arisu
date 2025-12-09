@@ -78,7 +78,7 @@ function Element:onClick(message)
 end
 
 ---@generic T
----@param cons fun(): T
+---@param cons fun(x: number, y: number, elementWidth: number, elementWidth: number): T
 function Element:onMouseDown(cons)
 	self.onmousedown = cons
 	return self
