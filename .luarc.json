@@ -1,5 +1,13 @@
 {
 	"$schema": "https://raw.githubusercontent.com/sumneko/vscode-lua/master/setting/schema.json",
+	"diagnostics": {
+		"groupSeverity": {
+			"type-check": "Error",
+			"unbalanced": "Error",
+			"luadoc": "Error",
+			"duplicate": "Error"
+		}
+	},
 	"runtime": {
 		"version": "LuaJIT",
 		"path": ["src/?.lua"],
