@@ -29,8 +29,8 @@ ffi.cdef([[
 	void* glXGetProcAddress(const unsigned char* procname);
 ]])
 
----@class GLXContext: userdata
----@class GLXFBConfig: userdata
+---@class GLXContext: ffi.cdata*
+---@class GLXFBConfig: ffi.cdata*
 
 local C = ffi.load("GL")
 

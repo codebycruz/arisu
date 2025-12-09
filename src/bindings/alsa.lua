@@ -6,13 +6,13 @@ ffi.cdef([[
 	int snd_pcm_open(snd_pcm_t **pcm, const char *name, int stream, int mode);
 	int snd_pcm_close(snd_pcm_t *pcm);
 	int snd_pcm_set_params(
-	  snd_pcm_t *pcm,
-	  int format,
-	  int access,
-	  unsigned int channels,
-	  unsigned int rate,
-	  int soft_resample,
-	  unsigned int latency
+		snd_pcm_t *pcm,
+		int format,
+		int access,
+		unsigned int channels,
+		unsigned int rate,
+		int soft_resample,
+		unsigned int latency
 	);
 	int snd_pcm_writei(snd_pcm_t *pcm, const void *buffer, unsigned int size);
 	int snd_pcm_drain(snd_pcm_t *pcm);
@@ -23,7 +23,7 @@ ffi.cdef([[
 
 local C = ffi.load("asound.so.2")
 
----@class alsa.PCM : userdata
+---@class alsa.PCM : ffi.cdata*
 
 return {
 	SND_PCM_FORMAT_S16_LE = 2,

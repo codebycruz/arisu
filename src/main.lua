@@ -77,7 +77,7 @@ local OverlayPlugin = require("plugin.overlay")
 ---@field currentColor { r: number, g: number, b: number, a: number }
 ---@field currentAction App.Action
 ---@field startTime number
----@field overlaySelection { start: { x: number, y: number }?, finish: { x: number, y: number }? }?
+---@field overlaySelection { start: { x: number, y: number }, finish: { x: number, y: number }? }?
 local App = {}
 App.__index = App
 
@@ -159,25 +159,6 @@ local function map(list, fn)
 	return result
 end
 
----@generic T
----@param list T[]
----@param size number
----@return T[][]
-local function chunks(list, size)
-	local result = {}
-
-	for i = 1, #list, size do
-		local chunk = {}
-		for j = i, math.min(i + size - 1, #list) do
-			chunk[#chunk + 1] = list[j]
-		end
-
-		result[#result + 1] = chunk
-	end
-
-	return result
-end
-
 ---@param window Window
 function App:view(window)
 	local disabledColor = { r = 0.7, g = 0.7, b = 0.7, a = 1.0 }
@@ -230,7 +211,7 @@ function App:view(window)
 			end))
 	end
 
-	local function makeIconButton(icon, label, msg)
+	local function makeIconButton(icon, label)
 		return Element.new("div")
 			:withStyle({
 				direction = "row",
@@ -662,7 +643,7 @@ function App:view(window)
 						end),
 					Element.new("div")
 						:withStyle({
-							bgImage = self.plugins.overlay:getTexture(window),
+							bgImage = assert(self.plugins.overlay:getTexture(window), "Overlay texture not found"),
 							width = { rel = 1 },
 							height = { rel = 1 },
 							margin = { right = 20, left = 20, top = 20, bottom = 20 },

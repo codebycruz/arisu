@@ -11,6 +11,13 @@ ffi.cdef([[
     } qoi_header_t;
 ]])
 
+---@class qoi.Header: ffi.cdata*
+---@field magic string
+---@field width number
+---@field height number
+---@field channels number
+---@field colorspace number
+
 local QOI = {}
 
 -- Use tonumber instead of the actual literals since stylua complains
@@ -40,12 +47,12 @@ end
 function QOI.Decode(content)
 	assert(QOI.isValid(content), "Invalid QOI file")
 
-	local header = ffi.cast("const qoi_header_t*", content)
+	local header = ffi.cast("const qoi_header_t*", content) --[[@as qoi.Header]]
 
-	local width = swapEndian(tonumber(header.width))
-	local height = swapEndian(tonumber(header.height))
+	local width = swapEndian(header.width)
+	local height = swapEndian(header.height)
 	local channels = tonumber(header.channels)
-	local colorspace = tonumber(header.colorspace)
+	local _colorspace = tonumber(header.colorspace)
 
 	local finalPixelCount = width * height
 	local currentPixelCount = 0
@@ -148,8 +155,10 @@ function QOI.isValid(content)
 	if #content < 14 then
 		return false
 	end
-	local header = ffi.cast("const qoi_header_t*", content)
+
+	local header = ffi.cast("const qoi_header_t*", content) --[[@as qoi.Header]]
 	local magic = ffi.string(header.magic, 4)
+
 	return magic == "qoif"
 end
 

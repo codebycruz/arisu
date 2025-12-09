@@ -105,9 +105,9 @@ ffi.cdef([[
 	HBRUSH GetSysColorBrush(int nIndex);
 ]])
 
----@class user32.HWND: userdata
+---@class user32.HWND: ffi.cdata*
 
----@class user32.MSG: userdata
+---@class user32.MSG: ffi.cdata*
 ---@field hwnd user32.HWND
 ---@field message number
 ---@field wParam number
@@ -129,7 +129,7 @@ ffi.cdef([[
 ---@field hbrBackground userdata
 ---@field style number
 
----@class user32.HDC: userdata
+---@class user32.HDC: ffi.cdata*
 
 ---@class user32.RECT: ffi.cdata*
 ---@field left number
@@ -262,21 +262,20 @@ return {
 		return C.PeekMessageA(lpMsg, hWnd or nil, wMsgFilterMin, wMsgFilterMax, wRemoveMsg) ~= 0
 	end,
 
-	---@type fun(lpMsg: userdata, hWnd: userdata?, wMsgFilterMin: number, wMsgFilterMax: number): number
+	---@type fun(lpMsg: ffi.cdata*, hWnd: user32.HWND?, wMsgFilterMin: number, wMsgFilterMax: number): number
 	getMessage = C.GetMessageA,
 
-	---@type fun(lpMsg: userdata): number
+	---@type fun(lpMsg: ffi.cdata*): number
 	translateMessage = C.TranslateMessage,
 
-	---@type fun(lpMsg: userdata): number
+	---@type fun(lpMsg: ffi.cdata*): number
 	dispatchMessage = C.DispatchMessageA,
 
 	---@type fun(nExitCode: number)
 	postQuitMessage = C.PostQuitMessage,
 
-	---@type fun(): user32.MSG
 	newMsg = function()
-		return ffi.new("MSG")
+		return ffi.new("MSG") --[[@as user32.MSG]]
 	end,
 
 	---@type fun(): user32.WNDCLASSEXA

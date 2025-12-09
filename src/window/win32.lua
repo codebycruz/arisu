@@ -49,8 +49,8 @@ function Win32Window.new(eventLoop, width, height)
 	return setmetatable({ hwnd = window, id = util.toPointer(window), width = width, height = height }, Win32Window)
 end
 
----@param image Image|nil
-function Win32Window:setIcon(image)
+---@param _image Image?
+function Win32Window:setIcon(_image)
 	print("Warning: Win32Window:setIcon is unimplemented")
 end
 

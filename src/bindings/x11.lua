@@ -157,7 +157,7 @@ local C = ffi.load("X11")
 ---@field xexpose { window: number }
 ---@field xany { window: number }
 ---@field xconfigure { window: number, x: number, y: number, width: number, height: number }
----@field xmotion { x: number, y: number }
+---@field xmotion { window: number, x: number, y: number }
 ---@field xbutton { x: number, y: number, button: number }
 
 ---@class XDisplay: userdata
@@ -169,7 +169,7 @@ local C = ffi.load("X11")
 ---@field height number
 
 return {
-	---@type fun(display_name: string): XDisplay?
+	---@type fun(display_name: string?): XDisplay?
 	openDisplay = C.XOpenDisplay,
 
 	---@type fun(display: XDisplay): number
@@ -190,11 +190,10 @@ return {
 	---@type fun(display: XDisplay, atom_name: string, only_if_exists: number): number
 	internAtom = C.XInternAtom,
 
-	setWMProtocols = function(
-		display --[[@param display XDisplay]],
-		window --[[@param window Window]],
-		protocols --[=[@param protocols string[]]=]
-	)
+	---@param display XDisplay
+	---@param window X11Window
+	---@param protocols string[]
+	setWMProtocols = function(display, window, protocols)
 		assert(display == window.display, "Display mismatch in setWMProtocols")
 
 		local atoms = ffi.new("Atom[?]", #protocols)
@@ -292,16 +291,15 @@ return {
 	---@type fun(display: XDisplay)
 	flush = C.XFlush,
 
-	changeProperty = function(
-		display --[[@param display XDisplay]],
-		w --[[@param w number]],
-		property --[[@param property string]],
-		ty --[[@param ty string]],
-		format --[[@param format number]],
-		mode --[[@param mode number]],
-		data --[[@param data userdata]],
-		nelements --[[@param nelements number]]
-	)
+	---@param display XDisplay
+	---@param w number
+	---@param property string
+	---@param ty string
+	---@param format number
+	---@param mode number
+	---@param data string|ffi.cdata*
+	---@param nelements number
+	changeProperty = function(display, w, property, ty, format, mode, data, nelements)
 		local property_atom = C.XInternAtom(display, property, 0)
 		local type_atom = C.XInternAtom(display, ty, 0)
 

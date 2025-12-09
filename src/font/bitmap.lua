@@ -1,5 +1,4 @@
 local Image = require("image")
-local ffi = require("ffi")
 
 ---@class BitmapConfig
 ---@field characters string
