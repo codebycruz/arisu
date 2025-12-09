@@ -5,7 +5,8 @@
 			"type-check": "Error",
 			"unbalanced": "Error",
 			"luadoc": "Error",
-			"duplicate": "Error"
+			"duplicate": "Error",
+			"global": "Error"
 		}
 	},
 	"runtime": {

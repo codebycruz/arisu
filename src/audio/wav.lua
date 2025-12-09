@@ -16,13 +16,25 @@ ffi.cdef([[
     } wav_header_t;
 ]])
 
+---@class wav.Header: ffi.cdata*
+---@field riff string
+---@field size number
+---@field wave string
+---@field fmt string
+---@field fmt_size number
+---@field audio_format number
+---@field num_channels number
+---@field sample_rate number
+---@field byte_rate number
+---@field block_align number
+---@field bits_per_sample number
+
 local WAV = {}
 
----@return { channels: number, sampleRate: number, bitsPerSample: number, data: userdata, dataLen: number, buffer: string }
-function WAV.Decode(
-	content --[[@param content string]]
-)
-	local header = ffi.cast("const wav_header_t*", content)
+---@param content string
+---@return { channels: number, sampleRate: number, bitsPerSample: number, data: string, dataLen: number, buffer: string }
+function WAV.Decode(content)
+	local header = ffi.cast("const wav_header_t*", content) --[[@as wav.Header]]
 	local channels = tonumber(header.num_channels)
 	local sampleRate = tonumber(header.sample_rate)
 	local bitsPerSample = tonumber(header.bits_per_sample)

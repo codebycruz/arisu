@@ -45,7 +45,7 @@ end
 
 ---@class plugin.Layout.Context
 ---@field window Window
----@field ui Element
+---@field ui Element?
 ---@field computedLayout ComputedLayout?
 
 ---@class plugin.Layout

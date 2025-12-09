@@ -29,7 +29,7 @@ local window = require("window")
 local Arisu = {}
 
 ---@alias arisu.New<T> fun(): arisu.App<T>
----@alias arisu.Update<T> fun(self: arisu.App<T>, message: T, window: Window): Task?
+---@alias arisu.Update<T> fun(self: arisu.App<T>, message: T, window: Window)
 ---@alias arisu.View<T> fun(self: arisu.App<T>, window: Window): Element
 ---@alias arisu.Event<T> fun(self: arisu.App<T>, event: Event, handler: EventHandler): any
 

@@ -8,6 +8,6 @@ local util = require("util")
 ---@field setPresentMode fun(self: Context, mode: PresentMode)
 ---@field swapBuffers fun(self: Context)
 ---@field destroy fun(self: Context)
-local Context = util.isWindows() and require("context.win32") or require("context.x11")
+local Context = util.isWindows() and require("context.win32") or require("context.x11") --[[@as Context]]
 
 return Context

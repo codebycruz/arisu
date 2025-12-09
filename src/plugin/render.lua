@@ -9,7 +9,6 @@ local Uniform = require("gl.uniform")
 local UniformBlock = require("gl.uniform_block")
 local TextureManager = require("gl.texture_manager")
 local FontManager = require("gl.font_manager")
-local Context = require("context")
 
 ---@class plugin.Render.Context
 ---@field window Window
@@ -22,9 +21,9 @@ local Context = require("context")
 ---@field overlayPipeline Pipeline
 ---@field overlayVertex Buffer
 ---@field overlayIndex Buffer
----@field ui Element
----@field layoutTree Layout
----@field computedLayout ComputedLayout
+---@field ui? Element
+---@field layoutTree? Layout
+---@field computedLayout? ComputedLayout
 ---@field nIndices number
 
 ---@class plugin.Render.SharedResources
@@ -134,7 +133,7 @@ function RenderPlugin:register(window)
 	overlayPipeline:setProgram(gl.ShaderType.VERTEX, self.sharedResources.overlayVertexProgram)
 	overlayPipeline:setProgram(gl.ShaderType.FRAGMENT, self.sharedResources.overlayFragmentProgram)
 
-	---@type plugin.render.Context
+	---@type plugin.Render.Context
 	local ctx = {
 		window = window,
 		renderCtx = ctx.renderCtx,
@@ -153,12 +152,12 @@ function RenderPlugin:register(window)
 	return ctx
 end
 
----@return plugin.render.Context?
+--- SAFETY: Returns non-nil as we will assume user registers all windows properly :)
 function RenderPlugin:getContext(window)
 	return self.contexts[window]
 end
 
----@param ctx plugin.render.Context
+---@param ctx plugin.Render.Context
 function RenderPlugin:draw(ctx)
 	ctx.renderCtx:makeCurrent()
 

@@ -91,23 +91,4 @@ function Element:onMouseUp(message)
 	return self
 end
 
----@param style Style
----@param children Element[]
-function Element.div(style, children)
-	return Element.new("div"):withStyle(style):withChildren(children)
-end
-
----@param style Style
----@param value string
-function Element.text(style, value)
-	return Element.from(value):withStyle(style)
-end
-
----@param style Style
----@param src string
-function Element.img(style, src)
-	style.bgImage = src
-	return Element.new("div"):withStyle(style)
-end
-
 return Element

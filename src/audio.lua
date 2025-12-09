@@ -31,7 +31,7 @@ function Audio.new(channels, sampleRate, bitsPerSample, duration, data, dataLen,
 end
 
 ---@param content string
----@return Audio?
+---@return Audio?, string?
 function Audio.fromData(content)
 	if WAV.isValid(content) then
 		local wavData = WAV.Decode(content)
@@ -49,7 +49,7 @@ function Audio.fromData(content)
 			wavData.data,
 			wavData.dataLen,
 			wavData.buffer
-		)
+		), nil
 	end
 
 	return nil, "Unsupported audio format"
@@ -60,7 +60,7 @@ function Audio.isValid(content)
 end
 
 ---@param path string
----@return Audio?
+---@return Audio?, string?
 function Audio.fromPath(path)
 	local file, err = io.open(path, "rb")
 	if not file then

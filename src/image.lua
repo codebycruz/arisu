@@ -38,16 +38,16 @@ function Image:getPixel(x, y)
 end
 
 ---@param content string
----@return Image?
+---@return Image?, string?
 function Image.fromData(content)
 	if PPM.isValid(content) then
 		local width, height, channels, pixels = PPM.Decode(content)
-		return Image.new(width, height, channels, pixels, content)
+		return Image.new(width, height, channels, pixels, content), nil
 	end
 
 	if QOI.isValid(content) then
 		local width, height, channels, pixels = QOI.Decode(content)
-		return Image.new(width, height, channels, pixels, content)
+		return Image.new(width, height, channels, pixels, content), nil
 	end
 
 	return nil, "Unsupported image format"
@@ -58,7 +58,7 @@ function Image.isValid(content)
 end
 
 ---@param path string
----@return Image?
+---@return Image?, string?
 function Image.fromPath(path)
 	local file, err = io.open(path, "rb")
 	if not file then
