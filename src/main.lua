@@ -986,6 +986,11 @@ if gpuDevice then
 	print("Using discrete GPU for compute")
 	local device = vk.createDevice(gpuDevice)
 	local buffer = vk.createBuffer(device, { size = 200, usage = vk.BufferUsage.STORAGE_BUFFER })
+
+	local shader = vk.createShaderModule(device, {
+		codeSize = 2123,
+		pCode = ffi.cast("const unsigned int*", "foo")
+	})
 end
 
 Arisu.run(App)

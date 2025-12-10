@@ -16,6 +16,8 @@ ffi.cdef([[
 	typedef VkFlags VkBufferCreateFlags;
 	typedef VkFlags VkBufferUsageFlags;
 	typedef uint32_t VkSharingMode;
+	typedef void VkAllocationCallbacks;
+	typedef VkFlags VkShaderModuleCreateFlags;
 
 	typedef struct {
 		VkStructureType     sType;
@@ -264,6 +266,14 @@ ffi.cdef([[
         const uint32_t*        pQueueFamilyIndices;
     } VkBufferCreateInfo;
 
+    typedef struct {
+        VkStructureType              sType;
+        const void*                  pNext;
+        VkShaderModuleCreateFlags    flags;
+        size_t                       codeSize;
+        const uint32_t*              pCode;
+    } VkShaderModuleCreateInfo;
+
 	VkResult vkGetPhysicalDeviceProperties(
 		VkPhysicalDevice physicalDevice,
 		VkPhysicalDeviceProperties* pProperties
@@ -302,6 +312,10 @@ ffi.cdef([[
 ---@field queueFamilyIndexCount number?
 ---@field pQueueFamilyIndices userdata?
 
+---@class vk.ShaderModuleCreateInfoStruct: vk.BaseStruct
+---@field codeSize number
+---@field pCode userdata
+
 ---@class vk.PhysicalDeviceProperties: ffi.cdata*
 ---@field apiVersion number
 ---@field driverVersion number
@@ -320,7 +334,51 @@ local vkGlobal = {
 		INSTANCE_CREATE_INFO = 1,
 		DEVICE_QUEUE_CREATE_INFO = 2,
 		DEVICE_CREATE_INFO = 3,
+		SUBMIT_INFO = 4,
+		MEMORY_ALLOCATE_INFO = 5,
+		MAPPED_MEMORY_RANGE = 6,
+		BIND_SPARSE_INFO = 7,
+		FENCE_CREATE_INFO = 8,
+		SEMAPHORE_CREATE_INFO = 9,
+		EVENT_CREATE_INFO = 10,
+		QUERY_POOL_CREATE_INFO = 11,
 		BUFFER_CREATE_INFO = 12,
+		BUFFER_VIEW_CREATE_INFO = 13,
+		IMAGE_CREATE_INFO = 14,
+		IMAGE_VIEW_CREATE_INFO = 15,
+		SHADER_MODULE_CREATE_INFO = 16,
+		PIPELINE_CACHE_CREATE_INFO = 17,
+		PIPELINE_SHADER_STAGE_CREATE_INFO = 18,
+		PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO = 19,
+		PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO = 20,
+		PIPELINE_TESSELLATION_STATE_CREATE_INFO = 21,
+		PIPELINE_VIEWPORT_STATE_CREATE_INFO = 22,
+		PIPELINE_RASTERIZATION_STATE_CREATE_INFO = 23,
+		PIPELINE_MULTISAMPLE_STATE_CREATE_INFO = 24,
+		PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO = 25,
+		PIPELINE_COLOR_BLEND_STATE_CREATE_INFO = 26,
+		PIPELINE_DYNAMIC_STATE_CREATE_INFO = 27,
+		GRAPHICS_PIPELINE_CREATE_INFO = 28,
+		COMPUTE_PIPELINE_CREATE_INFO = 29,
+		PIPELINE_LAYOUT_CREATE_INFO = 30,
+		SAMPLER_CREATE_INFO = 31,
+		DESCRIPTOR_SET_LAYOUT_CREATE_INFO = 32,
+		DESCRIPTOR_POOL_CREATE_INFO = 33,
+		DESCRIPTOR_SET_ALLOCATE_INFO = 34,
+		WRITE_DESCRIPTOR_SET = 35,
+		COPY_DESCRIPTOR_SET = 36,
+		FRAMEBUFFER_CREATE_INFO = 37,
+		RENDER_PASS_CREATE_INFO = 38,
+		COMMAND_POOL_CREATE_INFO = 39,
+		COMMAND_BUFFER_ALLOCATE_INFO = 40,
+		COMMAND_BUFFER_INHERITANCE_INFO = 41,
+		COMMAND_BUFFER_BEGIN_INFO = 42,
+		RENDER_PASS_BEGIN_INFO = 43,
+		BUFFER_MEMORY_BARRIER = 44,
+		IMAGE_MEMORY_BARRIER = 45,
+		MEMORY_BARRIER = 46,
+		LOADER_INSTANCE_CREATE_INFO = 47,
+		LOADER_DEVICE_CREATE_INFO = 48,
 	},
 }
 
@@ -414,15 +472,13 @@ local globalDevice = vkInstance.createDevice(globalPhysicalDevice, {})
 local vkDevice = {}
 do
 	local types = {
-		vkCreateBuffer = "VkResult(*)(VkDevice, const VkBufferCreateInfo*, const void*, VkBuffer*)",
+		vkCreateBuffer = "VkResult(*)(VkDevice, const VkBufferCreateInfo*, const VkAllocationCallbacks*, VkBuffer*)",
+		vkCreateShaderModule = "VkResult(*)(VkDevice, const void*, const VkAllocationCallbacks*, VkBuffer*)",
 	}
 
-	local C = {}
 	for name, funcType in pairs(types) do
-		C[name] = ffi.cast(funcType, vkGlobal.getDeviceProcAddr(globalDevice, name))
+		vkDevice[name] = ffi.cast(funcType, vkGlobal.getDeviceProcAddr(globalDevice, name))
 	end
-
-	vkDevice.vkCreateBuffer = C.vkCreateBuffer
 end
 
 local vk = {}
@@ -488,6 +544,23 @@ do
 		end
 
 		return buffer[0]
+	end
+
+	---@param device vk.Device
+	---@param info vk.ShaderModuleCreateInfoStruct
+	---@param allocator ffi.cdata*?
+	---@return vk.Buffer*
+	function vk.createShaderModule(device, info, allocator)
+		local info = ffi.new("VkShaderModuleCreateInfo", info)
+		info.sType = vk.StructureType.SHADER_MODULE_CREATE_INFO
+
+		local shaderModule = ffi.new("VkBuffer[1]")
+		local result = vkDevice.vkCreateShaderModule(device, info, allocator, shaderModule)
+		if result ~= 0 then
+			error("Failed to create Vulkan shader module, error code: " .. tostring(result))
+		end
+
+		return shaderModule[0]
 	end
 end
 
