@@ -12,6 +12,10 @@ ffi.cdef([[
 	typedef VkFlags VkSampleCountFlags;
 	typedef uint64_t VkDeviceSize;
 	typedef uint32_t VkPhysicalDeviceType;
+	typedef uint64_t VkBuffer;
+	typedef VkFlags VkBufferCreateFlags;
+	typedef VkFlags VkBufferUsageFlags;
+	typedef uint32_t VkSharingMode;
 
 	typedef struct {
 		VkStructureType     sType;
@@ -249,12 +253,16 @@ ffi.cdef([[
         const VkPhysicalDeviceFeatures* pEnabledFeatures;
     } VkDeviceCreateInfo;
 
-	VkResult vkCreateDevice(
-		VkPhysicalDevice physicalDevice,
-		const VkDeviceCreateInfo* pCreateInfo,
-		const void* pAllocator,
-		VkDevice* pDevice
-	);
+    typedef struct {
+        VkStructureType        sType;
+        const void*            pNext;
+        VkBufferCreateFlags    flags;
+        VkDeviceSize           size;
+        VkBufferUsageFlags     usage;
+        VkSharingMode          sharingMode;
+        uint32_t               queueFamilyIndexCount;
+        const uint32_t*        pQueueFamilyIndices;
+    } VkBufferCreateInfo;
 
 	VkResult vkGetPhysicalDeviceProperties(
 		VkPhysicalDevice physicalDevice,
@@ -262,29 +270,37 @@ ffi.cdef([[
 	);
 ]])
 
+---@class vk.BaseStruct
+---@field sType vk.StructureType?
+---@field pNext userdata?
+---@field flags number?
+
 ---@class vk.Instance: number
 ---@class vk.Result: number
 ---@class vk.PhysicalDevice: ffi.cdata*
 ---@class vk.Device: number
+---@class vk.Buffer*: ffi.cdata*
 
----@class vk.CreateInstanceInput
----@field pNext userdata?
----@field flags number?
+---@class vk.InstanceCreateInfoStruct: vk.BaseStruct
 ---@field pApplicationInfo userdata?
 ---@field enabledLayerCount number?
 ---@field ppEnabledLayerNames userdata?
 ---@field enabledExtensionCount number?
 ---@field ppEnabledExtensionNames userdata?
 
----@class vk.DeviceCreateInfoStruct
----@field sType vk.StructureType
----@field pNext userdata?
----@field flags number
----@field queueCreateInfoCount number
+---@class vk.DeviceCreateInfoStruct: vk.BaseStruct
+---@field queueCreateInfoCount number?
 ---@field pQueueCreateInfos userdata?
----@field enabledExtensionCount number
+---@field enabledExtensionCount number?
 ---@field ppEnabledExtensionNames userdata?
 ---@field pEnabledFeatures userdata?
+
+---@class vk.BufferCreateInfoStruct: vk.BaseStruct
+---@field size number
+---@field usage vk.BufferUsage
+---@field sharingMode vk.SharingMode?
+---@field queueFamilyIndexCount number?
+---@field pQueueFamilyIndices userdata?
 
 ---@class vk.PhysicalDeviceProperties: ffi.cdata*
 ---@field apiVersion number
@@ -297,35 +313,27 @@ ffi.cdef([[
 ---@field limits ffi.cdata*
 ---@field sparseProperties ffi.cdata*
 
-local core = {
+local vkGlobal = {
 	---@enum vk.StructureType
 	StructureType = {
 		APPLICATION_INFO = 0,
 		INSTANCE_CREATE_INFO = 1,
 		DEVICE_QUEUE_CREATE_INFO = 2,
 		DEVICE_CREATE_INFO = 3,
-	},
-
-	---@enum vk.PhysicalDeviceType
-	PhysicalDeviceType = {
-		OTHER = 0,
-		INTEGRATED_GPU = 1,
-		DISCRETE_GPU = 2,
-		VIRTUAL_GPU = 3,
-		CPU = 4,
+		BUFFER_CREATE_INFO = 12,
 	},
 }
 
 do
 	local C = ffi.load("vulkan")
 
-	---@param info vk.CreateInstanceInput
+	---@param info vk.InstanceCreateInfoStruct
 	---@param allocator ffi.cdata*?
 	---@return vk.Instance
-	function core.createInstance(info, allocator)
+	function vkGlobal.createInstance(info, allocator)
 		local instance = ffi.new("VkInstance[1]")
 		local info = ffi.new("VkInstanceCreateInfo", info)
-		info.sType = core.StructureType.INSTANCE_CREATE_INFO
+		info.sType = vkGlobal.StructureType.INSTANCE_CREATE_INFO
 
 		local result = C.vkCreateInstance(info, allocator, instance)
 		if result ~= 0 then
@@ -337,7 +345,7 @@ do
 
 	---@param instance vk.Instance
 	---@return vk.PhysicalDevice[]
-	function core.enumeratePhysicalDevices(instance)
+	function vkGlobal.enumeratePhysicalDevices(instance)
 		local deviceCount = ffi.new("uint32_t[1]", 0)
 		local result = C.vkEnumeratePhysicalDevices(instance, deviceCount, nil)
 		if result ~= 0 then
@@ -359,12 +367,38 @@ do
 	end
 
 	---@param physicalDevice vk.PhysicalDevice
-	---@param info vk.DeviceCreateInfoStruct
+	function vkGlobal.getPhysicalDeviceProperties(physicalDevice)
+		local properties = ffi.new("VkPhysicalDeviceProperties")
+		C.vkGetPhysicalDeviceProperties(physicalDevice, properties)
+		return properties --[[@as vk.PhysicalDeviceProperties]]
+	end
+
+	vkGlobal.getInstanceProcAddr = C.vkGetInstanceProcAddr
+	vkGlobal.getDeviceProcAddr = C.vkGetDeviceProcAddr
+end
+
+local globalInstance = vkGlobal.createInstance({})
+local globalPhysicalDevice = vkGlobal.enumeratePhysicalDevices(globalInstance)[1]
+
+local vkInstance = {}
+do
+	local types = {
+		vkCreateDevice = "VkDevice(*)(VkPhysicalDevice, const VkDeviceCreateInfo*, const void*, VkDevice*)",
+	}
+
+	local C = {}
+	for name, funcType in pairs(types) do
+		C[name] = ffi.cast(funcType, vkGlobal.getInstanceProcAddr(globalInstance, name))
+	end
+
+	---@param physicalDevice vk.PhysicalDevice
+	---@param info vk.DeviceCreateInfoStruct?
 	---@param allocator ffi.cdata*?
 	---@return vk.Device
-	function core.createDevice(physicalDevice, info, allocator)
+	function vkInstance.createDevice(physicalDevice, info, allocator)
 		local device = ffi.new("VkDevice[1]")
-		local info = ffi.new("VkDeviceCreateInfo", info)
+		local info = ffi.new("VkDeviceCreateInfo", info or {})
+		info.sType = vkGlobal.StructureType.DEVICE_CREATE_INFO
 
 		local result = C.vkCreateDevice(physicalDevice, info, allocator, device)
 		if result ~= 0 then
@@ -373,50 +407,88 @@ do
 
 		return device[0]
 	end
+end
 
-	---@param physicalDevice vk.PhysicalDevice
-	function core.getPhysicalDeviceProperties(physicalDevice)
-		local properties = ffi.new("VkPhysicalDeviceProperties")
-		C.vkGetPhysicalDeviceProperties(physicalDevice, properties)
-		return properties --[[@as vk.PhysicalDeviceProperties]]
+local globalDevice = vkInstance.createDevice(globalPhysicalDevice, {})
+
+local vkDevice = {}
+do
+	local types = {
+		vkCreateBuffer = "VkResult(*)(VkDevice, const VkBufferCreateInfo*, const void*, VkBuffer*)",
+	}
+
+	local C = {}
+	for name, funcType in pairs(types) do
+		C[name] = ffi.cast(funcType, vkGlobal.getDeviceProcAddr(globalDevice, name))
 	end
 
-	core.getInstanceProcAddr = C.vkGetInstanceProcAddr
-	core.getDeviceProcAddr = C.vkGetDeviceProcAddr
+	vkDevice.vkCreateBuffer = C.vkCreateBuffer
 end
 
-local globalInstance ---@type vk.Instance
+local vk = {}
+
+-- Globals
 do
-	local pCreateInfo = ffi.new("VkInstanceCreateInfo", {
-		sType = 1, -- VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO
-		pNext = nil,
-		flags = 0,
-		pApplicationInfo = nil,
-		enabledLayerCount = 0,
-		ppEnabledLayerNames = nil,
-		enabledExtensionCount = 0,
-		ppEnabledExtensionNames = nil,
-	})
+	vk.StructureType = vkGlobal.StructureType
 
-	globalInstance = core.createInstance(pCreateInfo, nil)
+	---@enum vk.PhysicalDeviceType
+	vk.PhysicalDeviceType = {
+		OTHER = 0,
+		INTEGRATED_GPU = 1,
+		DISCRETE_GPU = 2,
+		VIRTUAL_GPU = 3,
+		CPU = 4,
+	}
+
+	---@enum vk.BufferUsage
+	vk.BufferUsage = {
+		TRANSFER_SRC = 0x00000001,
+		TRANSFER_DST = 0x00000002,
+		UNIFORM_TEXEL_BUFFER = 0x00000004,
+		STORAGE_TEXEL_BUFFER = 0x00000008,
+		UNIFORM_BUFFER = 0x00000010,
+		STORAGE_BUFFER = 0x00000020,
+		INDEX_BUFFER = 0x00000040,
+		VERTEX_BUFFER = 0x00000080,
+		INDIRECT_BUFFER = 0x00000100,
+	}
+
+	---@enum vk.SharingMode
+	vk.SharingMode = {
+		EXCLUSIVE = 0,
+		CONCURRENT = 1,
+	}
+
+	vk.getPhysicalDeviceProperties = vkGlobal.getPhysicalDeviceProperties
 end
 
-local functionTypes = {}
+-- Instance
+do
+	function vk.enumeratePhysicalDevices()
+		return vkGlobal.enumeratePhysicalDevices(globalInstance)
+	end
 
-local C = {}
-for name, funcType in pairs(functionTypes) do
-	C[name] = ffi.cast(funcType, core.getInstanceProcAddr(globalInstance, name))
+	vk.createDevice = vkInstance.createDevice
 end
 
+-- Device
+do
+	---@param device vk.Device
+	---@param info vk.BufferCreateInfoStruct
+	---@param allocator ffi.cdata*?
+	---@return vk.Buffer*
+	function vk.createBuffer(device, info, allocator)
+		local info = ffi.new("VkBufferCreateInfo", info)
+		info.sType = vk.StructureType.BUFFER_CREATE_INFO
 
-return {
-	StructureType = core.StructureType,
-	PhysicalDeviceType = core.PhysicalDeviceType,
+		local buffer = ffi.new("VkBuffer[1]")
+		local result = vkDevice.vkCreateBuffer(device, info, allocator, buffer)
+		if result ~= 0 then
+			error("Failed to create Vulkan buffer, error code: " .. tostring(result))
+		end
 
-	createInstance = core.createInstance,
-	enumeratePhysicalDevices = core.enumeratePhysicalDevices,
-	createDevice = core.createDevice,
-	getInstanceProcAddr = core.getInstanceProcAddr,
-	getDeviceProcAddr = core.getDeviceProcAddr,
-	getPhysicalDeviceProperties = core.getPhysicalDeviceProperties,
-}
+		return buffer[0]
+	end
+end
+
+return vk

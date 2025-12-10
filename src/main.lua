@@ -973,11 +973,19 @@ end
 local vk = require("bindings.vk")
 local ffi = require("ffi")
 
-local instance = vk.createInstance({})
-for _, physicalDevice in ipairs(vk.enumeratePhysicalDevices(instance)) do
+local gpuDevice ---@type vk.PhysicalDevice?
+for _, physicalDevice in ipairs(vk.enumeratePhysicalDevices()) do
 	local properties = vk.getPhysicalDeviceProperties(physicalDevice)
+	if properties.deviceType == vk.PhysicalDeviceType.DISCRETE_GPU then
+		gpuDevice = physicalDevice
+		break
+	end
+end
 
-	print(ffi.string(properties.deviceName), properties.deviceType == vk.PhysicalDeviceType.DISCRETE_GPU)
+if gpuDevice then
+	print("Using discrete GPU for compute")
+	local device = vk.createDevice(gpuDevice)
+	local buffer = vk.createBuffer(device, { size = 200, usage = vk.BufferUsage.STORAGE_BUFFER })
 end
 
 Arisu.run(App)
