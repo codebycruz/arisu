@@ -970,4 +970,14 @@ function App:update(message, window)
 	end
 end
 
+local vk = require("bindings.vk")
+local ffi = require("ffi")
+
+local instance = vk.createInstance({})
+for _, physicalDevice in ipairs(vk.enumeratePhysicalDevices(instance)) do
+	local properties = vk.getPhysicalDeviceProperties(physicalDevice)
+
+	print(ffi.string(properties.deviceName), properties.deviceType == vk.PhysicalDeviceType.DISCRETE_GPU)
+end
+
 Arisu.run(App)
