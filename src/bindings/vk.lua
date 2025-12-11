@@ -18,6 +18,22 @@ ffi.cdef([[
 	typedef uint32_t VkSharingMode;
 	typedef void VkAllocationCallbacks;
 	typedef VkFlags VkShaderModuleCreateFlags;
+	typedef uint64_t VkPipelineLayout;
+	typedef uint64_t VkPipeline;
+	typedef uint64_t VkRenderPass;
+	typedef uint64_t VkFramebuffer;
+	typedef uint64_t VkCommandPool;
+	typedef uint64_t VkCommandBuffer;
+	typedef uint64_t VkQueue;
+	typedef VkFlags VkPipelineLayoutCreateFlags;
+	typedef VkFlags VkPipelineCreateFlags;
+	typedef VkFlags VkRenderPassCreateFlags;
+	typedef VkFlags VkFramebufferCreateFlags;
+	typedef VkFlags VkCommandPoolCreateFlags;
+	typedef VkFlags VkCommandBufferUsageFlags;
+	typedef int32_t VkPipelineBindPoint;
+	typedef int32_t VkSubpassContents;
+	typedef int32_t VkCommandBufferLevel;
 
 	typedef struct {
 		VkStructureType     sType;
@@ -274,9 +290,197 @@ ffi.cdef([[
         const uint32_t*              pCode;
     } VkShaderModuleCreateInfo;
 
+	typedef struct {
+		VkStructureType                 sType;
+		const void*                     pNext;
+		VkPipelineLayoutCreateFlags     flags;
+		uint32_t                        setLayoutCount;
+		const void*                     pSetLayouts;
+		uint32_t                        pushConstantRangeCount;
+		const void*                     pPushConstantRanges;
+	} VkPipelineLayoutCreateInfo;
+
+	typedef struct {
+		VkStructureType              sType;
+		const void*                  pNext;
+		VkPipelineCreateFlags        flags;
+		uint32_t                     stageCount;
+		const void*                  pStages;
+		const void*                  pVertexInputState;
+		const void*                  pInputAssemblyState;
+		const void*                  pTessellationState;
+		const void*                  pViewportState;
+		const void*                  pRasterizationState;
+		const void*                  pMultisampleState;
+		const void*                  pDepthStencilState;
+		const void*                  pColorBlendState;
+		const void*                  pDynamicState;
+		VkPipelineLayout             layout;
+		VkRenderPass                 renderPass;
+		uint32_t                     subpass;
+		VkPipeline                   basePipelineHandle;
+		int32_t                      basePipelineIndex;
+	} VkGraphicsPipelineCreateInfo;
+
+	typedef struct {
+		VkStructureType             sType;
+		const void*                 pNext;
+		VkRenderPassCreateFlags     flags;
+		uint32_t                    attachmentCount;
+		const void*                 pAttachments;
+		uint32_t                    subpassCount;
+		const void*                 pSubpasses;
+		uint32_t                    dependencyCount;
+		const void*                 pDependencies;
+	} VkRenderPassCreateInfo;
+
+	typedef struct {
+		VkStructureType             sType;
+		const void*                 pNext;
+		VkFramebufferCreateFlags    flags;
+		VkRenderPass                renderPass;
+		uint32_t                    attachmentCount;
+		const void*                 pAttachments;
+		uint32_t                    width;
+		uint32_t                    height;
+		uint32_t                    layers;
+	} VkFramebufferCreateInfo;
+
+	typedef struct {
+		VkStructureType         sType;
+		const void*             pNext;
+		VkCommandPool           commandPool;
+		VkCommandBufferLevel    level;
+		uint32_t                commandBufferCount;
+	} VkCommandBufferAllocateInfo;
+
+	typedef struct {
+		VkStructureType                 sType;
+		const void*                     pNext;
+		VkCommandBufferUsageFlags       flags;
+		const void*                     pInheritanceInfo;
+	} VkCommandBufferBeginInfo;
+
+	typedef struct {
+		int32_t    x;
+		int32_t    y;
+	} VkOffset2D;
+
+	typedef struct {
+		uint32_t    width;
+		uint32_t    height;
+	} VkExtent2D;
+
+	typedef struct {
+		VkOffset2D    offset;
+		VkExtent2D    extent;
+	} VkRect2D;
+
+	typedef struct {
+		VkStructureType     sType;
+		const void*         pNext;
+		VkRenderPass        renderPass;
+		VkFramebuffer       framebuffer;
+		VkRect2D            renderArea;
+		uint32_t            clearValueCount;
+		const void*         pClearValues;
+	} VkRenderPassBeginInfo;
+
+	typedef struct {
+		VkStructureType             sType;
+		const void*                 pNext;
+		uint32_t                    waitSemaphoreCount;
+		const void*                 pWaitSemaphores;
+		const void*                 pWaitDstStageMask;
+		uint32_t                    commandBufferCount;
+		const VkCommandBuffer*      pCommandBuffers;
+		uint32_t                    signalSemaphoreCount;
+		const void*                 pSignalSemaphores;
+	} VkSubmitInfo;
+
 	VkResult vkGetPhysicalDeviceProperties(
 		VkPhysicalDevice physicalDevice,
 		VkPhysicalDeviceProperties* pProperties
+	);
+
+	VkResult vkCreatePipelineLayout(
+		VkDevice device,
+		const VkPipelineLayoutCreateInfo* pCreateInfo,
+		const VkAllocationCallbacks* pAllocator,
+		VkPipelineLayout* pPipelineLayout
+	);
+
+	VkResult vkCreateGraphicsPipelines(
+		VkDevice device,
+		uint64_t pipelineCache,
+		uint32_t createInfoCount,
+		const VkGraphicsPipelineCreateInfo* pCreateInfos,
+		const VkAllocationCallbacks* pAllocator,
+		VkPipeline* pPipelines
+	);
+
+	VkResult vkCreateRenderPass(
+		VkDevice device,
+		const VkRenderPassCreateInfo* pCreateInfo,
+		const VkAllocationCallbacks* pAllocator,
+		VkRenderPass* pRenderPass
+	);
+
+	VkResult vkCreateFramebuffer(
+		VkDevice device,
+		const VkFramebufferCreateInfo* pCreateInfo,
+		const VkAllocationCallbacks* pAllocator,
+		VkFramebuffer* pFramebuffer
+	);
+
+	VkResult vkAllocateCommandBuffers(
+		VkDevice device,
+		const VkCommandBufferAllocateInfo* pAllocateInfo,
+		VkCommandBuffer* pCommandBuffers
+	);
+
+	VkResult vkBeginCommandBuffer(
+		VkCommandBuffer commandBuffer,
+		const VkCommandBufferBeginInfo* pBeginInfo
+	);
+
+	VkResult vkEndCommandBuffer(
+		VkCommandBuffer commandBuffer
+	);
+
+	void vkCmdBeginRenderPass(
+		VkCommandBuffer commandBuffer,
+		const VkRenderPassBeginInfo* pRenderPassBegin,
+		VkSubpassContents contents
+	);
+
+	void vkCmdEndRenderPass(
+		VkCommandBuffer commandBuffer
+	);
+
+	void vkCmdBindPipeline(
+		VkCommandBuffer commandBuffer,
+		VkPipelineBindPoint pipelineBindPoint,
+		VkPipeline pipeline
+	);
+
+	void vkCmdDraw(
+		VkCommandBuffer commandBuffer,
+		uint32_t vertexCount,
+		uint32_t instanceCount,
+		uint32_t firstVertex,
+		uint32_t firstInstance
+	);
+
+	VkResult vkQueueSubmit(
+		VkQueue queue,
+		uint32_t submitCount,
+		const VkSubmitInfo* pSubmits,
+		uint64_t fence
+	);
+
+	VkResult vkQueueWaitIdle(
+		VkQueue queue
 	);
 ]])
 
@@ -290,6 +494,12 @@ ffi.cdef([[
 ---@class vk.PhysicalDevice: ffi.cdata*
 ---@class vk.Device: number
 ---@class vk.Buffer*: ffi.cdata*
+---@class vk.PipelineLayout: number
+---@class vk.Pipeline: number
+---@class vk.RenderPass: number
+---@class vk.Framebuffer: number
+---@class vk.CommandBuffer: number
+---@class vk.Queue: number
 
 ---@class vk.InstanceCreateInfoStruct: vk.BaseStruct
 ---@field pApplicationInfo userdata?
@@ -316,6 +526,70 @@ ffi.cdef([[
 ---@field codeSize number
 ---@field pCode userdata
 
+---@class vk.PipelineLayoutCreateInfoStruct: vk.BaseStruct
+---@field setLayoutCount number?
+---@field pSetLayouts userdata?
+---@field pushConstantRangeCount number?
+---@field pPushConstantRanges userdata?
+
+---@class vk.GraphicsPipelineCreateInfoStruct: vk.BaseStruct
+---@field stageCount number
+---@field pStages userdata
+---@field pVertexInputState userdata?
+---@field pInputAssemblyState userdata?
+---@field pTessellationState userdata?
+---@field pViewportState userdata?
+---@field pRasterizationState userdata?
+---@field pMultisampleState userdata?
+---@field pDepthStencilState userdata?
+---@field pColorBlendState userdata?
+---@field pDynamicState userdata?
+---@field layout vk.PipelineLayout
+---@field renderPass vk.RenderPass
+---@field subpass number?
+
+---@class vk.RenderPassCreateInfoStruct: vk.BaseStruct
+---@field attachmentCount number?
+---@field pAttachments userdata?
+---@field subpassCount number
+---@field pSubpasses userdata
+---@field dependencyCount number?
+---@field pDependencies userdata?
+
+---@class vk.FramebufferCreateInfoStruct: vk.BaseStruct
+---@field renderPass vk.RenderPass
+---@field attachmentCount number?
+---@field pAttachments userdata?
+---@field width number
+---@field height number
+---@field layers number
+
+---@class vk.CommandBufferAllocateInfoStruct: vk.BaseStruct
+---@field commandPool number
+---@field level number
+---@field commandBufferCount number
+
+---@class vk.CommandBufferBeginInfoStruct: vk.BaseStruct
+---@field pInheritanceInfo userdata?
+
+---@class vk.RenderPassBeginInfo: ffi.cdata*
+
+---@class vk.RenderPassBeginInfoStruct: vk.BaseStruct
+---@field renderPass vk.RenderPass
+---@field framebuffer vk.Framebuffer
+---@field renderArea userdata
+---@field clearValueCount number?
+---@field pClearValues userdata?
+
+---@class vk.SubmitInfoStruct: vk.BaseStruct
+---@field waitSemaphoreCount number?
+---@field pWaitSemaphores userdata?
+---@field pWaitDstStageMask userdata?
+---@field commandBufferCount number
+---@field pCommandBuffers userdata
+---@field signalSemaphoreCount number?
+---@field pSignalSemaphores userdata?
+
 ---@class vk.PhysicalDeviceProperties: ffi.cdata*
 ---@field apiVersion number
 ---@field driverVersion number
@@ -327,59 +601,59 @@ ffi.cdef([[
 ---@field limits ffi.cdata*
 ---@field sparseProperties ffi.cdata*
 
-local vkGlobal = {
-	---@enum vk.StructureType
-	StructureType = {
-		APPLICATION_INFO = 0,
-		INSTANCE_CREATE_INFO = 1,
-		DEVICE_QUEUE_CREATE_INFO = 2,
-		DEVICE_CREATE_INFO = 3,
-		SUBMIT_INFO = 4,
-		MEMORY_ALLOCATE_INFO = 5,
-		MAPPED_MEMORY_RANGE = 6,
-		BIND_SPARSE_INFO = 7,
-		FENCE_CREATE_INFO = 8,
-		SEMAPHORE_CREATE_INFO = 9,
-		EVENT_CREATE_INFO = 10,
-		QUERY_POOL_CREATE_INFO = 11,
-		BUFFER_CREATE_INFO = 12,
-		BUFFER_VIEW_CREATE_INFO = 13,
-		IMAGE_CREATE_INFO = 14,
-		IMAGE_VIEW_CREATE_INFO = 15,
-		SHADER_MODULE_CREATE_INFO = 16,
-		PIPELINE_CACHE_CREATE_INFO = 17,
-		PIPELINE_SHADER_STAGE_CREATE_INFO = 18,
-		PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO = 19,
-		PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO = 20,
-		PIPELINE_TESSELLATION_STATE_CREATE_INFO = 21,
-		PIPELINE_VIEWPORT_STATE_CREATE_INFO = 22,
-		PIPELINE_RASTERIZATION_STATE_CREATE_INFO = 23,
-		PIPELINE_MULTISAMPLE_STATE_CREATE_INFO = 24,
-		PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO = 25,
-		PIPELINE_COLOR_BLEND_STATE_CREATE_INFO = 26,
-		PIPELINE_DYNAMIC_STATE_CREATE_INFO = 27,
-		GRAPHICS_PIPELINE_CREATE_INFO = 28,
-		COMPUTE_PIPELINE_CREATE_INFO = 29,
-		PIPELINE_LAYOUT_CREATE_INFO = 30,
-		SAMPLER_CREATE_INFO = 31,
-		DESCRIPTOR_SET_LAYOUT_CREATE_INFO = 32,
-		DESCRIPTOR_POOL_CREATE_INFO = 33,
-		DESCRIPTOR_SET_ALLOCATE_INFO = 34,
-		WRITE_DESCRIPTOR_SET = 35,
-		COPY_DESCRIPTOR_SET = 36,
-		FRAMEBUFFER_CREATE_INFO = 37,
-		RENDER_PASS_CREATE_INFO = 38,
-		COMMAND_POOL_CREATE_INFO = 39,
-		COMMAND_BUFFER_ALLOCATE_INFO = 40,
-		COMMAND_BUFFER_INHERITANCE_INFO = 41,
-		COMMAND_BUFFER_BEGIN_INFO = 42,
-		RENDER_PASS_BEGIN_INFO = 43,
-		BUFFER_MEMORY_BARRIER = 44,
-		IMAGE_MEMORY_BARRIER = 45,
-		MEMORY_BARRIER = 46,
-		LOADER_INSTANCE_CREATE_INFO = 47,
-		LOADER_DEVICE_CREATE_INFO = 48,
-	},
+local vkGlobal = {}
+
+---@enum vk.StructureType
+vkGlobal.StructureType = {
+	APPLICATION_INFO = 0,
+	INSTANCE_CREATE_INFO = 1,
+	DEVICE_QUEUE_CREATE_INFO = 2,
+	DEVICE_CREATE_INFO = 3,
+	SUBMIT_INFO = 4,
+	MEMORY_ALLOCATE_INFO = 5,
+	MAPPED_MEMORY_RANGE = 6,
+	BIND_SPARSE_INFO = 7,
+	FENCE_CREATE_INFO = 8,
+	SEMAPHORE_CREATE_INFO = 9,
+	EVENT_CREATE_INFO = 10,
+	QUERY_POOL_CREATE_INFO = 11,
+	BUFFER_CREATE_INFO = 12,
+	BUFFER_VIEW_CREATE_INFO = 13,
+	IMAGE_CREATE_INFO = 14,
+	IMAGE_VIEW_CREATE_INFO = 15,
+	SHADER_MODULE_CREATE_INFO = 16,
+	PIPELINE_CACHE_CREATE_INFO = 17,
+	PIPELINE_SHADER_STAGE_CREATE_INFO = 18,
+	PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO = 19,
+	PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO = 20,
+	PIPELINE_TESSELLATION_STATE_CREATE_INFO = 21,
+	PIPELINE_VIEWPORT_STATE_CREATE_INFO = 22,
+	PIPELINE_RASTERIZATION_STATE_CREATE_INFO = 23,
+	PIPELINE_MULTISAMPLE_STATE_CREATE_INFO = 24,
+	PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO = 25,
+	PIPELINE_COLOR_BLEND_STATE_CREATE_INFO = 26,
+	PIPELINE_DYNAMIC_STATE_CREATE_INFO = 27,
+	GRAPHICS_PIPELINE_CREATE_INFO = 28,
+	COMPUTE_PIPELINE_CREATE_INFO = 29,
+	PIPELINE_LAYOUT_CREATE_INFO = 30,
+	SAMPLER_CREATE_INFO = 31,
+	DESCRIPTOR_SET_LAYOUT_CREATE_INFO = 32,
+	DESCRIPTOR_POOL_CREATE_INFO = 33,
+	DESCRIPTOR_SET_ALLOCATE_INFO = 34,
+	WRITE_DESCRIPTOR_SET = 35,
+	COPY_DESCRIPTOR_SET = 36,
+	FRAMEBUFFER_CREATE_INFO = 37,
+	RENDER_PASS_CREATE_INFO = 38,
+	COMMAND_POOL_CREATE_INFO = 39,
+	COMMAND_BUFFER_ALLOCATE_INFO = 40,
+	COMMAND_BUFFER_INHERITANCE_INFO = 41,
+	COMMAND_BUFFER_BEGIN_INFO = 42,
+	RENDER_PASS_BEGIN_INFO = 43,
+	BUFFER_MEMORY_BARRIER = 44,
+	IMAGE_MEMORY_BARRIER = 45,
+	MEMORY_BARRIER = 46,
+	LOADER_INSTANCE_CREATE_INFO = 47,
+	LOADER_DEVICE_CREATE_INFO = 48,
 }
 
 do
@@ -474,6 +748,23 @@ do
 	local types = {
 		vkCreateBuffer = "VkResult(*)(VkDevice, const VkBufferCreateInfo*, const VkAllocationCallbacks*, VkBuffer*)",
 		vkCreateShaderModule = "VkResult(*)(VkDevice, const void*, const VkAllocationCallbacks*, VkBuffer*)",
+		vkCreatePipelineLayout =
+		"VkResult(*)(VkDevice, const VkPipelineLayoutCreateInfo*, const VkAllocationCallbacks*, VkPipelineLayout*)",
+		vkCreateGraphicsPipelines =
+		"VkResult(*)(VkDevice, uint64_t, uint32_t, const VkGraphicsPipelineCreateInfo*, const VkAllocationCallbacks*, VkPipeline*)",
+		vkCreateRenderPass =
+		"VkResult(*)(VkDevice, const VkRenderPassCreateInfo*, const VkAllocationCallbacks*, VkRenderPass*)",
+		vkCreateFramebuffer =
+		"VkResult(*)(VkDevice, const VkFramebufferCreateInfo*, const VkAllocationCallbacks*, VkFramebuffer*)",
+		vkAllocateCommandBuffers = "VkResult(*)(VkDevice, const VkCommandBufferAllocateInfo*, VkCommandBuffer*)",
+		vkBeginCommandBuffer = "VkResult(*)(VkCommandBuffer, const VkCommandBufferBeginInfo*)",
+		vkEndCommandBuffer = "VkResult(*)(VkCommandBuffer)",
+		vkCmdBeginRenderPass = "void(*)(VkCommandBuffer, const VkRenderPassBeginInfo*, VkSubpassContents)",
+		vkCmdEndRenderPass = "void(*)(VkCommandBuffer)",
+		vkCmdBindPipeline = "void(*)(VkCommandBuffer, VkPipelineBindPoint, VkPipeline)",
+		vkCmdDraw = "void(*)(VkCommandBuffer, uint32_t, uint32_t, uint32_t, uint32_t)",
+		vkQueueSubmit = "VkResult(*)(VkQueue, uint32_t, const VkSubmitInfo*, uint64_t)",
+		vkQueueWaitIdle = "VkResult(*)(VkQueue)",
 	}
 
 	for name, funcType in pairs(types) do
@@ -515,7 +806,32 @@ do
 		CONCURRENT = 1,
 	}
 
+	---@enum vk.PipelineBindPoint
+	vk.PipelineBindPoint = {
+		GRAPHICS = 0,
+		COMPUTE = 1,
+	}
+
+	---@enum vk.SubpassContents
+	vk.SubpassContents = {
+		INLINE = 0,
+		SECONDARY_COMMAND_BUFFERS = 1,
+	}
+
+	---@enum vk.CommandBufferLevel
+	vk.CommandBufferLevel = {
+		PRIMARY = 0,
+		SECONDARY = 1,
+	}
+
 	vk.getPhysicalDeviceProperties = vkGlobal.getPhysicalDeviceProperties
+
+	---@param info vk.RenderPassBeginInfoStruct
+	function vk.newRenderPassBeginInfo(info)
+		local info = ffi.new("VkRenderPassBeginInfo", info)
+		info.sType = vk.StructureType.RENDER_PASS_BEGIN_INFO
+		return info --[[@as vk.RenderPassBeginInfo]]
+	end
 end
 
 -- Instance
@@ -561,6 +877,167 @@ do
 		end
 
 		return shaderModule[0]
+	end
+
+	---@param device vk.Device
+	---@param info vk.PipelineLayoutCreateInfoStruct
+	---@param allocator ffi.cdata*?
+	---@return vk.PipelineLayout
+	function vk.createPipelineLayout(device, info, allocator)
+		local info = ffi.new("VkPipelineLayoutCreateInfo", info)
+		info.sType = vk.StructureType.PIPELINE_LAYOUT_CREATE_INFO
+
+		local pipelineLayout = ffi.new("VkPipelineLayout[1]")
+		local result = vkDevice.vkCreatePipelineLayout(device, info, allocator, pipelineLayout)
+		if result ~= 0 then
+			error("Failed to create Vulkan pipeline layout, error code: " .. tostring(result))
+		end
+
+		return pipelineLayout[0]
+	end
+
+	---@param device vk.Device
+	---@param pipelineCache number?
+	---@param infos vk.GraphicsPipelineCreateInfoStruct[]
+	---@param allocator ffi.cdata*?
+	---@return vk.Pipeline[]
+	function vk.createGraphicsPipelines(device, pipelineCache, infos, allocator)
+		local count = #infos
+		local infoArray = ffi.new("VkGraphicsPipelineCreateInfo[?]", count)
+
+		for i = 1, count do
+			local info = ffi.new("VkGraphicsPipelineCreateInfo", infos[i])
+			info.sType = vk.StructureType.GRAPHICS_PIPELINE_CREATE_INFO
+			infoArray[i - 1] = info
+		end
+
+		local pipelines = ffi.new("VkPipeline[?]", count)
+		local result = vkDevice.vkCreateGraphicsPipelines(device, pipelineCache or 0, count, infoArray, allocator,
+			pipelines)
+		if result ~= 0 then
+			error("Failed to create Vulkan graphics pipelines, error code: " .. tostring(result))
+		end
+
+		local pipelineList = {}
+		for i = 0, count - 1 do
+			pipelineList[i + 1] = pipelines[i]
+		end
+
+		return pipelineList
+	end
+
+	---@param device vk.Device
+	---@param info vk.RenderPassCreateInfoStruct
+	---@param allocator ffi.cdata*?
+	---@return vk.RenderPass
+	function vk.createRenderPass(device, info, allocator)
+		local info = ffi.new("VkRenderPassCreateInfo", info)
+		info.sType = vk.StructureType.RENDER_PASS_CREATE_INFO
+
+		local renderPass = ffi.new("VkRenderPass[1]")
+		local result = vkDevice.vkCreateRenderPass(device, info, allocator, renderPass)
+		if result ~= 0 then
+			error("Failed to create Vulkan render pass, error code: " .. tostring(result))
+		end
+
+		return renderPass[0]
+	end
+
+	---@param device vk.Device
+	---@param info vk.FramebufferCreateInfoStruct
+	---@param allocator ffi.cdata*?
+	---@return vk.Framebuffer
+	function vk.createFramebuffer(device, info, allocator)
+		local info = ffi.new("VkFramebufferCreateInfo", info)
+		info.sType = vk.StructureType.FRAMEBUFFER_CREATE_INFO
+
+		local framebuffer = ffi.new("VkFramebuffer[1]")
+		local result = vkDevice.vkCreateFramebuffer(device, info, allocator, framebuffer)
+		if result ~= 0 then
+			error("Failed to create Vulkan framebuffer, error code: " .. tostring(result))
+		end
+
+		return framebuffer[0]
+	end
+
+	---@param device vk.Device
+	---@param info vk.CommandBufferAllocateInfoStruct
+	---@return vk.CommandBuffer[]
+	function vk.allocateCommandBuffers(device, info)
+		local info = ffi.new("VkCommandBufferAllocateInfo", info)
+		info.sType = vk.StructureType.COMMAND_BUFFER_ALLOCATE_INFO
+
+		local commandBuffers = ffi.new("VkCommandBuffer[?]", info.commandBufferCount)
+		local result = vkDevice.vkAllocateCommandBuffers(device, info, commandBuffers)
+		if result ~= 0 then
+			error("Failed to allocate Vulkan command buffers, error code: " .. tostring(result))
+		end
+
+		local commandBufferList = {}
+		for i = 0, info.commandBufferCount - 1 do
+			commandBufferList[i + 1] = commandBuffers[i]
+		end
+
+		return commandBufferList
+	end
+
+	---@param commandBuffer vk.CommandBuffer
+	---@param info vk.CommandBufferBeginInfoStruct?
+	function vk.beginCommandBuffer(commandBuffer, info)
+		local info = ffi.new("VkCommandBufferBeginInfo", info or {})
+		info.sType = vk.StructureType.COMMAND_BUFFER_BEGIN_INFO
+
+		local result = vkDevice.vkBeginCommandBuffer(commandBuffer, info)
+		if result ~= 0 then
+			error("Failed to begin Vulkan command buffer, error code: " .. tostring(result))
+		end
+	end
+
+	---@param commandBuffer vk.CommandBuffer
+	function vk.endCommandBuffer(commandBuffer)
+		local result = vkDevice.vkEndCommandBuffer(commandBuffer)
+		if result ~= 0 then
+			error("Failed to end Vulkan command buffer, error code: " .. tostring(result))
+		end
+	end
+
+	---@type fun(commandBuffer: vk.CommandBuffer, info: vk.RenderPassBeginInfo, contents: vk.SubpassContents)
+	vk.cmdBeginRenderPass = vkDevice.vkCmdBeginRenderPass
+
+	---@type fun(commandBuffer: vk.CommandBuffer)
+	vk.cmdEndRenderPass = vkDevice.vkCmdEndRenderPass
+
+	---@type fun(commandBuffer: vk.CommandBuffer, pipelineBindPoint: vk.PipelineBindPoint, pipeline: vk.Pipeline)
+	vk.cmdBindPipeline = vkDevice.vkCmdBindPipeline
+
+	---@type fun(commandBuffer: vk.CommandBuffer, vertexCount: number, instanceCount: number, firstVertex: number, firstInstance: number)
+	vk.cmdDraw = vkDevice.vkCmdDraw
+
+	---@param queue vk.Queue
+	---@param submits vk.SubmitInfoStruct[]
+	---@param fence number?
+	function vk.queueSubmit(queue, submits, fence)
+		local count = #submits
+		local submitArray = ffi.new("VkSubmitInfo[?]", count)
+
+		for i = 1, count do
+			local submit = ffi.new("VkSubmitInfo", submits[i])
+			submit.sType = vk.StructureType.SUBMIT_INFO
+			submitArray[i - 1] = submit
+		end
+
+		local result = vkDevice.vkQueueSubmit(queue, count, submitArray, fence or 0)
+		if result ~= 0 then
+			error("Failed to submit to Vulkan queue, error code: " .. tostring(result))
+		end
+	end
+
+	---@param queue vk.Queue
+	function vk.queueWaitIdle(queue)
+		local result = vkDevice.vkQueueWaitIdle(queue)
+		if result ~= 0 then
+			error("Failed to wait for Vulkan queue idle, error code: " .. tostring(result))
+		end
 	end
 end
 
