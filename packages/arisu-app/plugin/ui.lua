@@ -1,11 +1,11 @@
----@class plugin.UI
----@field layoutPlugin plugin.Layout
----@field renderPlugin plugin.Render
+---@class arisu.plugin.UI
+---@field layoutPlugin arisu.plugin.Layout
+---@field renderPlugin arisu.plugin.Render
 local UI = {}
 UI.__index = UI
 
----@param layoutPlugin plugin.Layout
----@param renderPlugin plugin.Render
+---@param layoutPlugin arisu.plugin.Layout
+---@param renderPlugin arisu.plugin.Render
 function UI.new(layoutPlugin, renderPlugin)
 	return setmetatable({ layoutPlugin = layoutPlugin, renderPlugin = renderPlugin }, UI)
 end
@@ -145,7 +145,7 @@ function UI:requestRedraw(window)
 	window.shouldRedraw = true -- shh. I'll figure out a way to make this use the eventhandler later.
 end
 
----@param window Window
+---@param window winit.Window
 function UI:refreshView(window)
 	local computedLayout = self.layoutPlugin:refreshView(window)
 

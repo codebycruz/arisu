@@ -1,2 +1,2 @@
----@alias Color { r: number, g: number, b: number, a: number }
----@alias VisualStyle { bg: Color, bgImage: Texture, bgImageUV: { u0: number, u1: number, v0: number, v1: number }, fg: Color, font: Font }
+---@alias arisu.Color { r: number, g: number, b: number, a: number }
+---@alias arisu.VisualStyle { bg: arisu.Color, bgImage: Texture, bgImageUV: { u0: number, u1: number, v0: number, v1: number }, fg: arisu.Color, font: Font }

@@ -222,7 +222,7 @@ return {
 	---@return XWindowAttributes?
 	getWindowAttributes = function(
 		display --[[@param display XDisplay]],
-		w --[[@param w Window]]
+		w --[[@param w winit.Window]]
 	)
 		local attrs = ffi.new("XWindowAttributes")
 

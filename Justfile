@@ -1,2 +1,2 @@
 run:
-    luajit ./packages/arisu-app/init.lua
+    luajit ./packages/arisu/init.lua

@@ -1,7 +1,5 @@
-package.path = package.path .. ";./packages/?/init.lua;./packages/?.lua"
-
-local PPM = require("arisu-image.image.ppm")
-local QOI = require("arisu-image.image.qoi")
+local PPM = require("arisu-image.formats.ppm")
+local QOI = require("arisu-image.formats.qoi")
 
 ---@class Image
 ---@field buffer string

@@ -1,8 +1,8 @@
 local UILayout = require("arisu-app.ui.layout")
 
----@param element Element
----@param acceptFn? fun(element: Element): boolean
----@return { element: Element, layout: ComputedLayout, absX: number, absY: number }?
+---@param element arisu.Element
+---@param acceptFn? fun(element: arisu.Element): boolean
+---@return { element: arisu.Element, layout: arisu.ComputedLayout, absX: number, absY: number }?
 local function findElementAtPosition(element, layout, x, y, parentX, parentY, acceptFn)
 	local absX = (parentX or 0) + (layout.x or 0)
 	local absY = (parentY or 0) + (layout.y or 0)
@@ -25,9 +25,9 @@ local function findElementAtPosition(element, layout, x, y, parentX, parentY, ac
 	return nil
 end
 
----@param element Element
----@param layout ComputedLayout
----@param results table<Element, { layout: ComputedLayout, absX: number, absY: number }>
+---@param element arisu.Element
+---@param layout arisu.ComputedLayout
+---@param results table<arisu.Element, { layout: arisu.ComputedLayout, absX: number, absY: number }>
 local function findElementsAtPosition(element, layout, x, y, parentX, parentY, results)
 	local absX = (parentX or 0) + (layout.x or 0)
 	local absY = (parentY or 0) + (layout.y or 0)
@@ -44,30 +44,30 @@ local function findElementsAtPosition(element, layout, x, y, parentX, parentY, r
 end
 
 ---@class plugin.Layout.Context
----@field window Window
+---@field window winit.Window
 ---@field ui Element?
 ---@field computedLayout ComputedLayout?
 
 ---@class plugin.Layout
 ---@field textPlugin plugin.Text
----@field view fun(window: Window): Element
----@field contexts table<Window, plugin.Layout.Context>
+---@field view fun(window: winit.Window): Element
+---@field contexts table<winit.Window, plugin.Layout.Context>
 local Layout = {}
 Layout.__index = Layout
 
----@param view fun(window: Window): Element
+---@param view fun(window: winit.Window): Element
 ---@param textPlugin plugin.Text
 function Layout.new(view, textPlugin) ---@return plugin.Layout
 	return setmetatable({ view = view, contexts = {}, textPlugin = textPlugin }, Layout)
 end
 
----@param window Window
+---@param window winit.Window
 function Layout:register(window)
 	self.contexts[window] = { window = window }
 	self:refreshView(window)
 end
 
----@param window Window
+---@param window winit.Window
 function Layout:refreshView(window)
 	local ctx = self.contexts[window]
 	ctx.ui = self.textPlugin:convertTextElements(self.view(window))
@@ -84,8 +84,8 @@ local function hasMouseDownOrClick(e) ---@param e Element
 	return e.onmousedown ~= nil or e.onclick ~= nil
 end
 
----@param event Event
----@param handler EventHandler
+---@param event winit.Event
+---@param handler winit.EventManager
 ---@return Message?
 function Layout:event(event, handler)
 	if event.name == "mouseMove" then

@@ -1,8 +1,8 @@
 local gl = require("arisu-opengl")
-local Uniform = require("arisu-app.gl.uniform")
+local Uniform = require("arisu.gl.uniform")
 
 ---@class plugin.Overlay.Context
----@field window Window
+---@field window winit.Window
 ---@field vertices number[]
 ---@field indices number[]
 ---@field nIndices number
@@ -15,7 +15,7 @@ local Uniform = require("arisu-app.gl.uniform")
 
 ---@class plugin.Overlay
 ---@field renderPlugin plugin.Render
----@field contexts table<Window, plugin.Overlay.Context>
+---@field contexts table<winit.Window, plugin.Overlay.Context>
 local OverlayPlugin = {}
 OverlayPlugin.__index = OverlayPlugin
 
@@ -28,7 +28,7 @@ function OverlayPlugin.new(renderPlugin)
 	return setmetatable({ renderPlugin = renderPlugin, contexts = {} }, OverlayPlugin)
 end
 
----@param window Window
+---@param window winit.Window
 function OverlayPlugin:register(window)
 	local renderCtx = self.renderPlugin:getContext(window)
 	assert(renderCtx, "Render context not found for overlay plugin")
@@ -66,7 +66,7 @@ function OverlayPlugin:register(window)
 	return ctx
 end
 
----@param window Window
+---@param window winit.Window
 ---@return plugin.Overlay.Context?
 function OverlayPlugin:getContext(window)
 	return self.contexts[window]
@@ -80,7 +80,7 @@ local function convertZ(z)
 	return 1 - math.min(z or 0, 100000) / 1000000
 end
 
----@param window Window
+---@param window winit.Window
 function OverlayPlugin:clear(window)
 	local ctx = self:getContext(window)
 	if not ctx then return end
@@ -90,7 +90,7 @@ function OverlayPlugin:clear(window)
 	ctx.nIndices = 0
 end
 
----@param window Window
+---@param window winit.Window
 ---@param x number
 ---@param y number
 ---@param width number
@@ -111,7 +111,7 @@ function OverlayPlugin:addBox(window, x, y, width, height, color, thickness, z)
 	self:addLine(window, x, y + height, x, y, color, thickness, z)
 end
 
----@param window Window
+---@param window winit.Window
 ---@param x1 number
 ---@param y1 number
 ---@param x2 number
@@ -147,7 +147,7 @@ function OverlayPlugin:addEllipse(window, x1, y1, x2, y2, color, thickness, z)
 	end
 end
 
----@param window Window
+---@param window winit.Window
 ---@param x1 number
 ---@param y1 number
 ---@param x2 number
@@ -218,7 +218,7 @@ function OverlayPlugin:addLine(window, x1, y1, x2, y2, color, thickness, z)
 	ctx.nIndices = #ctx.indices
 end
 
----@param window Window
+---@param window winit.Window
 ---@param pattern OverlayPattern?
 ---@param time number?
 function OverlayPlugin:draw(window, pattern, time)
@@ -264,7 +264,7 @@ function OverlayPlugin:draw(window, pattern, time)
 	gl.bindFramebuffer(gl.FRAMEBUFFER, 0)
 end
 
----@param window Window
+---@param window winit.Window
 ---@return Texture?
 function OverlayPlugin:getTexture(window)
 	local ctx = self:getContext(window)

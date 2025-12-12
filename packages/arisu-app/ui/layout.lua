@@ -9,7 +9,7 @@
 ---@alias Border { width: number?, style: BorderStyle?, color: { r: number, g: number, b: number, a: number }? }
 ---@alias Borders { top: Border?, bottom: Border?, left: Border?, right: Border? }
 
----@class LayoutStyle
+---@class arisu.LayoutStyle
 ---@field width ScaleUnit
 ---@field height ScaleUnit
 ---@field gap number
@@ -27,9 +27,9 @@
 ---@field bottom number
 ---@field position "relative" | "static"
 
----@class Layout: LayoutStyle
----@field children Layout[]
----@field visualStyle VisualStyle
+---@class arisu.Layout: arisu.LayoutStyle
+---@field children arisu.Layout[]
+---@field visualStyle arisu.VisualStyle
 local Layout = {}
 Layout.__index = Layout
 
@@ -44,29 +44,30 @@ function Layout.new()
 	}, Layout)
 end
 
-function Layout:withChildren(...)
-	self.children = { ... }
+---@param children arisu.Layout[]
+function Layout:withChildren(children)
+	self.children = children
 	return self
 end
 
-function Layout:withStyle(
-	style --[[@param style VisualStyle]]
-)
+---@param style arisu.VisualStyle
+function Layout:withStyle(style)
 	self.style = style
 	return self
 end
 
----@class ComputedLayout
+---@class arisu.ComputedLayout
 ---@field width number
 ---@field height number
 ---@field x number
 ---@field y number
----@field style VisualStyle
+---@field style arisu.VisualStyle
 ---@field border Borders
 ---@field margin Margin
----@field children ComputedLayout[]
+---@field children arisu.ComputedLayout[]
 ---@field visible boolean
 ---@field zIndex number
+---@field position ("relative" | "static")?
 
 ---@type Border
 local DEFAULT_BORDER = { width = 0, style = "none", color = { r = 0, g = 0, b = 0, a = 1 } }
@@ -98,7 +99,7 @@ end
 
 ---@param parentWidth number
 ---@param parentHeight number
----@return ComputedLayout
+---@return arisu.ComputedLayout
 function Layout:solve(parentWidth, parentHeight)
 	local visibility = self.visibility or "visible"
 
@@ -165,7 +166,7 @@ function Layout:solve(parentWidth, parentHeight)
 	local containerMainSize = isRow and contentWidth or contentHeight
 	local containerCrossSize = isRow and contentHeight or contentWidth
 
-	---@type ComputedLayout[]
+	---@type arisu.ComputedLayout[]
 	local childResults = {}
 	local totalMainSize = 0
 	local visibleChildCount = 0
@@ -337,7 +338,7 @@ function Layout:solve(parentWidth, parentHeight)
 	}
 end
 
----@param element Element<any>
+---@param element arisu.Element<any>
 function Layout.fromElement(element)
 	local layout = Layout.new()
 
@@ -357,7 +358,7 @@ function Layout.fromElement(element)
 			table.insert(childLayouts, Layout.fromElement(child))
 		end
 
-		layout:withChildren(unpack(childLayouts))
+		layout:withChildren(childLayouts)
 	end
 
 	return layout

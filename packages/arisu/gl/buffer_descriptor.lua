@@ -1,4 +1,3 @@
-local gl = require("arisu-opengl")
 local ffi = require("ffi")
 
 ---@alias AttributeType "f32" | "i32"

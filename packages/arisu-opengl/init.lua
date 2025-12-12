@@ -152,7 +152,7 @@ return {
 
 	TRIANGLES = 0x0004,
 
-	--- @enum ShaderType
+	--- @enum gl.ShaderType
 	ShaderType = {
 		VERTEX = 0x8B31,
 		FRAGMENT = 0x8B30,
@@ -204,7 +204,7 @@ return {
 	COLOR_ATTACHMENT0 = 0x8CE0,
 	FRAMEBUFFER_COMPLETE = 0x8CD5,
 
-	--- @param type ShaderType
+	--- @param type gl.ShaderType
 	--- @param src string
 	--- @return number
 	createShaderProgram = function(type, src)

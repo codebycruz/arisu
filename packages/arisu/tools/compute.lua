@@ -1,10 +1,10 @@
 local gl = require("arisu-opengl")
 
-local Uniform = require("arisu-app.gl.uniform")
-local Program = require("arisu-app.gl.program")
-local Pipeline = require("arisu-app.gl.pipeline")
+local Uniform = require("arisu.gl.uniform")
+local Program = require("arisu.gl.program")
+local Pipeline = require("arisu.gl.pipeline")
 
-local computeSource = io.open("packages/arisu-app/shaders/brush.compute.glsl"):read("*a")
+local computeSource = io.open("packages/arisu/shaders/brush.compute.glsl"):read("*a")
 
 ---@class Compute
 ---@field pipeline Pipeline

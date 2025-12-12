@@ -10,13 +10,13 @@ local function intoElement(value)
 	end
 end
 
----@alias IntoElement Element | string
+---@alias arisu.IntoElement arisu.Element | string
 
 --- The View is a small layer above the Layout that bridges interactivity with the layout.
----@class Element<T>: { onclick: T?, onmousemove: (fun(x: number, y: number): T)?, onmousedown: T?, onmouseup: T? }
----@field visualStyle VisualStyle?
----@field layoutStyle LayoutStyle?
----@field children Element[]?
+---@class arisu.Element<T>: { onclick: T?, onmousemove: (fun(x: number, y: number): T)?, onmousedown: T?, onmouseup: T? }
+---@field visualStyle arisu.VisualStyle?
+---@field layoutStyle arisu.LayoutStyle?
+---@field children arisu.Element[]?
 ---@field type string
 ---@field userdata any?
 ---@field id string?
@@ -28,7 +28,7 @@ function Element.new(type)
 	return setmetatable({ type = type, children = {}, visualStyle = {}, layoutStyle = {} }, Element)
 end
 
----@param val IntoElement
+---@param val arisu.IntoElement
 function Element.from(val)
 	return intoElement(val)
 end
@@ -39,7 +39,7 @@ function Element:withId(id)
 	return self
 end
 
----@param children IntoElement[]
+---@param children arisu.IntoElement[]
 function Element:withChildren(children)
 	local elems = {}
 	for i, child in ipairs(children) do
@@ -50,7 +50,7 @@ function Element:withChildren(children)
 	return self
 end
 
----@param style VisualStyle | LayoutStyle
+---@param style arisu.VisualStyle | arisu.LayoutStyle
 function Element:withStyle(style)
 	self.visualStyle = style
 	self.layoutStyle = style

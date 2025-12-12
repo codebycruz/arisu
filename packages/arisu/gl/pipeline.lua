@@ -3,7 +3,7 @@ local ffi = require("ffi")
 
 --- @class Pipeline
 --- @field id number
---- @field stages table<ShaderType, Program>
+--- @field stages table<gl.ShaderType, Program>
 local Pipeline = {}
 Pipeline.__index = Pipeline
 
@@ -12,7 +12,7 @@ function Pipeline.new()
 	return setmetatable({ id = pipeline, stages = {} }, Pipeline)
 end
 
----@param type ShaderType
+---@param type gl.ShaderType
 ---@param program Program
 function Pipeline:setProgram(type, program)
 	local stage = ({

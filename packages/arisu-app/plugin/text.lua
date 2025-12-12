@@ -1,17 +1,17 @@
 local Element = require("arisu-app.ui.element")
 
----@class plugin.Text
----@field renderPlugin plugin.Render
+---@class arisu.plugin.Text
+---@field renderPlugin arisu.plugin.Render
 local Text = {}
 Text.__index = Text
 
----@param renderPlugin plugin.Render
-function Text.new(renderPlugin) ---@return plugin.Text
+---@param renderPlugin arisu.plugin.Render
+function Text.new(renderPlugin) ---@return arisu.plugin.Text
 	return setmetatable({ renderPlugin = renderPlugin }, Text)
 end
 
----@param element Element
----@return Element
+---@param element arisu.Element
+---@return arisu.Element
 function Text:convertTextElements(element)
 	if element.type == "text" then
 		local fontManager = self.renderPlugin.sharedResources.fontManager

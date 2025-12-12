@@ -1,6 +1,6 @@
 local gl = require("arisu-opengl")
 
-local Buffer = require("arisu-app.gl.buffer")
+local Buffer = require("arisu.gl.buffer")
 
 ---@class UniformBlock
 ---@field location number

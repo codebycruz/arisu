@@ -5,7 +5,7 @@ local gl = require("arisu-opengl")
 local Program = {}
 Program.__index = Program
 
----@param type ShaderType
+---@param type gl.ShaderType
 ---@param src string
 function Program.new(type, src)
 	local id = gl.createShaderProgram(type, src)

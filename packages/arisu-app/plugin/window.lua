@@ -1,12 +1,12 @@
-local Context = require("arisu-app.context")
+local Context = require("arisu.context")
 
----@class plugin.Window.Context
----@field window Window
+---@class arisu.plugin.Window.Context
+---@field window winit.Window
 ---@field renderCtx Context
 
----@class plugin.Window<Message>: { onWindowCreate: Message }
----@field mainCtx plugin.Window.Context?
----@field contexts table<Window, plugin.Window.Context>
+---@class arisu.plugin.Window<Message>: { onWindowCreate: Message }
+---@field mainCtx arisu.plugin.Window.Context?
+---@field contexts table<winit.Window, arisu.plugin.Window.Context>
 ---@field onWindowCreate unknown
 local WindowPlugin = {}
 WindowPlugin.__index = WindowPlugin
@@ -16,7 +16,7 @@ function WindowPlugin.new(onWindowCreate)
 	return setmetatable({ contexts = {}, onWindowCreate = onWindowCreate }, WindowPlugin)
 end
 
----@param window Window
+---@param window winit.Window
 function WindowPlugin:register(window)
 	local renderCtx = Context.new(window, self.mainCtx and self.mainCtx.renderCtx)
 
@@ -36,8 +36,8 @@ function WindowPlugin:getContext(window) ---@return plugin.Window.Context?
 	return self.contexts[window]
 end
 
----@param event Event
----@param handler EventHandler
+---@param event winit.Event
+---@param handler winit.EventManager
 function WindowPlugin:event(event, handler)
 	-- onWindowCreate is not passed the window as the update will be triggered
 	-- with the new window anyway.

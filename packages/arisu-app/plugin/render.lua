@@ -1,17 +1,17 @@
 local util = require("arisu-util")
 local gl = require("arisu-opengl")
-local Pipeline = require("arisu-app.gl.pipeline")
-local Program = require("arisu-app.gl.program")
-local BufferDescriptor = require("arisu-app.gl.buffer_descriptor")
-local Buffer = require("arisu-app.gl.buffer")
-local VAO = require("arisu-app.gl.vao")
-local Uniform = require("arisu-app.gl.uniform")
-local UniformBlock = require("arisu-app.gl.uniform_block")
-local TextureManager = require("arisu-app.gl.texture_manager")
-local FontManager = require("arisu-app.gl.font_manager")
+local Pipeline = require("arisu.gl.pipeline")
+local Program = require("arisu.gl.program")
+local BufferDescriptor = require("arisu.gl.buffer_descriptor")
+local Buffer = require("arisu.gl.buffer")
+local VAO = require("arisu.gl.vao")
+local Uniform = require("arisu.gl.uniform")
+local UniformBlock = require("arisu.gl.uniform_block")
+local TextureManager = require("arisu.gl.texture_manager")
+local FontManager = require("arisu.gl.font_manager")
 
----@class plugin.Render.Context
----@field window Window
+---@class arisu.plugin.Render.Context
+---@field window winit.Window
 ---@field renderCtx Context
 ---@field quadVAO VAO
 ---@field quadPipeline Pipeline
@@ -21,9 +21,9 @@ local FontManager = require("arisu-app.gl.font_manager")
 ---@field overlayPipeline Pipeline
 ---@field overlayVertex Buffer
 ---@field overlayIndex Buffer
----@field ui? Element
----@field layoutTree? Layout
----@field computedLayout? ComputedLayout
+---@field ui? arisu.Element
+---@field layoutTree? arisu.Layout
+---@field computedLayout? arisu.ComputedLayout
 ---@field nIndices number
 
 ---@class plugin.Render.SharedResources
@@ -36,11 +36,11 @@ local FontManager = require("arisu-app.gl.font_manager")
 ---@field textureManager TextureManager
 ---@field fontManager FontManager
 
----@class plugin.Render<Message>: { onWindowCreate: Message }
----@field windowPlugin plugin.Window<any>
----@field mainCtx plugin.Render.Context?
----@field contexts table<Window, plugin.Render.Context>
----@field sharedResources plugin.Render.SharedResources?
+---@class arisu.plugin.Render<Message>: { onWindowCreate: Message }
+---@field windowPlugin arisu.plugin.Window<any>
+---@field mainCtx arisu.plugin.Render.Context?
+---@field contexts table<winit.Window, arisu.plugin.Render.Context>
+---@field sharedResources arisu.plugin.Render.SharedResources?
 local RenderPlugin = {}
 RenderPlugin.__index = RenderPlugin
 
@@ -49,7 +49,7 @@ function RenderPlugin.new(windowPlugin)
 	return setmetatable({ contexts = {}, windowPlugin = windowPlugin }, RenderPlugin)
 end
 
----@param window Window
+---@param window winit.Window
 ---@param vertexData number[]
 ---@param indexData number[]
 function RenderPlugin:setRenderData(window, vertexData, indexData)
@@ -59,7 +59,7 @@ function RenderPlugin:setRenderData(window, vertexData, indexData)
 	ctx.nIndices = #indexData
 end
 
----@param window Window
+---@param window winit.Window
 function RenderPlugin:register(window)
 	local ctx = self.windowPlugin:getContext(window)
 	assert(ctx, "Window context not found for render plugin")
@@ -96,14 +96,14 @@ function RenderPlugin:register(window)
 
 	-- Initialize shared resources
 	if not self.mainCtx then
-		local mainVertexShader = io.open("packages/arisu-app/shaders/main.vert.glsl", "r"):read("*a")
-		local mainFragmentShadder = io.open("packages/arisu-app/shaders/main.frag.glsl", "r"):read("*a")
+		local mainVertexShader = io.open("packages/arisu/shaders/main.vert.glsl", "r"):read("*a")
+		local mainFragmentShadder = io.open("packages/arisu/shaders/main.frag.glsl", "r"):read("*a")
 
 		local mainVertexProgram = Program.new(gl.ShaderType.VERTEX, mainVertexShader)
 		local mainFragmentProgram = Program.new(gl.ShaderType.FRAGMENT, mainFragmentShadder)
 
-		local overlayVertexShader = io.open("packages/arisu-app/shaders/overlay.vert.glsl", "r"):read("*a")
-		local overlayFragmentShader = io.open("packages/arisu-app/shaders/overlay.frag.glsl", "r"):read("*a")
+		local overlayVertexShader = io.open("packages/arisu/shaders/overlay.vert.glsl", "r"):read("*a")
+		local overlayFragmentShader = io.open("packages/arisu/shaders/overlay.frag.glsl", "r"):read("*a")
 
 		local overlayVertexProgram = Program.new(gl.ShaderType.VERTEX, overlayVertexShader)
 		local overlayFragmentProgram = Program.new(gl.ShaderType.FRAGMENT, overlayFragmentShader)
@@ -176,8 +176,8 @@ function RenderPlugin:draw(ctx)
 	gl.drawElements(gl.TRIANGLES, ctx.nIndices, gl.UNSIGNED_INT, nil)
 end
 
----@param event Event
----@param handler EventHandler
+---@param event winit.Event
+---@param handler winit.EventManager
 function RenderPlugin:event(event, handler)
 	if event.name == "resize" then
 		local ctx = self:getContext(event.window)

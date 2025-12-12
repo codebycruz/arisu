@@ -1,7 +1,7 @@
 local x11 = require("arisu-x11.x11")
 local ffi = require("ffi")
 
----@class X11Window: Window
+---@class X11Window: winit.Window
 ---@field display XDisplay
 ---@field currentCursor number?
 local X11Window = {}
@@ -121,7 +121,7 @@ function X11Window:destroy()
 	x11.destroyWindow(self.display, self.id)
 end
 
----@class X11EventLoop: EventLoop
+---@class X11EventLoop: winit.EventLoop
 ---@field display XDisplay
 local X11EventLoop = {}
 X11EventLoop.__index = X11EventLoop
@@ -135,18 +135,18 @@ function X11EventLoop.new()
 	return setmetatable({ display = display, windows = {} }, X11EventLoop)
 end
 
----@param window Window
+---@param window winit.Window
 function X11EventLoop:register(window)
 	self.windows[tostring(window.id)] = window
 end
 
----@param window Window
+---@param window winit.Window
 function X11EventLoop:close(window)
 	window:destroy()
 	self.windows[tostring(window.id)] = nil
 end
 
----@param callback fun(event: Event, handler: EventHandler)
+---@param callback fun(event: winit.Event, handler: winit.EventHandler)
 function X11EventLoop:run(callback)
 	local display = self.display
 	local event = x11.newEvent()
@@ -175,7 +175,7 @@ function X11EventLoop:run(callback)
 		end
 	end
 
-	---@type table<number, fun(window: Window)>
+	---@type table<number, fun(window: winit.Window)>
 	local Handlers = {
 		[x11.MotionNotify] = function(window)
 			callback({ window = window, name = "mouseMove", x = event.xmotion.x, y = event.xmotion.y }, handler)

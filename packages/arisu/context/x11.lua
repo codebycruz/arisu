@@ -4,7 +4,7 @@ local gl = require("arisu-opengl")
 
 --- @class X11Context
 --- @field display XDisplay
---- @field window Window
+--- @field window winit.Window
 --- @field ctx userdata
 local X11Context = {}
 X11Context.__index = X11Context

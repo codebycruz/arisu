@@ -1,4 +1,4 @@
-local WAV = require("audio.wav")
+local WAV = require("arisu-audio.formats.wav")
 
 ---@class Audio
 ---@field channels number
