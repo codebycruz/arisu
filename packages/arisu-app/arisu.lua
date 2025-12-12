@@ -1,0 +1,58 @@
+local window = require("arisu-windowing")
+
+--[[
+	The Arisu app architecture is simple.
+
+	// This is the base type. You decide what it is.
+	// Depending on how simple your usecases are, it could just be a string or number.
+	type Message<T> = T
+	type App<Message> = ...
+
+	An event loop is created which triggers the lowest level "App:event"
+
+	`function App:event(event: Event, handler: EventHandler) -> Message?`
+		- If returns, triggers `App:update`
+		- Triggered by `Events` which are low level X11/Win32 windowing events.
+		- Usually a `Plugin` will register this and you can just worry about defining App:update and App:view
+
+	`function App:update(message: Message) -> Task?`
+		- Triggered by `App:event`
+		- A task can be returned which will do internal work like creating windows asynchronously
+
+	`function App:view() -> Element`
+		- This is used by the base `QuadPlugin` (bad temp name for now)
+		- You provide `Message` values as "callbacks" for element click/hover/whatever events.
+		- Basically it doesn't really mean anything
+		  beyond providing data to the App:event so it can decide things like
+		  when to fire an update if your mouse clicked at a certain position.
+]]
+local Arisu = {}
+
+---@alias arisu.New<T> fun(): arisu.App<T>
+---@alias arisu.Update<T> fun(self: arisu.App<T>, message: T, window: Window)
+---@alias arisu.View<T> fun(self: arisu.App<T>, window: Window): Element
+---@alias arisu.Event<T> fun(self: arisu.App<T>, event: Event, handler: EventHandler): any
+
+---@class arisu.App<T>: { new: arisu.New<T>, update: arisu.Update<T>, view: arisu.View<T>, event: arisu.Event<T> }
+
+---@generic Message
+---@param appStatic arisu.App<Message>
+function Arisu.run(appStatic)
+	local app = appStatic.new()
+
+	local eventLoop = window.EventLoop.new()
+
+	-- The RenderPlugin will pick up on this.
+	window.Window.fromEventLoop(eventLoop)
+
+	eventLoop:run(function(event, handler)
+		handler:setMode("poll")
+
+		local message = app:event(event, handler)
+		if message then
+			app:update(message, event.window)
+		end
+	end)
+end
+
+return Arisu
