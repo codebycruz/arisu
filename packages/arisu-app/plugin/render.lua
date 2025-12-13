@@ -2,13 +2,14 @@ local util = require("arisu-util")
 local gl = require("arisu-opengl")
 local Pipeline = require("arisu.gl.pipeline")
 local Program = require("arisu.gl.program")
-local VertexLayoutDescriptor = require("arisu-gfx.vertex_layout")
-local Buffer = require("arisu-gfx.buffer")
+local VertexLayout = require("arisu-gfx.vertex_layout")
 local VAO = require("arisu.gl.vao")
 local Uniform = require("arisu.gl.uniform")
 local UniformBlock = require("arisu.gl.uniform_block")
 local TextureManager = require("arisu.gl.texture_manager")
 local FontManager = require("arisu.gl.font_manager")
+
+local Device = require("arisu-gfx.device.gl")
 
 ---@class arisu.plugin.Render.Context
 ---@field window winit.Window
@@ -66,23 +67,26 @@ function RenderPlugin:register(window)
 
 	ctx.renderCtx:makeCurrent()
 
-	local vertexDescriptor = VertexLayoutDescriptor.new()
+	-- todo: dont make this here
+	local device = Device.new()
+
+	local vertexDescriptor = VertexLayout.new()
 		:withAttribute({ type = "f32", size = 3, offset = 0 }) -- position (vec3)
 		:withAttribute({ type = "f32", size = 4, offset = 12 }) -- color (rgba)
 		:withAttribute({ type = "f32", size = 2, offset = 28 }) -- uv
 		:withAttribute({ type = "f32", size = 1, offset = 36 }) -- texture id
 
-	local quadVertex = Buffer.new()
-	local quadIndex = Buffer.new()
+	local quadVertex = device:createBuffer({ size = vertexDescriptor:getStride() * 1000, usages = { "VERTEX" } })
+	local quadIndex = device:createBuffer({ size = util.sizeof("u16") * 1000, usages = { "INDEX" } })
 
 	local quadVAO = VAO.new()
 	quadVAO:setVertexBuffer(quadVertex, vertexDescriptor)
 	quadVAO:setIndexBuffer(quadIndex)
 
-	local overlayVertex = Buffer.new()
-	local overlayIndex = Buffer.new()
+	local overlayVertex = device:createBuffer({ size = vertexDescriptor:getStride() * 1000, usages = { "VERTEX" } })
+	local overlayIndex = device:createBuffer({ size = util.sizeof("u16") * 1000, usages = { "INDEX" } })
 
-	local overlayVertexDescriptor = VertexLayoutDescriptor.new()
+	local overlayVertexDescriptor = VertexLayout.new()
 		:withAttribute({ type = "f32", size = 3, offset = 0 }) -- position (vec3)
 		:withAttribute({ type = "f32", size = 4, offset = 12 }) -- color (rgba)
 		:withAttribute({ type = "f32", size = 2, offset = 28 }) -- uv

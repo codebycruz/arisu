@@ -10,7 +10,7 @@ GLBuffer.__index = GLBuffer
 function GLBuffer.new(descriptor)
 	local handle = ffi.new("GLuint[1]")
 	gl.createBuffers(1, handle)
-	return setmetatable({ id = handle[0] }, GLBuffer)
+	return setmetatable({ id = handle[0], descriptor = descriptor }, GLBuffer)
 end
 
 ---@alias BufferDataType "u32" | "f32"

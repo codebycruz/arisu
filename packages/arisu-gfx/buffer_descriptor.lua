@@ -3,6 +3,7 @@
 --- | "COPY_SRC"
 --- | "VERTEX"
 --- | "INDEX"
+--- | "UNIFORM"
 
 ---@class gfx.BufferDescriptor
 ---@field size number

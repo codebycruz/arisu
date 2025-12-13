@@ -1,5 +1,7 @@
 local util = require("arisu-util")
 
+---@alias gfx.Color { r: number, g: number, b: number, a: number }
+
 ---@class gfx.Context
 ---@field new fun(window: winit.Window, sharedCtx: gfx.Context?): gfx.Context
 ---@field makeCurrent fun(self: gfx.Context): boolean
