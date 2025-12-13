@@ -2,8 +2,8 @@ local util = require("arisu-util")
 local gl = require("arisu-opengl")
 local Pipeline = require("arisu.gl.pipeline")
 local Program = require("arisu.gl.program")
-local BufferDescriptor = require("arisu.gl.buffer_descriptor")
-local Buffer = require("arisu.gl.buffer")
+local VertexLayoutDescriptor = require("arisu-gfx.vertex_layout")
+local Buffer = require("arisu-gfx.buffer")
 local VAO = require("arisu.gl.vao")
 local Uniform = require("arisu.gl.uniform")
 local UniformBlock = require("arisu.gl.uniform_block")
@@ -12,21 +12,21 @@ local FontManager = require("arisu.gl.font_manager")
 
 ---@class arisu.plugin.Render.Context
 ---@field window winit.Window
----@field renderCtx Context
+---@field renderCtx gfx.Context
 ---@field quadVAO VAO
 ---@field quadPipeline Pipeline
----@field quadVertex Buffer
----@field quadIndex Buffer
+---@field quadVertex gfx.Buffer
+---@field quadIndex gfx.Buffer
 ---@field overlayVAO VAO
 ---@field overlayPipeline Pipeline
----@field overlayVertex Buffer
----@field overlayIndex Buffer
+---@field overlayVertex gfx.Buffer
+---@field overlayIndex gfx.Buffer
 ---@field ui? arisu.Element
 ---@field layoutTree? arisu.Layout
 ---@field computedLayout? arisu.ComputedLayout
 ---@field nIndices number
 
----@class plugin.Render.SharedResources
+---@class arisu.plugin.Render.SharedResources
 ---@field mainVertexProgram Program
 ---@field mainFragmentProgram Program
 ---@field overlayVertexProgram Program
@@ -44,7 +44,7 @@ local FontManager = require("arisu.gl.font_manager")
 local RenderPlugin = {}
 RenderPlugin.__index = RenderPlugin
 
----@param windowPlugin plugin.Window
+---@param windowPlugin arisu.plugin.Window
 function RenderPlugin.new(windowPlugin)
 	return setmetatable({ contexts = {}, windowPlugin = windowPlugin }, RenderPlugin)
 end
@@ -65,10 +65,8 @@ function RenderPlugin:register(window)
 	assert(ctx, "Window context not found for render plugin")
 
 	ctx.renderCtx:makeCurrent()
-	ctx.renderCtx:setPresentMode("vsync")
 
-	local vertexDescriptor = BufferDescriptor
-		.new()
+	local vertexDescriptor = VertexLayoutDescriptor.new()
 		:withAttribute({ type = "f32", size = 3, offset = 0 }) -- position (vec3)
 		:withAttribute({ type = "f32", size = 4, offset = 12 }) -- color (rgba)
 		:withAttribute({ type = "f32", size = 2, offset = 28 }) -- uv
@@ -84,8 +82,7 @@ function RenderPlugin:register(window)
 	local overlayVertex = Buffer.new()
 	local overlayIndex = Buffer.new()
 
-	local overlayVertexDescriptor = BufferDescriptor
-		.new()
+	local overlayVertexDescriptor = VertexLayoutDescriptor.new()
 		:withAttribute({ type = "f32", size = 3, offset = 0 }) -- position (vec3)
 		:withAttribute({ type = "f32", size = 4, offset = 12 }) -- color (rgba)
 		:withAttribute({ type = "f32", size = 2, offset = 28 }) -- uv
@@ -133,7 +130,7 @@ function RenderPlugin:register(window)
 	overlayPipeline:setProgram(gl.ShaderType.VERTEX, self.sharedResources.overlayVertexProgram)
 	overlayPipeline:setProgram(gl.ShaderType.FRAGMENT, self.sharedResources.overlayFragmentProgram)
 
-	---@type plugin.Render.Context
+	---@type arisu.plugin.Render.Context
 	local ctx = {
 		window = window,
 		renderCtx = ctx.renderCtx,
@@ -157,7 +154,7 @@ function RenderPlugin:getContext(window)
 	return self.contexts[window]
 end
 
----@param ctx plugin.Render.Context
+---@param ctx arisu.plugin.Render.Context
 function RenderPlugin:draw(ctx)
 	ctx.renderCtx:makeCurrent()
 

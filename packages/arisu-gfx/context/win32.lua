@@ -46,8 +46,4 @@ function Win32Context:destroy()
 	wgl.deleteContext(self.ctx)
 end
 
-function Win32Context:setPresentMode(mode)
-	print("Warning: Win32Context:setPresentMode is unimplemented")
-end
-
 return Win32Context

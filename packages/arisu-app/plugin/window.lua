@@ -1,4 +1,4 @@
-local Context = require("arisu.context")
+local Context = require("arisu-gfx")
 
 ---@class arisu.plugin.Window.Context
 ---@field window winit.Window

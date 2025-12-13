@@ -1,10 +1,10 @@
 local gl = require("arisu-opengl")
 
-local Buffer = require("arisu.gl.buffer")
+local Buffer = require("arisu-gfx.buffer")
 
 ---@class UniformBlock
 ---@field location number
----@field buffer Buffer
+---@field buffer gfx.GLBuffer
 local UniformBlock = {}
 UniformBlock.__index = UniformBlock
 

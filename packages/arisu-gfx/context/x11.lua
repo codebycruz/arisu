@@ -47,16 +47,6 @@ function X11Context:makeCurrent()
 	return glx.makeCurrent(self.display, self.window.id, self.ctx) ~= 0
 end
 
----@param mode PresentMode
-function X11Context:setPresentMode(mode)
-	local intMode = ({
-		["immediate"] = 0,
-		["vsync"] = 1,
-	})[mode]
-
-	glx.swapIntervalEXT(self.display, self.window.id, intMode)
-end
-
 function X11Context:swapBuffers()
 	glx.swapBuffers(self.display, self.window.id)
 end

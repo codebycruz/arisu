@@ -1,15 +1,15 @@
 local gl = require("arisu-opengl")
 local ffi = require("ffi")
 
----@class Buffer
+---@class gfx.gl.Buffer
 ---@field id number
-local Buffer = {}
-Buffer.__index = Buffer
+local GLBuffer = {}
+GLBuffer.__index = GLBuffer
 
-function Buffer.new()
+function GLBuffer.new()
 	local handle = ffi.new("GLuint[1]")
 	gl.createBuffers(1, handle)
-	return setmetatable({ id = handle[0] }, Buffer)
+	return setmetatable({ id = handle[0] }, GLBuffer)
 end
 
 ---@alias BufferDataType "u32" | "f32"
@@ -38,7 +38,7 @@ local typeConstructors = {
 
 ---@param type BufferDataType
 ---@param data table?
-function Buffer:setData(type, data)
+function GLBuffer:setData(type, data)
 	local constructor = assert(typeConstructors[type], "Invalid buffer data type: " .. tostring(type))
 	gl.namedBufferData(self.id, #data * typeSizes[type], constructor(data), 0x88E4)
 end
@@ -46,9 +46,9 @@ end
 ---@param type BufferDataType
 ---@param offset number
 ---@param data table
-function Buffer:setSlice(type, offset, data)
+function GLBuffer:setSlice(type, offset, data)
 	local constructor = assert(typeConstructors[type], "Invalid buffer data type: " .. tostring(type))
 	gl.namedBufferSubData(self.id, offset, #data * typeSizes[type], constructor(data))
 end
 
-return Buffer
+return GLBuffer

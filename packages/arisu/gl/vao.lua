@@ -20,8 +20,8 @@ function VAO:unbind()
 	gl.bindVertexArray(0)
 end
 
----@param buffer Buffer
----@param descriptor BufferDescriptor
+---@param buffer gfx.gl.Buffer
+---@param descriptor gfx.VertexLayoutDescriptor
 ---@param bindingIndex number?
 function VAO:setVertexBuffer(buffer, descriptor, bindingIndex)
 	bindingIndex = bindingIndex or 0
@@ -48,7 +48,7 @@ function VAO:setVertexBuffer(buffer, descriptor, bindingIndex)
 	end
 end
 
----@param buffer Buffer
+---@param buffer gfx.gl.Buffer
 function VAO:setIndexBuffer(buffer)
 	gl.vertexArrayElementBuffer(self.id, buffer.id)
 end
