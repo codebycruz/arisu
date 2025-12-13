@@ -974,27 +974,4 @@ function App:update(message, window)
 	end
 end
 
-local vk = require("arisu-vulkan")
-local ffi = require("ffi")
-
-local gpuDevice ---@type vk.PhysicalDevice?
-for _, physicalDevice in ipairs(vk.enumeratePhysicalDevices()) do
-	local properties = vk.getPhysicalDeviceProperties(physicalDevice)
-	if properties.deviceType == vk.PhysicalDeviceType.DISCRETE_GPU then
-		gpuDevice = physicalDevice
-		break
-	end
-end
-
-if gpuDevice then
-	print("Using discrete GPU for compute")
-	local device = vk.createDevice(gpuDevice)
-	local buffer = vk.createBuffer(device, { size = 200, usage = vk.BufferUsage.STORAGE_BUFFER })
-
-	local shader = vk.createShaderModule(device, {
-		codeSize = 2123,
-		pCode = ffi.cast("const unsigned int*", "foo")
-	})
-end
-
 Arisu.run(App)

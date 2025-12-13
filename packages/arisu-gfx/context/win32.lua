@@ -3,7 +3,7 @@ local kernel32 = require("arisu-win32..kernel32")
 local wgl = require("arisu-win32.wgl")
 local gdi = require("arisu-win32.gdi")
 
----@class Win32Context: Context
+---@class Win32Context
 ---@field display user32.HDC
 ---@field ctx wgl.HGLRC
 local Win32Context = {}

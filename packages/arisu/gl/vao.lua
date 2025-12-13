@@ -21,7 +21,7 @@ function VAO:unbind()
 end
 
 ---@param buffer gfx.gl.Buffer
----@param descriptor gfx.VertexLayoutDescriptor
+---@param descriptor gfx.VertexLayout
 ---@param bindingIndex number?
 function VAO:setVertexBuffer(buffer, descriptor, bindingIndex)
 	bindingIndex = bindingIndex or 0

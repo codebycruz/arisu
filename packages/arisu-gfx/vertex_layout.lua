@@ -3,28 +3,28 @@ local ffi = require("ffi")
 ---@alias AttributeType "f32" | "i32"
 ---@alias Attribute { type: "f32" | "i32", size: number, offset: number, normalized: boolean }
 
----@class gfx.VertexLayoutDescriptor
+---@class gfx.VertexLayout
 ---@field attributes Attribute[]
 ---@field stride number?
-local VertexLayoutDescriptor = {}
-VertexLayoutDescriptor.__index = VertexLayoutDescriptor
+local VertexLayout = {}
+VertexLayout.__index = VertexLayout
 
-function VertexLayoutDescriptor.new()
-	return setmetatable({ attributes = {}, stride = 0 }, VertexLayoutDescriptor)
+function VertexLayout.new()
+	return setmetatable({ attributes = {}, stride = 0 }, VertexLayout)
 end
 
 ---@param attribute Attribute
-function VertexLayoutDescriptor:withAttribute(attribute)
+function VertexLayout:withAttribute(attribute)
 	table.insert(self.attributes, attribute)
 	return self
 end
 
-function VertexLayoutDescriptor:withStride(stride)
+function VertexLayout:withStride(stride)
 	self.stride = stride
 	return self
 end
 
-function VertexLayoutDescriptor:getStride()
+function VertexLayout:getStride()
 	if self.stride and self.stride > 0 then
 		return self.stride
 	end
@@ -47,4 +47,4 @@ function VertexLayoutDescriptor:getStride()
 	return maxEnd
 end
 
-return VertexLayoutDescriptor
+return VertexLayout

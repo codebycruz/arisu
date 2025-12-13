@@ -1,7 +1,5 @@
 local util = require("arisu-util")
 
----@alias PresentMode "immediate" | "vsync"
-
 ---@class gfx.Context
 ---@field new fun(window: winit.Window, sharedCtx: gfx.Context?): gfx.Context
 ---@field makeCurrent fun(self: gfx.Context): boolean

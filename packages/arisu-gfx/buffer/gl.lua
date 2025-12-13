@@ -6,7 +6,8 @@ local ffi = require("ffi")
 local GLBuffer = {}
 GLBuffer.__index = GLBuffer
 
-function GLBuffer.new()
+---@param descriptor gfx.BufferDescriptor
+function GLBuffer.new(descriptor)
 	local handle = ffi.new("GLuint[1]")
 	gl.createBuffers(1, handle)
 	return setmetatable({ id = handle[0] }, GLBuffer)
