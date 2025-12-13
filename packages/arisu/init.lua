@@ -770,7 +770,7 @@ function App:event(event, handler)
 		return renderUpdate
 	end
 
-	local layoutUpdate = self.plugins.layout:event(event, handler)
+	local layoutUpdate = self.plugins.layout:event(event)
 	if layoutUpdate then
 		return layoutUpdate
 	end

@@ -54,24 +54,17 @@ function TextureManager.new(sampler2DArray, textureDims, textureUnit)
 		2,
 		2,
 		4,
-		ffi.new("uint8_t[?]", 12, {
-			255,
-			0,
-			255,
-			255,
-			0,
-			0,
-			0,
-			255,
-			0,
-			0,
-			0,
-			255,
-			255,
-			0,
-			255,
-			255,
-		}),
+		ffi.new(
+			"uint8_t[?]",
+			12,
+			-- stylua: ignore
+			{
+				255, 0, 255, 255,
+				0, 0, 0, 255,
+				0, 0, 0, 255,
+				255, 0, 255, 255
+			}
+		),
 		""
 	))
 

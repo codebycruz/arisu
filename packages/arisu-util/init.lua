@@ -1,16 +1,17 @@
 local ffi = require("ffi")
 
-local isWindows = string.sub(package.config, 1, 1) == "\\"
-local isUnix = string.sub(package.config, 1, 1) == "/"
-
 local util = {}
 
 function util.isWindows()
-	return isWindows
+	return ffi.os == "Windows"
 end
 
-function util.isUnix()
-	return isUnix
+function util.isLinux()
+	return ffi.os == "Linux"
+end
+
+function util.isMac()
+	return ffi.os == "OSX"
 end
 
 -- This should work in the majority of cases

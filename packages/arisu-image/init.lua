@@ -3,7 +3,7 @@ local QOI = require("arisu-image.formats.qoi")
 
 ---@class Image
 ---@field buffer string
----@field pixels userdata # RGBA or RGB pixel data
+---@field pixels ffi.cdata* # RGBA or RGB pixel data
 ---@field width number
 ---@field height number
 ---@field channels number
@@ -13,7 +13,7 @@ Image.__index = Image
 ---@param width number
 ---@param height number
 ---@param channels number
----@param pixels userdata
+---@param pixels ffi.cdata*
 ---@param buffer string
 ---@return Image
 function Image.new(width, height, channels, pixels, buffer)

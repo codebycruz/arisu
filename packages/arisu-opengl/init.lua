@@ -92,7 +92,7 @@ local nonCoreFnDefs = {
 ---@type fun(name: string): function
 local fetchNonCoreFn
 
-if util.isUnix() then
+if util.isLinux() then
 	local glx = require("arisu-x11.glx")
 
 	function fetchNonCoreFn(name)
@@ -128,7 +128,11 @@ for name in pairs(nonCoreFnDefs) do
 	C[name] = fetchNonCoreFn(name)
 end
 
-local coreFns = util.isUnix() and ffi.load("GL") or ffi.load("opengl32")
+local coreFns =
+	util.isLinux() and ffi.load("GL")
+	or util.isWindows() and ffi.load("opengl32")
+	or error("Unsupported platform for OpenGL")
+
 setmetatable(C, { __index = coreFns })
 
 return {

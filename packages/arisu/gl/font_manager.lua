@@ -1,4 +1,4 @@
-local Bitmap = require("arisu.font.bitmap")
+local Bitmap = require("arisu-text.font.bitmap")
 
 ---@alias Font number
 

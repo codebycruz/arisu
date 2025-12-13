@@ -1,41 +1,42 @@
 local alsa = require("arisu-alsa")
 local ffi = require("ffi")
 
+---@class ALSASound
+local Sound = {}
+Sound.__index = Sound
+
+---@private
+function Sound.new(pcm)
+	return setmetatable({ pcm = pcm }, Sound)
+end
+
 ---@class Playback
 ---@field started number
 ---@field audio Audio
 
----@class SoundManager
----@field pcms table<alsa.PCM, Playback>
-local SoundManager = {}
-SoundManager.__index = SoundManager
-
-function SoundManager.new()
-	return setmetatable({
-		pcms = {},
-	}, SoundManager)
-end
+---@type table<alsa.PCM, Playback>
+local playbackList = {}
 
 --- Removes unused pcms
 ---@param force boolean? # If true, remove even those still playing
-function SoundManager:clean(force)
+local function clean(force)
 	local now = os.clock()
 
-	for pcm, playback in pairs(self.pcms) do
+	for pcm, playback in pairs(playbackList) do
 		local elapsed = now - playback.started
 		if force or elapsed >= playback.audio.duration then
 			alsa.pcmClose(pcm)
-			self.pcms[pcm] = nil
+			playbackList[pcm] = nil
 		end
 	end
 end
 
 ---@param audio Audio
 ---@param volume number? # Volume multiplier (default: 1.0, max: 1.5)
-function SoundManager:play(audio, volume)
+function Sound.play(audio, volume)
 	volume = math.min(1.5, volume or 1.0)
 
-	self:clean()
+	clean()
 
 	local pcm, err = alsa.pcmOpen("default", 0, 1)
 	if not pcm then
@@ -78,10 +79,12 @@ function SoundManager:play(audio, volume)
 		error("Error writing to PCM device: " .. err)
 	end
 
-	self.pcms[pcm] = {
+	playbackList[pcm] = {
 		started = os.clock(),
 		audio = audio,
 	}
+
+	return Sound.new(pcm)
 end
 
-return SoundManager
+return Sound
