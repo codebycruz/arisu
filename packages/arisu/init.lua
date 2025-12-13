@@ -60,11 +60,11 @@ local OverlayPlugin = require("arisu.plugin.overlay")
 ---@field compute Compute
 
 ---@class App.Plugins
----@field window plugin.Window
----@field render plugin.Render
----@field text plugin.Text
----@field ui plugin.UI
----@field layout plugin.Layout
+---@field window arisu.plugin.Window
+---@field render arisu.plugin.Render
+---@field text arisu.plugin.Text
+---@field ui arisu.plugin.UI
+---@field layout arisu.plugin.Layout
 ---@field overlay plugin.Overlay
 
 ---@alias App.Tool "brush" | "eraser" | "fill" | "pencil" | "text" | "select" | "square" | "circle" | "line" | "curve"

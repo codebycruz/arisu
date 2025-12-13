@@ -43,21 +43,21 @@ local function findElementsAtPosition(element, layout, x, y, parentX, parentY, r
 	end
 end
 
----@class plugin.Layout.Context
+---@class arisu.plugin.Layout.Context
 ---@field window winit.Window
----@field ui Element?
----@field computedLayout ComputedLayout?
+---@field ui arisu.Element?
+---@field computedLayout arisu.ComputedLayout?
 
----@class plugin.Layout
----@field textPlugin plugin.Text
----@field view fun(window: winit.Window): Element
----@field contexts table<winit.Window, plugin.Layout.Context>
+---@class arisu.plugin.Layout
+---@field textPlugin arisu.plugin.Text
+---@field view fun(window: winit.Window): arisu.Element
+---@field contexts table<winit.Window, arisu.plugin.Layout.Context>
 local Layout = {}
 Layout.__index = Layout
 
----@param view fun(window: winit.Window): Element
----@param textPlugin plugin.Text
-function Layout.new(view, textPlugin) ---@return plugin.Layout
+---@param view fun(window: winit.Window): arisu.Element
+---@param textPlugin arisu.plugin.Text
+function Layout.new(view, textPlugin) ---@return arisu.plugin.Layout
 	return setmetatable({ view = view, contexts = {}, textPlugin = textPlugin }, Layout)
 end
 
@@ -76,23 +76,22 @@ function Layout:refreshView(window)
 	return ctx.computedLayout
 end
 
-local function hasMouseUp(e) ---@param e Element
+local function hasMouseUp(e) ---@param e arisu.Element
 	return e.onmouseup ~= nil
 end
 
-local function hasMouseDownOrClick(e) ---@param e Element
+local function hasMouseDownOrClick(e) ---@param e arisu.Element
 	return e.onmousedown ~= nil or e.onclick ~= nil
 end
 
 ---@param event winit.Event
----@param handler winit.EventManager
 ---@return Message?
-function Layout:event(event, handler)
+function Layout:event(event)
 	if event.name == "mouseMove" then
 		local ctx = self.contexts[event.window]
 		if not ctx then return end
 
-		---@type table<Element, {layout: ComputedLayout, absX: number, absY: number}>
+		---@type table<arisu.Element, {layout: arisu.ComputedLayout, absX: number, absY: number}>
 		local hoveredElements = {}
 		findElementsAtPosition(ctx.ui, ctx.computedLayout, event.x, event.y, 0, 0, hoveredElements)
 

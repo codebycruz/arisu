@@ -2,7 +2,7 @@ local Context = require("arisu-gfx")
 
 ---@class arisu.plugin.Window.Context
 ---@field window winit.Window
----@field renderCtx Context
+---@field renderCtx gfx.Context
 
 ---@class arisu.plugin.Window<Message>: { onWindowCreate: Message }
 ---@field mainCtx arisu.plugin.Window.Context?
@@ -32,7 +32,7 @@ function WindowPlugin:register(window)
 	self.contexts[window] = windowCtx
 end
 
-function WindowPlugin:getContext(window) ---@return plugin.Window.Context?
+function WindowPlugin:getContext(window) ---@return arisu.plugin.Window.Context?
 	return self.contexts[window]
 end
 

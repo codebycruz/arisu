@@ -4,7 +4,7 @@ local Buffer = require("arisu-gfx.buffer")
 
 ---@class UniformBlock
 ---@field location number
----@field buffer gfx.GLBuffer
+---@field buffer gfx.gl.Buffer
 local UniformBlock = {}
 UniformBlock.__index = UniformBlock
 

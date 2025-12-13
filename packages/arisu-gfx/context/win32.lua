@@ -1,5 +1,5 @@
 local user32 = require("arisu-win32.user32")
-local kernel32 = require("arisu-win32..kernel32")
+local kernel32 = require("arisu-win32.kernel32")
 local wgl = require("arisu-win32.wgl")
 local gdi = require("arisu-win32.gdi")
 

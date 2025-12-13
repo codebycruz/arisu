@@ -14,7 +14,7 @@ local Uniform = require("arisu.gl.uniform")
 ---@alias OverlayPattern "solid" | "dashed" | "marching_ants"
 
 ---@class plugin.Overlay
----@field renderPlugin plugin.Render
+---@field renderPlugin arisu.plugin.Render
 ---@field contexts table<winit.Window, plugin.Overlay.Context>
 local OverlayPlugin = {}
 OverlayPlugin.__index = OverlayPlugin
@@ -23,7 +23,7 @@ local PATTERN_SOLID = 0
 local PATTERN_DASHED = 1
 local PATTERN_MARCHING_ANTS = 2
 
----@param renderPlugin plugin.Render
+---@param renderPlugin arisu.plugin.Render
 function OverlayPlugin.new(renderPlugin)
 	return setmetatable({ renderPlugin = renderPlugin, contexts = {} }, OverlayPlugin)
 end

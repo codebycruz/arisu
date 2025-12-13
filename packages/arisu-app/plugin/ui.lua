@@ -55,7 +55,7 @@ local function addBorderQuad(bx, by, bw, bh, color, z, windowWidth, windowHeight
 	end
 end
 
----@param layout ComputedLayout
+---@param layout arisu.ComputedLayout
 local function generateLayoutQuads(layout, parentX, parentY, vertices, indices, windowWidth, windowHeight)
 	local x = (parentX or 0) + (layout.x or 0)
 	local y = (parentY or 0) + (layout.y or 0)

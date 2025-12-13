@@ -85,8 +85,8 @@ end
 ---@field class user32.WNDCLASSEXA
 ---@field isActive boolean
 ---@field currentMode "poll" | "wait"
----@field handler winit.EventHandler
----@field callback fun(event: winit.Event, handler: winit.EventHandler)
+---@field handler winit.EventManager
+---@field callback winit.EventHandler
 local Win32EventLoop = {}
 Win32EventLoop.__index = Win32EventLoop
 
@@ -197,7 +197,7 @@ function Win32EventLoop:close(window)
 	self.windows[window.id] = nil
 end
 
----@param callback fun(event: winit.Event, handler: winit.EventHandler)
+---@param callback winit.EventHandler
 function Win32EventLoop:run(callback)
 	self.isActive = true
 	self.currentMode = "poll"
