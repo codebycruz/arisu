@@ -6,8 +6,14 @@
 ---@field module gfx.ShaderModule
 ---@field buffers gfx.VertexLayout[]
 
+---@class gfx.ColorTargetState
+---@field format gfx.TextureFormat
+---@field blend? gfx.BlendState
+---@field writeMask? gfx.ColorWrites
+
 ---@class gfx.FragmentState
 ---@field module gfx.ShaderModule
+---@field targets? gfx.ColorTargetState[]
 
 ---@class gfx.PipelineDescriptor
 ---@field vertex gfx.VertexState

@@ -7,7 +7,7 @@ local GLCommandBuffer = require("arisu-gfx.command_buffer.gl")
 ---| { type: "setVertexBuffer", slot: number, buffer: gfx.Buffer, offset: number }
 ---| { type: "setIndexBuffer", buffer: gfx.Buffer, offset: number }
 ---| { type: "setBindGroup", index: number, bindGroup: gfx.BindGroup }
----| { type: "setPipeline", pipeline: gfx.Pipeline }
+---| { type: "setPipeline", pipeline: gfx.gl.Pipeline }
 ---| { type: "draw", vertexCount: number, instanceCount: number, firstVertex: number, firstInstance: number }
 
 ---@class gfx.gl.Encoder
@@ -37,15 +37,15 @@ end
 
 ---@param slot number
 ---@param buffer gfx.Buffer
----@param offset number
+---@param offset number?
 function GLCommandEncoder:setVertexBuffer(slot, buffer, offset)
-	self.commands[#self.commands + 1] = { type = "setVertexBuffer", slot = slot, buffer = buffer, offset = offset }
+	self.commands[#self.commands + 1] = { type = "setVertexBuffer", slot = slot, buffer = buffer, offset = offset or 0 }
 end
 
 ---@param buffer gfx.Buffer
 ---@param offset number
 function GLCommandEncoder:setIndexBuffer(buffer, offset)
-	self.commands[#self.commands + 1] = { type = "setIndexBuffer", buffer = buffer, offset = offset }
+	self.commands[#self.commands + 1] = { type = "setIndexBuffer", buffer = buffer, offset = offset or 0 }
 end
 
 ---@param index number

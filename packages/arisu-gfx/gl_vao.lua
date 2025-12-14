@@ -1,29 +1,29 @@
 local gl = require("arisu-opengl")
 local ffi = require("ffi")
 
----@class VAO
+---@class gfx.gl.VAO
 ---@field id number
-local VAO = {}
-VAO.__index = VAO
+local GLVAO = {}
+GLVAO.__index = GLVAO
 
-function VAO.new()
+function GLVAO.new()
 	local handle = ffi.new("GLuint[1]")
 	gl.createVertexArrays(1, handle)
-	return setmetatable({ id = handle[0] }, VAO)
+	return setmetatable({ id = handle[0] }, GLVAO)
 end
 
-function VAO:bind()
+function GLVAO:bind()
 	gl.bindVertexArray(self.id)
 end
 
-function VAO:unbind()
+function GLVAO:unbind()
 	gl.bindVertexArray(0)
 end
 
 ---@param buffer gfx.gl.Buffer
 ---@param descriptor gfx.VertexLayout
 ---@param bindingIndex number?
-function VAO:setVertexBuffer(buffer, descriptor, bindingIndex)
+function GLVAO:setVertexBuffer(buffer, descriptor, bindingIndex)
 	bindingIndex = bindingIndex or 0
 
 	gl.vertexArrayVertexBuffer(self.id, bindingIndex, buffer.id, 0, descriptor:getStride())
@@ -49,14 +49,14 @@ function VAO:setVertexBuffer(buffer, descriptor, bindingIndex)
 end
 
 ---@param buffer gfx.gl.Buffer
-function VAO:setIndexBuffer(buffer)
+function GLVAO:setIndexBuffer(buffer)
 	gl.vertexArrayElementBuffer(self.id, buffer.id)
 end
 
-function VAO:destroy()
+function GLVAO:destroy()
 	local handle = ffi.new("GLuint[1]", self.id)
 	gl.deleteVertexArrays(1, handle)
 	self.id = 0
 end
 
-return VAO
+return GLVAO

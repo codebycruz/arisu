@@ -2,6 +2,7 @@ local GLBuffer = require("arisu-gfx.buffer.gl")
 local GLCommandEncoder = require("arisu-gfx.command_encoder.gl")
 local GLContext = require("arisu-gfx.gl_context")
 local GLQueue = require("arisu-gfx.queue.gl")
+local GLPipeline = require("arisu-gfx.pipeline.gl")
 
 ---@class gfx.gl.Device
 ---@field public queue gfx.gl.Queue
@@ -18,13 +19,17 @@ end
 
 ---@param descriptor gfx.BufferDescriptor
 function GLDevice:createBuffer(descriptor)
-	-- todo: enable this when vaos dont exist
-	-- self.ctx:makeCurrent()
+	self.ctx:makeCurrent()
 	return GLBuffer.new(descriptor)
 end
 
 function GLDevice:createCommandEncoder()
 	return GLCommandEncoder.new()
+end
+
+---@param descriptor gfx.PipelineDescriptor
+function GLDevice:createPipeline(descriptor)
+	return GLPipeline.new(self, descriptor)
 end
 
 ---@param buffer gfx.gl.CommandBuffer
