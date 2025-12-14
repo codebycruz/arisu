@@ -15,6 +15,7 @@ function GLSwapchain:getCurrentTexture()
 end
 
 function GLSwapchain:present()
+	self.ctx:makeCurrent()
 	self.ctx:swapBuffers()
 end
 

@@ -28,6 +28,7 @@ function GLCommandBuffer:execute()
 	---@type gfx.gl.Pipeline?
 	local pipeline
 	local vao = GLVAO.new()
+	vao:bind()
 
 	for _, command in ipairs(self.commands) do
 		if command.type == "beginRendering" then
@@ -64,6 +65,10 @@ function GLCommandBuffer:execute()
 		elseif command.type == "writeBuffer" then
 			local buffer = command.buffer --[[@as gfx.gl.Buffer]]
 			buffer:setSlice(command.size, command.offset, command.data)
+		elseif command.type == "setBindGroup" then
+			-- I don't think this needs to exist for OpenGL
+		elseif command.type == "drawIndexed" then
+			gl.drawElements(gl.TRIANGLES, command.indexCount, gl.UNSIGNED_INT, nil)
 		else
 			print("Unknown command type: " .. tostring(command.type))
 		end

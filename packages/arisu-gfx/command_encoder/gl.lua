@@ -9,6 +9,7 @@ local GLCommandBuffer = require("arisu-gfx.command_buffer.gl")
 ---| { type: "setBindGroup", index: number, bindGroup: gfx.BindGroup }
 ---| { type: "setPipeline", pipeline: gfx.gl.Pipeline }
 ---| { type: "draw", vertexCount: number, instanceCount: number, firstVertex: number, firstInstance: number }
+---| { type: "drawIndexed", indexCount: number, instanceCount: number, firstIndex: number, baseVertex: number, firstInstance: number }
 ---| { type: "writeBuffer", buffer: gfx.gl.Buffer, size: number, data: ffi.cdata*, offset: number }
 
 ---@class gfx.gl.Encoder
@@ -70,6 +71,22 @@ function GLCommandEncoder:draw(vertexCount, instanceCount, firstVertex, firstIns
 		vertexCount = vertexCount,
 		instanceCount = instanceCount,
 		firstVertex = firstVertex or 0,
+		firstInstance = firstInstance or 0
+	}
+end
+
+---@param indexCount number
+---@param instanceCount number
+---@param firstIndex number?
+---@param baseVertex number?
+---@param firstInstance number?
+function GLCommandEncoder:drawIndexed(indexCount, instanceCount, firstIndex, baseVertex, firstInstance)
+	self.commands[#self.commands + 1] = {
+		type = "drawIndexed",
+		indexCount = indexCount,
+		instanceCount = instanceCount,
+		firstIndex = firstIndex or 0,
+		baseVertex = baseVertex or 0,
 		firstInstance = firstInstance or 0
 	}
 end

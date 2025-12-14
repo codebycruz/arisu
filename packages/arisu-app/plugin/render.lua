@@ -171,6 +171,7 @@ function RenderPlugin:draw(ctx)
 	encoder:setViewport(0, 0, ctx.window.width, ctx.window.height)
 	encoder:setVertexBuffer(0, ctx.quadVertex)
 	encoder:setIndexBuffer(ctx.quadIndex)
+	encoder:drawIndexed(ctx.nIndices, 1)
 	encoder:endRendering()
 
 	local commandBuffer = encoder:finish()
