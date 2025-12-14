@@ -4,12 +4,12 @@ local GLCommandBuffer = require("arisu-gfx.command_buffer.gl")
 ---| { type: "beginRendering", descriptor: gfx.RenderPassDescriptor }
 ---| { type: "endRendering" }
 ---| { type: "setViewport", x: number, y: number, width: number, height: number }
----| { type: "setVertexBuffer", slot: number, buffer: gfx.Buffer, offset: number }
----| { type: "setIndexBuffer", buffer: gfx.Buffer, offset: number }
+---| { type: "setVertexBuffer", slot: number, buffer: gfx.gl.Buffer, offset: number }
+---| { type: "setIndexBuffer", buffer: gfx.gl.Buffer, offset: number }
 ---| { type: "setBindGroup", index: number, bindGroup: gfx.BindGroup }
 ---| { type: "setPipeline", pipeline: gfx.gl.Pipeline }
 ---| { type: "draw", vertexCount: number, instanceCount: number, firstVertex: number, firstInstance: number }
----| { type: "writeBuffer", buffer: gfx.Buffer, size: number, data: ffi.cdata*, offset: number }
+---| { type: "writeBuffer", buffer: gfx.gl.Buffer, size: number, data: ffi.cdata*, offset: number }
 
 ---@class gfx.gl.Encoder
 ---@field commands gfx.gl.Command[]
@@ -37,13 +37,13 @@ function GLCommandEncoder:setViewport(x, y, width, height)
 end
 
 ---@param slot number
----@param buffer gfx.Buffer
+---@param buffer gfx.gl.Buffer
 ---@param offset number?
 function GLCommandEncoder:setVertexBuffer(slot, buffer, offset)
 	self.commands[#self.commands + 1] = { type = "setVertexBuffer", slot = slot, buffer = buffer, offset = offset or 0 }
 end
 
----@param buffer gfx.Buffer
+---@param buffer gfx.gl.Buffer
 ---@param offset number
 function GLCommandEncoder:setIndexBuffer(buffer, offset)
 	self.commands[#self.commands + 1] = { type = "setIndexBuffer", buffer = buffer, offset = offset or 0 }
@@ -55,7 +55,7 @@ function GLCommandEncoder:setBindGroup(index, bindGroup)
 	self.commands[#self.commands + 1] = { type = "setBindGroup", index = index, bindGroup = bindGroup }
 end
 
----@param pipeline gfx.Pipeline
+---@param pipeline gfx.gl.Pipeline
 function GLCommandEncoder:setPipeline(pipeline)
 	self.commands[#self.commands + 1] = { type = "setPipeline", pipeline = pipeline }
 end
@@ -74,13 +74,18 @@ function GLCommandEncoder:draw(vertexCount, instanceCount, firstVertex, firstIns
 	}
 end
 
----@param buffer gfx.Buffer
+---@param buffer gfx.gl.Buffer
 ---@param size number
 ---@param data ffi.cdata*
 ---@param offset number?
 function GLCommandEncoder:writeBuffer(buffer, size, data, offset)
-	self.commands[#self.commands + 1] = { type = "writeBuffer", buffer = buffer, size = size, data = data, offset =
-	offset or 0 }
+	self.commands[#self.commands + 1] = {
+		type = "writeBuffer",
+		buffer = buffer,
+		size = size,
+		data = data,
+		offset = offset or 0
+	}
 end
 
 function GLCommandEncoder:finish()

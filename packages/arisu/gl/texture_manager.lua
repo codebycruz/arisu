@@ -14,6 +14,7 @@ local maxLayers = 256
 ---@alias TextureMetadata { width: number, height: number, image?: Image }
 
 ---@class TextureManager
+---@field device gfx.Device
 ---@field textures TextureMetadata[]
 ---@field textureCount number
 ---@field textureDimsBuffer gfx.Buffer
@@ -51,6 +52,7 @@ function TextureManager.new(device)
 		textureDimsBuffer = textureDimsBuffer,
 		textureHandle = textureHandle,
 		sampler = sampler,
+		device = device,
 		textures = {},
 	}, TextureManager)
 
@@ -92,9 +94,9 @@ function TextureManager:allocate(width, height)
 
 	self.textures[layer] = { width = width, height = height }
 
-	-- Update dimensions in buffer
+	-- todo: is this right?
 	local dims = ffi.new("float[4]", width, height, 0, 0)
-	self.textureDimsBuffer:setData(dims, layer * 16, 16)
+	self.device.queue:writeBuffer(self.textureDimsBuffer, 16, dims, layer * 16)
 
 	self.textureCount = self.textureCount + 1
 
@@ -143,7 +145,7 @@ function TextureManager:update(texture, image)
 
 	-- Update dimensions
 	local dims = ffi.new("float[4]", image.width, image.height, 0, 0)
-	self.textureDimsBuffer:write(dims, texture * 16, 16)
+	self.device.queue:writeBuffer(self.textureDimsBuffer, 16, dims, texture * 16)
 
 	gl.textureSubImage3D(
 		self.textureHandle,
@@ -173,21 +175,21 @@ end
 ---@param dimsBinding number The binding index for the dimensions buffer
 ---@return gfx.BindGroup
 function TextureManager:createBindGroup(binding, samplerBinding, dimsBinding)
-	return gfx.BindGroup.new({
+	return self.device:createBindGroup({
 		{
 			binding = binding,
 			texture = self.textureHandle,
-			visibility = { gfx.ShaderStage.FRAGMENT },
+			visibility = { "FRAGMENT" },
 		},
 		{
 			binding = samplerBinding,
 			sampler = self.sampler,
-			visibility = { gfx.ShaderStage.FRAGMENT },
+			visibility = { "FRAGMENT" },
 		},
 		{
 			binding = dimsBinding,
 			buffer = self.textureDimsBuffer,
-			visibility = { gfx.ShaderStage.FRAGMENT },
+			visibility = { "FRAGMENT" },
 		},
 	})
 end

@@ -25,8 +25,6 @@ local Instance = require("arisu-gfx.instance")
 ---@field nIndices number
 
 ---@class arisu.plugin.Render.SharedResources
----@field samplers Uniform
----@field textureDims UniformBlock
 ---@field textureManager TextureManager
 ---@field fontManager FontManager
 ---@field bindGroup gfx.BindGroup
@@ -55,11 +53,11 @@ end
 function RenderPlugin:setRenderData(window, vertexData, indexData)
 	local ctx = self:getContext(window)
 
-	local cmd = self.device:createCommandEncoder()
-	cmd:writeBuffer(ctx.quadVertex, ffi.new("float[?]", #vertexData, vertexData))
-	cmd:writeBuffer(ctx.quadIndex, ffi.new("uint32_t[?]", #indexData, indexData))
-	local commandBuffer = cmd:finish()
-	self.device.queue:submit(commandBuffer)
+	local vertexSize = util.sizeof("f32") * #vertexData
+	self.device.queue:writeBuffer(ctx.quadVertex, vertexSize, ffi.new("float[?]", #vertexData, vertexData))
+
+	local indexSize = util.sizeof("u32") * #indexData
+	self.device.queue:writeBuffer(ctx.quadIndex, indexSize, ffi.new("uint32_t[?]", #indexData, indexData))
 
 	ctx.nIndices = #indexData
 end
@@ -124,20 +122,11 @@ function RenderPlugin:register(window)
 
 	-- Initialize shared resources
 	if not self.mainCtx then
-		-- local samplers = Uniform.new(mainFragmentProgram, "sampler2DArray", 0)
-		-- local textureDims = UniformBlock.new(0)
-		-- local textureManager = TextureManager.new(samplers, textureDims, 0)
-		-- local fontManager = FontManager.new(textureManager)
-
-		local textureDims = self.device:createBuffer({ size = util.sizeof("u32") * 256, usages = { "UNIFORM", "COPY_DST" } })
-
-		local bindGroup = self.device:createBindGroup({
-			{ binding = 0, buffer = textureDims, visibility = { "FRAGMENT" } }
-		})
+		local textureManager = TextureManager.new(self.device)
+		local bindGroup = textureManager:createBindGroup(0, 1, 2)
+		local fontManager = FontManager.new(textureManager)
 
 		self.sharedResources = {
-			samplers = samplers,
-			textureDims = textureDims,
 			bindGroup = bindGroup,
 			textureManager = textureManager,
 			fontManager = fontManager
@@ -178,7 +167,7 @@ function RenderPlugin:draw(ctx)
 		}
 	})
 	encoder:setPipeline(ctx.quadPipeline)
-	-- encoder:setBindGroup(0, self.sharedResources.textureManager.bindGroup)
+	encoder:setBindGroup(0, self.sharedResources.bindGroup)
 	encoder:setViewport(0, 0, ctx.window.width, ctx.window.height)
 	encoder:setVertexBuffer(0, ctx.quadVertex)
 	encoder:setIndexBuffer(ctx.quadIndex)

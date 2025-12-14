@@ -15,7 +15,7 @@
 ---@field setBindGroup fun(self: gfx.CommandEncoder, index: number, bindGroup: gfx.BindGroup)
 ---@field setPipeline fun(self: gfx.CommandEncoder, pipeline: gfx.Pipeline)
 ---@field draw fun(self: gfx.CommandEncoder, vertexCount: number, instanceCount: number, firstVertex: number?, firstInstance: number?)
----@field writeBuffer fun(self: gfx.CommandEncoder, buffer: gfx.Buffer, data: ffi.cdata*, offset: number?)
+---@field writeBuffer fun(self: gfx.CommandEncoder, buffer: gfx.Buffer, size: number, data: ffi.cdata*, offset: number?)
 local Encoder = require("arisu-gfx.encoder.gl") --[[@as gfx.CommandEncoder]]
 
 return Encoder
