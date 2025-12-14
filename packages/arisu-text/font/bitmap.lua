@@ -80,9 +80,8 @@ function Bitmap.fromPath(bitmapConfig, path)
 	return setmetatable({ config = bitmapConfig, image = img }, Bitmap)
 end
 
-function Bitmap.isValid(
-	content --[[@param content string]]
-)
+---@param content string
+function Bitmap.isValid(content)
 	return Image.isValid(content)
 end
 

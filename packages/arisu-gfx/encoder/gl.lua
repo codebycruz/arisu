@@ -1,5 +1,7 @@
+local CommandBuffer = require("arisu-gfx.command_buffer")
+
 ---@class gfx.gl.Encoder
----@field commands gfx.EncoderCommand[]
+---@field commands gfx.Command[]
 local GLEncoder = {}
 GLEncoder.__index = GLEncoder
 
@@ -12,5 +14,7 @@ function GLEncoder:clear(color)
 end
 
 function GLEncoder:finish()
-	return self.commands
+	return CommandBuffer.new(self.commands)
 end
+
+return GLEncoder
