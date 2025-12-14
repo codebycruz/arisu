@@ -35,6 +35,12 @@ function GLCommandBuffer:execute()
 			local attachments = command.descriptor.colorAttachments
 			for _, attachment in ipairs(attachments) do
 				local texture = attachment.texture --[[@as gfx.gl.Texture]]
+				if texture.id then
+					-- Rendering to a texture rather than a framebuffer
+					error("Haven't handled this case yet")
+				end
+
+				texture.context:makeCurrent()
 				gl.bindFramebuffer(gl.FRAMEBUFFER, texture.framebuffer)
 				executeOp(attachment.op)
 			end

@@ -13,10 +13,10 @@ local GLDevice = {}
 GLDevice.__index = GLDevice
 
 function GLDevice.new()
-	local context = GLContext.fromHeadless()
-	local queue = GLQueue.new()
+	local ctx = GLContext.fromHeadless()
+	local queue = GLQueue.new(ctx)
 
-	return setmetatable({ queue = queue, ctx = context }, GLDevice)
+	return setmetatable({ queue = queue, ctx = ctx }, GLDevice)
 end
 
 ---@param descriptor gfx.BufferDescriptor
@@ -31,21 +31,19 @@ end
 
 ---@param descriptor gfx.PipelineDescriptor
 function GLDevice:createPipeline(descriptor)
+	self.ctx:makeCurrent()
 	return GLPipeline.new(self, descriptor)
-end
-
----@param buffer gfx.gl.CommandBuffer
-function GLDevice:submit(buffer)
-	buffer:execute()
 end
 
 ---@param entries gfx.BindGroupEntry[]
 function GLDevice:createBindGroup(entries)
+	self.ctx:makeCurrent()
 	return GLBindGroup.new(entries)
 end
 
 ---@param desc gfx.SamplerDescriptor
 function GLDevice:createSampler(desc)
+	self.ctx:makeCurrent()
 	return GLSampler.new(desc)
 end
 

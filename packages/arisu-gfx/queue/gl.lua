@@ -1,15 +1,18 @@
 local GLCommandEncoder = require("arisu-gfx.command_encoder.gl")
 
 ---@class gfx.gl.Queue
+---@field private ctx gfx.gl.Context # The headless GL context
 local GLQueue = {}
 GLQueue.__index = GLQueue
 
-function GLQueue.new()
-	return setmetatable({}, GLQueue)
+---@param ctx gfx.gl.Context
+function GLQueue.new(ctx)
+	return setmetatable({ ctx = ctx }, GLQueue)
 end
 
 ---@param buffer gfx.gl.CommandBuffer
 function GLQueue:submit(buffer)
+	self.ctx:makeCurrent()
 	buffer:execute()
 end
 

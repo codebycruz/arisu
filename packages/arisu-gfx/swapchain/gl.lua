@@ -11,7 +11,7 @@ function GLSwapchain.new(ctx)
 end
 
 function GLSwapchain:getCurrentTexture()
-	return GLTexture.VIEWPORT_TEXTURE
+	return GLTexture.forContextViewport(self.ctx)
 end
 
 function GLSwapchain:present()

@@ -76,7 +76,7 @@ function RenderPlugin:register(window)
 		:withAttribute({ type = "f32", size = 1, offset = 36 }) -- texture id
 
 	local quadVertex = self.device:createBuffer({ size = vertexDescriptor:getStride() * 1000, usages = { "VERTEX" } })
-	local quadIndex = self.device:createBuffer({ size = util.sizeof("u16") * 1000, usages = { "INDEX" } })
+	local quadIndex = self.device:createBuffer({ size = util.sizeof("u32") * 1000, usages = { "INDEX" } })
 
 	local quadPipeline = self.device:createPipeline({
 		vertex = {
@@ -96,7 +96,7 @@ function RenderPlugin:register(window)
 	})
 
 	local overlayVertex = self.device:createBuffer({ size = vertexDescriptor:getStride() * 1000, usages = { "VERTEX" } })
-	local overlayIndex = self.device:createBuffer({ size = util.sizeof("u16") * 1000, usages = { "INDEX" } })
+	local overlayIndex = self.device:createBuffer({ size = util.sizeof("u32") * 1000, usages = { "INDEX" } })
 
 	local overlayVertexDescriptor = VertexLayout.new()
 		:withAttribute({ type = "f32", size = 3, offset = 0 }) -- position (vec3)
@@ -161,7 +161,15 @@ function RenderPlugin:draw(ctx)
 	encoder:beginRendering({
 		colorAttachments = {
 			{
-				op = { type = "clear", color = { r = 1, g = 0, b = 0, a = 1 } },
+				op = {
+					type = "clear",
+					color = {
+						r = (math.sin(os.clock() * 10) + 1) / 2,
+						g = 0,
+						b = (math.cos(os.clock() * 10) + 1) / 2,
+						a = 1
+					}
+				},
 				texture = ctx.swapchain:getCurrentTexture()
 			}
 		}
