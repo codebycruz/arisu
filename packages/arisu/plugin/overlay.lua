@@ -33,7 +33,7 @@ function OverlayPlugin:register(window)
 	local renderCtx = self.renderPlugin:getContext(window)
 	assert(renderCtx, "Render context not found for overlay plugin")
 
-	renderCtx.renderCtx:makeCurrent()
+	renderCtx.surface.context:makeCurrent()
 
 	local textureManager = self.renderPlugin.sharedResources.textureManager
 	local overlayTexture = textureManager:allocate(800, 600)
@@ -238,7 +238,7 @@ function OverlayPlugin:draw(window, pattern, time)
 		patternType = PATTERN_MARCHING_ANTS
 	end
 
-	renderCtx.renderCtx:makeCurrent()
+	renderCtx.surface.context:makeCurrent()
 
 	gl.bindFramebuffer(gl.FRAMEBUFFER, ctx.framebuffer)
 	gl.viewport(0, 0, 800, 600)

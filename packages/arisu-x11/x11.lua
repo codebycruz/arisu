@@ -191,7 +191,7 @@ return {
 	internAtom = C.XInternAtom,
 
 	---@param display XDisplay
-	---@param window X11Window
+	---@param window winit.x11.Window
 	---@param protocols string[]
 	setWMProtocols = function(display, window, protocols)
 		assert(display == window.display, "Display mismatch in setWMProtocols")

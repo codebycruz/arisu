@@ -1,7 +1,7 @@
 local x11 = require("arisu-x11.x11")
 local ffi = require("ffi")
 
----@class X11Window: winit.Window
+---@class winit.x11.Window: winit.Window
 ---@field display XDisplay
 ---@field currentCursor number?
 local X11Window = {}

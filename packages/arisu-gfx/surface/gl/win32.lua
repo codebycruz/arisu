@@ -9,7 +9,7 @@ local gdi = require("arisu-win32.gdi")
 local Win32Context = {}
 Win32Context.__index = Win32Context
 
----@param window Win32Window
+---@param window winit.win32.Window
 ---@param sharedCtx Win32Context?
 function Win32Context.new(window, sharedCtx)
 	local hdc = user32.getDC(window.hwnd)

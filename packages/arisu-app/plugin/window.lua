@@ -1,8 +1,8 @@
-local Context = require("arisu-gfx")
+local Surface = require("arisu-gfx.surface")
 
 ---@class arisu.plugin.Window.Context
 ---@field window winit.Window
----@field renderCtx gfx.Context
+---@field surface gfx.gl.Surface
 
 ---@class arisu.plugin.Window<Message>: { onWindowCreate: Message }
 ---@field mainCtx arisu.plugin.Window.Context?
@@ -18,17 +18,14 @@ end
 
 ---@param window winit.Window
 function WindowPlugin:register(window)
-	local renderCtx = Context.new(window, self.mainCtx and self.mainCtx.renderCtx)
+	local surface = Surface.new(window)
 
 	local windowCtx = {
 		window = window,
-		renderCtx = renderCtx
+		surface = surface
 	}
 
-	if not self.mainCtx then
-		self.mainCtx = windowCtx
-	end
-
+	self.mainCtx = self.mainCtx or windowCtx
 	self.contexts[window] = windowCtx
 end
 

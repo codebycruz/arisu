@@ -9,7 +9,7 @@ local gl = require("arisu-opengl")
 local X11Context = {}
 X11Context.__index = X11Context
 
----@param window X11Window
+---@param window winit.x11.Window
 ---@param sharedCtx X11Context?
 function X11Context.new(window, sharedCtx)
 	local display = window.display

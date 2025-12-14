@@ -9,11 +9,11 @@ local UniformBlock = require("arisu.gl.uniform_block")
 local TextureManager = require("arisu.gl.texture_manager")
 local FontManager = require("arisu.gl.font_manager")
 
-local Device = require("arisu-gfx.device.gl")
+local Instance = require("arisu-gfx.instance")
 
 ---@class arisu.plugin.Render.Context
 ---@field window winit.Window
----@field renderCtx gfx.Context
+---@field surface gfx.gl.Surface
 ---@field quadVAO VAO
 ---@field quadPipeline Pipeline
 ---@field quadVertex gfx.Buffer
@@ -42,12 +42,17 @@ local Device = require("arisu-gfx.device.gl")
 ---@field mainCtx arisu.plugin.Render.Context?
 ---@field contexts table<winit.Window, arisu.plugin.Render.Context>
 ---@field sharedResources arisu.plugin.Render.SharedResources?
+---@field device gfx.Device
 local RenderPlugin = {}
 RenderPlugin.__index = RenderPlugin
 
 ---@param windowPlugin arisu.plugin.Window
 function RenderPlugin.new(windowPlugin)
-	return setmetatable({ contexts = {}, windowPlugin = windowPlugin }, RenderPlugin)
+	local instance = Instance.new()
+	local adapter = instance:requestAdapter({ powerPreference = "high-performance" })
+	local device = adapter:requestDevice()
+
+	return setmetatable({ device = device, contexts = {}, windowPlugin = windowPlugin }, RenderPlugin)
 end
 
 ---@param window winit.Window
@@ -65,10 +70,7 @@ function RenderPlugin:register(window)
 	local ctx = self.windowPlugin:getContext(window)
 	assert(ctx, "Window context not found for render plugin")
 
-	ctx.renderCtx:makeCurrent()
-
-	-- todo: dont make this here
-	local device = Device.new()
+	ctx.surface.context:makeCurrent()
 
 	local vertexDescriptor = VertexLayout.new()
 		:withAttribute({ type = "f32", size = 3, offset = 0 }) -- position (vec3)
@@ -76,15 +78,15 @@ function RenderPlugin:register(window)
 		:withAttribute({ type = "f32", size = 2, offset = 28 }) -- uv
 		:withAttribute({ type = "f32", size = 1, offset = 36 }) -- texture id
 
-	local quadVertex = device:createBuffer({ size = vertexDescriptor:getStride() * 1000, usages = { "VERTEX" } })
-	local quadIndex = device:createBuffer({ size = util.sizeof("u16") * 1000, usages = { "INDEX" } })
+	local quadVertex = self.device:createBuffer({ size = vertexDescriptor:getStride() * 1000, usages = { "VERTEX" } })
+	local quadIndex = self.device:createBuffer({ size = util.sizeof("u16") * 1000, usages = { "INDEX" } })
 
 	local quadVAO = VAO.new()
 	quadVAO:setVertexBuffer(quadVertex, vertexDescriptor)
 	quadVAO:setIndexBuffer(quadIndex)
 
-	local overlayVertex = device:createBuffer({ size = vertexDescriptor:getStride() * 1000, usages = { "VERTEX" } })
-	local overlayIndex = device:createBuffer({ size = util.sizeof("u16") * 1000, usages = { "INDEX" } })
+	local overlayVertex = self.device:createBuffer({ size = vertexDescriptor:getStride() * 1000, usages = { "VERTEX" } })
+	local overlayIndex = self.device:createBuffer({ size = util.sizeof("u16") * 1000, usages = { "INDEX" } })
 
 	local overlayVertexDescriptor = VertexLayout.new()
 		:withAttribute({ type = "f32", size = 3, offset = 0 }) -- position (vec3)
@@ -137,7 +139,7 @@ function RenderPlugin:register(window)
 	---@type arisu.plugin.Render.Context
 	local ctx = {
 		window = window,
-		renderCtx = ctx.renderCtx,
+		surface = ctx.surface,
 		quadVAO = quadVAO,
 		quadPipeline = quadPipeline,
 		quadVertex = quadVertex,
@@ -160,7 +162,7 @@ end
 
 ---@param ctx arisu.plugin.Render.Context
 function RenderPlugin:draw(ctx)
-	ctx.renderCtx:makeCurrent()
+	ctx.surface.context:makeCurrent()
 
 	gl.enable(gl.BLEND)
 	gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
@@ -182,7 +184,7 @@ end
 function RenderPlugin:event(event, handler)
 	if event.name == "resize" then
 		local ctx = self:getContext(event.window)
-		ctx.renderCtx:makeCurrent()
+		ctx.surface.context:makeCurrent()
 		gl.viewport(0, 0, ctx.window.width, ctx.window.height)
 
 		if util.isWindows() then

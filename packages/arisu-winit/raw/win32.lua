@@ -2,7 +2,7 @@ local user32 = require("arisu-win32.user32")
 local kernel32 = require("arisu-win32.kernel32")
 local util = require("arisu-util")
 
----@class Win32Window: winit.Window
+---@class winit.win32.Window: winit.Window
 ---@field display user32.HDC
 ---@field id ffi.cdata*
 ---@field hwnd user32.HWND
@@ -81,7 +81,7 @@ function Win32Window:destroy()
 end
 
 ---@class Win32EventLoop: winit.EventLoop
----@field windows table<string, Win32Window>
+---@field windows table<string, winit.win32.Window>
 ---@field class user32.WNDCLASSEXA
 ---@field isActive boolean
 ---@field currentMode "poll" | "wait"
@@ -186,12 +186,12 @@ function Win32EventLoop.new()
 	return self
 end
 
----@param window Win32Window
+---@param window winit.win32.Window
 function Win32EventLoop:register(window)
 	self.windows[window.id] = window
 end
 
----@param window Win32Window
+---@param window winit.win32.Window
 function Win32EventLoop:close(window)
 	window:destroy()
 	self.windows[window.id] = nil
