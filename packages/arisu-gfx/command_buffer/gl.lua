@@ -61,6 +61,9 @@ function GLCommandBuffer:execute()
 			vao:setVertexBuffer(command.buffer, descriptor, command.slot)
 		elseif command.type == "setIndexBuffer" then
 			vao:setIndexBuffer(command.buffer)
+		elseif command.type == "writeBuffer" then
+			local buffer = command.buffer --[[@as gfx.gl.Buffer]]
+			buffer:setSlice(command.size, command.offset, command.data)
 		else
 			print("Unknown command type: " .. tostring(command.type))
 		end

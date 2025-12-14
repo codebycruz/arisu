@@ -92,7 +92,7 @@ function App.new()
 	self.plugins.text = TextPlugin.new(self.plugins.render)
 	self.plugins.layout = LayoutPlugin.new(function(w) return self:view(w) end, self.plugins.text)
 	self.plugins.ui = UIPlugin.new(self.plugins.layout, self.plugins.render)
-	self.plugins.overlay = OverlayPlugin.new(self.plugins.render)
+	-- self.plugins.overlay = OverlayPlugin.new(self.plugins.render)
 
 	self.isDrawing = false
 	self.currentColor = { r = 0, g = 0, b = 0, a = 1 }
@@ -147,7 +147,7 @@ function App:makeResources() ---@return App.Resources
 			canvas = canvas
 		},
 
-		compute = Compute.new(textureManager, canvas)
+		-- compute = Compute.new(textureManager, canvas)
 	}
 end
 
@@ -647,7 +647,7 @@ function App:view(window)
 						end),
 					Element.new("div")
 						:withStyle({
-							bgImage = assert(self.plugins.overlay:getTexture(window), "Overlay texture not found"),
+							-- bgImage = assert(self.plugins.overlay:getTexture(window), "Overlay texture not found"),
 							width = { rel = 1 },
 							height = { rel = 1 },
 							margin = { right = 20, left = 20, top = 20, bottom = 20 },
@@ -681,86 +681,86 @@ function App:event(event, handler)
 		local ctx = self.plugins.render:getContext(event.window)
 		self.plugins.render:draw(ctx)
 
-		self.plugins.overlay:clear(event.window)
+		-- self.plugins.overlay:clear(event.window)
 
-		if self.overlaySelection then
-			local start = self.overlaySelection.start
-			local finish = self.overlaySelection.finish or start
+		-- if self.overlaySelection then
+		-- 	local start = self.overlaySelection.start
+		-- 	local finish = self.overlaySelection.finish or start
 
-			local x1 = start.x
-			local y1 = start.y
-			local x2 = finish.x
-			local y2 = finish.y
+		-- 	local x1 = start.x
+		-- 	local y1 = start.y
+		-- 	local x2 = finish.x
+		-- 	local y2 = finish.y
 
-			local boxX = math.min(x1, x2)
-			local boxY = math.min(y1, y2)
-			local boxW = math.abs(x2 - x1)
-			local boxH = math.abs(y2 - y1)
+		-- 	local boxX = math.min(x1, x2)
+		-- 	local boxY = math.min(y1, y2)
+		-- 	local boxW = math.abs(x2 - x1)
+		-- 	local boxH = math.abs(y2 - y1)
 
-			self.plugins.overlay:addBox(
-				event.window,
-				boxX, boxY, boxW, boxH,
-				{ r = 0, g = 0, b = 0, a = 1 },
-				2
-			)
-		end
+		-- 	self.plugins.overlay:addBox(
+		-- 		event.window,
+		-- 		boxX, boxY, boxW, boxH,
+		-- 		{ r = 0, g = 0, b = 0, a = 1 },
+		-- 		2
+		-- 	)
+		-- end
 
-		if self.overlayLine then
-			local start = self.overlayLine.start
-			local finish = self.overlayLine.finish or start
+		-- if self.overlayLine then
+		-- 	local start = self.overlayLine.start
+		-- 	local finish = self.overlayLine.finish or start
 
-			self.plugins.overlay:addLine(
-				event.window,
-				start.x, start.y,
-				finish.x, finish.y,
-				self.currentColor,
-				2
-			)
-		end
+		-- 	self.plugins.overlay:addLine(
+		-- 		event.window,
+		-- 		start.x, start.y,
+		-- 		finish.x, finish.y,
+		-- 		self.currentColor,
+		-- 		2
+		-- 	)
+		-- end
 
-		if self.overlayRectangle then
-			local start = self.overlayRectangle.start
-			local finish = self.overlayRectangle.finish or start
+		-- if self.overlayRectangle then
+		-- 	local start = self.overlayRectangle.start
+		-- 	local finish = self.overlayRectangle.finish or start
 
-			local x1 = start.x
-			local y1 = start.y
-			local x2 = finish.x
-			local y2 = finish.y
+		-- 	local x1 = start.x
+		-- 	local y1 = start.y
+		-- 	local x2 = finish.x
+		-- 	local y2 = finish.y
 
-			local boxX = math.min(x1, x2)
-			local boxY = math.min(y1, y2)
-			local boxW = math.abs(x2 - x1)
-			local boxH = math.abs(y2 - y1)
+		-- 	local boxX = math.min(x1, x2)
+		-- 	local boxY = math.min(y1, y2)
+		-- 	local boxW = math.abs(x2 - x1)
+		-- 	local boxH = math.abs(y2 - y1)
 
-			self.plugins.overlay:addBox(
-				event.window,
-				boxX, boxY, boxW, boxH,
-				self.currentColor,
-				2
-			)
-		end
+		-- 	self.plugins.overlay:addBox(
+		-- 		event.window,
+		-- 		boxX, boxY, boxW, boxH,
+		-- 		self.currentColor,
+		-- 		2
+		-- 	)
+		-- end
 
-		if self.overlayCircle then
-			local start = self.overlayCircle.start
-			local finish = self.overlayCircle.finish or start
+		-- if self.overlayCircle then
+		-- 	local start = self.overlayCircle.start
+		-- 	local finish = self.overlayCircle.finish or start
 
-			self.plugins.overlay:addEllipse(
-				event.window,
-				start.x, start.y,
-				finish.x, finish.y,
-				self.currentColor,
-				2
-			)
-		end
+		-- 	self.plugins.overlay:addEllipse(
+		-- 		event.window,
+		-- 		start.x, start.y,
+		-- 		finish.x, finish.y,
+		-- 		self.currentColor,
+		-- 		2
+		-- 	)
+		-- end
 
-		local time = os.clock() - self.startTime
-		self.plugins.overlay:draw(event.window, "marching_ants", time)
+		-- local time = os.clock() - self.startTime
+		-- self.plugins.overlay:draw(event.window, "marching_ants", time)
 
-		ctx.swapchain.ctx:swapBuffers()
+		ctx.swapchain:present()
 
-		if self.overlaySelection or self.overlayLine or self.overlayRectangle or self.overlayCircle then
-			handler:requestRedraw(event.window)
-		end
+		-- if self.overlaySelection or self.overlayLine or self.overlayRectangle or self.overlayCircle then
+		-- 	handler:requestRedraw(event.window)
+		-- end
 
 		return nil
 	end
@@ -784,7 +784,7 @@ function App:update(message, window)
 
 		-- Now we can initialize assets for a specific window
 		self.plugins.render:register(window)
-		self.plugins.overlay:register(window)
+		-- self.plugins.overlay:register(window)
 
 		if window == self.plugins.window.mainCtx.window then
 			self.resources = self:makeResources()

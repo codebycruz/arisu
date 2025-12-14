@@ -23,4 +23,29 @@ gfx.TextureFormat = {
 	RGBA8_UNORM = 1,
 }
 
+---@enum gfx.AddressMode
+gfx.AddressMode = {
+	CLAMP_TO_EDGE = 1,
+	REPEAT = 2,
+	MIRRORED_REPEAT = 3,
+}
+
+---@enum gfx.FilterMode
+gfx.FilterMode = {
+	NEAREST = 1,
+	LINEAR = 2,
+}
+
+---@enum gfx.CompareFunction
+gfx.CompareFunction = {
+	NEVER = 1,
+	LESS = 2,
+	EQUAL = 3,
+	LESS_EQUAL = 4,
+	GREATER = 5,
+	NOT_EQUAL = 6,
+	GREATER_EQUAL = 7,
+	ALWAYS = 8,
+}
+
 return gfx

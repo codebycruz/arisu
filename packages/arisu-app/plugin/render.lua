@@ -1,4 +1,5 @@
 local util = require("arisu-util")
+local ffi = require("ffi")
 local gl = require("arisu-opengl")
 local VertexLayout = require("arisu-gfx.vertex_layout")
 local Uniform = require("arisu.gl.uniform")
@@ -11,13 +12,13 @@ local Instance = require("arisu-gfx.instance")
 
 ---@class arisu.plugin.Render.Context
 ---@field window winit.Window
----@field swapchain gfx.gl.Swapchain
----@field quadPipeline gfx.gl.Pipeline
----@field quadVertex gfx.gl.Buffer
----@field quadIndex gfx.gl.Buffer
----@field overlayPipeline gfx.gl.Pipeline
----@field overlayVertex gfx.gl.Buffer
----@field overlayIndex gfx.gl.Buffer
+---@field swapchain gfx.Swapchain
+---@field quadPipeline gfx.Pipeline
+---@field quadVertex gfx.Buffer
+---@field quadIndex gfx.Buffer
+---@field overlayPipeline gfx.Pipeline
+---@field overlayVertex gfx.Buffer
+---@field overlayIndex gfx.Buffer
 ---@field ui? arisu.Element
 ---@field layoutTree? arisu.Layout
 ---@field computedLayout? arisu.ComputedLayout
@@ -28,6 +29,7 @@ local Instance = require("arisu-gfx.instance")
 ---@field textureDims UniformBlock
 ---@field textureManager TextureManager
 ---@field fontManager FontManager
+---@field bindGroup gfx.BindGroup
 
 ---@class arisu.plugin.Render<Message>: { onWindowCreate: Message }
 ---@field windowPlugin arisu.plugin.Window<any>
@@ -52,8 +54,13 @@ end
 ---@param indexData number[]
 function RenderPlugin:setRenderData(window, vertexData, indexData)
 	local ctx = self:getContext(window)
-	ctx.quadVertex:setData("f32", vertexData)
-	ctx.quadIndex:setData("u32", indexData)
+
+	local cmd = self.device:createCommandEncoder()
+	cmd:writeBuffer(ctx.quadVertex, ffi.new("float[?]", #vertexData, vertexData))
+	cmd:writeBuffer(ctx.quadIndex, ffi.new("uint32_t[?]", #indexData, indexData))
+	local commandBuffer = cmd:finish()
+	self.device.queue:submit(commandBuffer)
+
 	ctx.nIndices = #indexData
 end
 
@@ -62,7 +69,7 @@ function RenderPlugin:register(window)
 	local ctx = self.windowPlugin:getContext(window)
 	assert(ctx, "Window context not found for render plugin")
 
-	local swapchain = ctx.surface:configure(self.device, {}) --[[@as gfx.gl.Swapchain]]
+	local swapchain = ctx.surface:configure(self.device, {})
 
 	local vertexDescriptor = VertexLayout.new()
 		:withAttribute({ type = "f32", size = 3, offset = 0 }) -- position (vec3)
@@ -117,14 +124,21 @@ function RenderPlugin:register(window)
 
 	-- Initialize shared resources
 	if not self.mainCtx then
-		local samplers = Uniform.new(mainFragmentProgram, "sampler2DArray", 0)
-		local textureDims = UniformBlock.new(0)
-		local textureManager = TextureManager.new(samplers, textureDims, 0)
-		local fontManager = FontManager.new(textureManager)
+		-- local samplers = Uniform.new(mainFragmentProgram, "sampler2DArray", 0)
+		-- local textureDims = UniformBlock.new(0)
+		-- local textureManager = TextureManager.new(samplers, textureDims, 0)
+		-- local fontManager = FontManager.new(textureManager)
+
+		local textureDims = self.device:createBuffer({ size = util.sizeof("u32") * 256, usages = { "UNIFORM", "COPY_DST" } })
+
+		local bindGroup = self.device:createBindGroup({
+			{ binding = 0, buffer = textureDims, visibility = { "FRAGMENT" } }
+		})
 
 		self.sharedResources = {
 			samplers = samplers,
 			textureDims = textureDims,
+			bindGroup = bindGroup,
 			textureManager = textureManager,
 			fontManager = fontManager
 		}
@@ -154,8 +168,6 @@ end
 
 ---@param ctx arisu.plugin.Render.Context
 function RenderPlugin:draw(ctx)
-	-- ctx.swapchain.ctx:makeCurrent()
-
 	local encoder = self.device:createCommandEncoder()
 	encoder:beginRendering({
 		colorAttachments = {
@@ -166,6 +178,7 @@ function RenderPlugin:draw(ctx)
 		}
 	})
 	encoder:setPipeline(ctx.quadPipeline)
+	-- encoder:setBindGroup(0, self.sharedResources.textureManager.bindGroup)
 	encoder:setViewport(0, 0, ctx.window.width, ctx.window.height)
 	encoder:setVertexBuffer(0, ctx.quadVertex)
 	encoder:setIndexBuffer(ctx.quadIndex)
@@ -194,8 +207,8 @@ end
 function RenderPlugin:event(event, handler)
 	if event.name == "resize" then
 		local ctx = self:getContext(event.window)
-		ctx.swapchain.ctx:makeCurrent()
-		gl.viewport(0, 0, ctx.window.width, ctx.window.height)
+		-- ctx.swapchain.ctx:makeCurrent()
+		-- gl.viewport(0, 0, ctx.window.width, ctx.window.height)
 
 		if util.isWindows() then
 			handler:requestRedraw(event.window)

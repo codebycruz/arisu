@@ -9,6 +9,7 @@ local GLCommandBuffer = require("arisu-gfx.command_buffer.gl")
 ---| { type: "setBindGroup", index: number, bindGroup: gfx.BindGroup }
 ---| { type: "setPipeline", pipeline: gfx.gl.Pipeline }
 ---| { type: "draw", vertexCount: number, instanceCount: number, firstVertex: number, firstInstance: number }
+---| { type: "writeBuffer", buffer: gfx.Buffer, size: number, data: ffi.cdata*, offset: number }
 
 ---@class gfx.gl.Encoder
 ---@field commands gfx.gl.Command[]
@@ -71,6 +72,15 @@ function GLCommandEncoder:draw(vertexCount, instanceCount, firstVertex, firstIns
 		firstVertex = firstVertex or 0,
 		firstInstance = firstInstance or 0
 	}
+end
+
+---@param buffer gfx.Buffer
+---@param size number
+---@param data ffi.cdata*
+---@param offset number?
+function GLCommandEncoder:writeBuffer(buffer, size, data, offset)
+	self.commands[#self.commands + 1] = { type = "writeBuffer", buffer = buffer, size = size, data = data, offset =
+	offset or 0 }
 end
 
 function GLCommandEncoder:finish()

@@ -3,6 +3,7 @@ local GLCommandEncoder = require("arisu-gfx.command_encoder.gl")
 local GLContext = require("arisu-gfx.gl_context")
 local GLQueue = require("arisu-gfx.queue.gl")
 local GLPipeline = require("arisu-gfx.pipeline.gl")
+local GLBindGroup = require("arisu-gfx.bind_group")
 
 ---@class gfx.gl.Device
 ---@field public queue gfx.gl.Queue
@@ -35,6 +36,11 @@ end
 ---@param buffer gfx.gl.CommandBuffer
 function GLDevice:submit(buffer)
 	buffer:execute()
+end
+
+---@param entries gfx.BindGroupEntry[]
+function GLDevice:createBindGroup(entries)
+	return GLBindGroup.new(entries)
 end
 
 return GLDevice

@@ -14,11 +14,11 @@ function UniformBlock.new(location)
 	return setmetatable({ buffer = buffer, location = location }, UniformBlock)
 end
 
----@param type BufferDataType
----@param data table
-function UniformBlock:set(type, data)
+---@param size number
+---@param data ffi.cdata*
+function UniformBlock:set(size, data)
 	gl.bindBufferBase(gl.UNIFORM_BUFFER, self.location, self.buffer.id)
-	self.buffer:setData(type, data)
+	self.buffer:setData(size, data)
 end
 
 return UniformBlock
