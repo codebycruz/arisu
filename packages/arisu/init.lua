@@ -2,7 +2,7 @@ package.path = package.path .. ";./packages/?/init.lua;./packages/?.lua"
 
 local Image = require("arisu-image")
 
-local Compute = require("arisu.tools.compute")
+-- local Compute = require("arisu.tools.compute")
 
 local Arisu = require("arisu-app")
 local Element = require("arisu-app.ui.element")
