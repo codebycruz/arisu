@@ -10,6 +10,7 @@ ffi.cdef([[
 	int glXMakeCurrent(XDisplay*, Window, GLXContext);
 	void glXSwapBuffers(XDisplay*, Window);
 	void glXDestroyContext(XDisplay*, GLXContext);
+	int glXMakeContextCurrent(XDisplay*, Window, Window, GLXContext);
 
 	// Modern OpenGL
 	GLXFBConfig* glXChooseFBConfig(XDisplay* dpy, int screen, const int* attrib_list, int* nelements);
@@ -78,6 +79,9 @@ return {
 
 	---@type fun(display: XDisplay, window: number, ctx: GLXContext): number
 	makeCurrent = C.glXMakeCurrent,
+
+	---@type fun(display: XDisplay, window: number, read: number, ctx: GLXContext): number
+	makeContextCurrent = C.glXMakeContextCurrent,
 
 	---@type fun(display: XDisplay, window: number)
 	swapBuffers = C.glXSwapBuffers,

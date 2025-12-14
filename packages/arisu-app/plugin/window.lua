@@ -2,7 +2,7 @@ local Surface = require("arisu-gfx.surface")
 
 ---@class arisu.plugin.Window.Context
 ---@field window winit.Window
----@field surface gfx.gl.Surface
+---@field surface gfx.Surface
 
 ---@class arisu.plugin.Window<Message>: { onWindowCreate: Message }
 ---@field mainCtx arisu.plugin.Window.Context?

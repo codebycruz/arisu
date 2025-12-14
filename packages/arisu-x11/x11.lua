@@ -160,7 +160,7 @@ local C = ffi.load("X11")
 ---@field xmotion { window: number, x: number, y: number }
 ---@field xbutton { x: number, y: number, button: number }
 
----@class XDisplay: userdata
+---@class XDisplay: ffi.cdata*
 
 ---@class XWindowAttributes: userdata
 ---@field x number

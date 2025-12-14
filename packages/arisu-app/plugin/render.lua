@@ -13,15 +13,15 @@ local Instance = require("arisu-gfx.instance")
 
 ---@class arisu.plugin.Render.Context
 ---@field window winit.Window
----@field surface gfx.gl.Surface
+---@field swapchain gfx.gl.Swapchain
 ---@field quadVAO VAO
 ---@field quadPipeline Pipeline
----@field quadVertex gfx.Buffer
----@field quadIndex gfx.Buffer
+---@field quadVertex gfx.gl.Buffer
+---@field quadIndex gfx.gl.Buffer
 ---@field overlayVAO VAO
 ---@field overlayPipeline Pipeline
----@field overlayVertex gfx.Buffer
----@field overlayIndex gfx.Buffer
+---@field overlayVertex gfx.gl.Buffer
+---@field overlayIndex gfx.gl.Buffer
 ---@field ui? arisu.Element
 ---@field layoutTree? arisu.Layout
 ---@field computedLayout? arisu.ComputedLayout
@@ -70,7 +70,8 @@ function RenderPlugin:register(window)
 	local ctx = self.windowPlugin:getContext(window)
 	assert(ctx, "Window context not found for render plugin")
 
-	ctx.surface.context:makeCurrent()
+	local swapchain = ctx.surface:configure(self.device, {}) --[[@as gfx.gl.Swapchain]]
+	swapchain.ctx:makeCurrent()
 
 	local vertexDescriptor = VertexLayout.new()
 		:withAttribute({ type = "f32", size = 3, offset = 0 }) -- position (vec3)
@@ -139,7 +140,7 @@ function RenderPlugin:register(window)
 	---@type arisu.plugin.Render.Context
 	local ctx = {
 		window = window,
-		surface = ctx.surface,
+		swapchain = swapchain,
 		quadVAO = quadVAO,
 		quadPipeline = quadPipeline,
 		quadVertex = quadVertex,
@@ -162,7 +163,7 @@ end
 
 ---@param ctx arisu.plugin.Render.Context
 function RenderPlugin:draw(ctx)
-	ctx.surface.context:makeCurrent()
+	ctx.swapchain.ctx:makeCurrent()
 
 	gl.enable(gl.BLEND)
 	gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
@@ -184,7 +185,7 @@ end
 function RenderPlugin:event(event, handler)
 	if event.name == "resize" then
 		local ctx = self:getContext(event.window)
-		ctx.surface.context:makeCurrent()
+		ctx.swapchain.ctx:makeCurrent()
 		gl.viewport(0, 0, ctx.window.width, ctx.window.height)
 
 		if util.isWindows() then

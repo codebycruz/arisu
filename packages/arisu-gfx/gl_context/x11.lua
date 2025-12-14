@@ -1,6 +1,5 @@
 local glx = require("arisu-x11.glx")
 local x11 = require("arisu-x11.x11")
-local gl = require("arisu-opengl")
 
 --- @class X11Context
 --- @field display XDisplay
@@ -9,10 +8,10 @@ local gl = require("arisu-opengl")
 local X11Context = {}
 X11Context.__index = X11Context
 
----@param window winit.x11.Window
+---@param display XDisplay
 ---@param sharedCtx X11Context?
-function X11Context.new(window, sharedCtx)
-	local display = window.display
+---@param window winit.x11.Window?
+function X11Context.new(display, sharedCtx, window)
 	local screen = x11.defaultScreen(display)
 
 	local fbConfig = glx.chooseFBConfig(display, screen, {
@@ -42,13 +41,31 @@ function X11Context.new(window, sharedCtx)
 	return setmetatable({ ctx = ctx, display = display, window = window }, X11Context)
 end
 
+---@param sharedCtx X11Context?
+function X11Context.fromHeadless(sharedCtx)
+	local display = x11.openDisplay(nil)
+	return X11Context.new(display, sharedCtx)
+end
+
+---@param window winit.x11.Window
+---@param sharedCtx X11Context?
+function X11Context.fromWindow(window, sharedCtx)
+	return X11Context.new(window.display, sharedCtx, window)
+end
+
 ---@return boolean # true on success, false on failure
 function X11Context:makeCurrent()
-	return glx.makeCurrent(self.display, self.window.id, self.ctx) ~= 0
+	if self.window then
+		return glx.makeCurrent(self.display, self.window.id, self.ctx) ~= 0
+	end
+
+	return glx.makeContextCurrent(self.display, 0, 0, self.ctx) ~= 0
 end
 
 function X11Context:swapBuffers()
-	glx.swapBuffers(self.display, self.window.id)
+	if self.window then
+		glx.swapBuffers(self.display, self.window.id)
+	end
 end
 
 function X11Context:destroy()

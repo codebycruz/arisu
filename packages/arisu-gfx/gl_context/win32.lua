@@ -11,7 +11,7 @@ Win32Context.__index = Win32Context
 
 ---@param window winit.win32.Window
 ---@param sharedCtx Win32Context?
-function Win32Context.new(window, sharedCtx)
+function Win32Context.fromWindow(window, sharedCtx)
 	local hdc = user32.getDC(window.hwnd)
 
 	local pfDescriptor = gdi.newPFD()
