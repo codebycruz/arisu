@@ -165,6 +165,19 @@ end
 function RenderPlugin:draw(ctx)
 	ctx.swapchain.ctx:makeCurrent()
 
+	local encoder = self.device:createCommandEncoder()
+	encoder:beginRendering({
+		colorAttachments = {
+			op = { type = "clear", color = { r = 1, g = 0, b = 0, a = 1 } },
+			texture = ctx.swapchain:getCurrentTexture()
+		}
+	})
+	encoder:setViewport(0, 0, ctx.window.width, ctx.window.height)
+	encoder:endRendering()
+
+	local commandBuffer = encoder:finish()
+	self.device.queue:submit(commandBuffer)
+
 	gl.enable(gl.BLEND)
 	gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
 
