@@ -4,12 +4,13 @@
 ---@field addressModeW gfx.AddressMode
 ---@field magFilter gfx.FilterMode
 ---@field minFilter gfx.FilterMode
----@field mipmapFilter gfx.FilterMode
----@field lodMinClamp number
----@field lodMaxClamp number
----@field maxAnisotropy number
+-- @field mipmapFilter gfx.FilterMode
+---@field lodMinClamp number?
+---@field lodMaxClamp number?
+---@field maxAnisotropy number?
 ---@field compareOp gfx.CompareFunction?
 
 ---@class gfx.Sampler
 ---@field new fun(desc: gfx.SamplerDescriptor): gfx.Sampler
+---@field destroy fun(self: gfx.Sampler)
 local Sampler = require("arisu-gfx.sampler.gl") --[[@as gfx.Sampler]]

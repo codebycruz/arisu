@@ -26,4 +26,8 @@ function GLBuffer:setSlice(len, offset, data)
 	gl.namedBufferSubData(self.id, offset, len, data)
 end
 
+function GLBuffer:destroy()
+	gl.deleteBuffers(1, ffi.new("GLuint[1]", self.id))
+end
+
 return GLBuffer

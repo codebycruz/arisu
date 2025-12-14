@@ -4,6 +4,7 @@ local GLContext = require("arisu-gfx.gl_context")
 local GLQueue = require("arisu-gfx.queue.gl")
 local GLPipeline = require("arisu-gfx.pipeline.gl")
 local GLBindGroup = require("arisu-gfx.bind_group")
+local GLSampler = require("arisu-gfx.sampler.gl")
 
 ---@class gfx.gl.Device
 ---@field public queue gfx.gl.Queue
@@ -41,6 +42,11 @@ end
 ---@param entries gfx.BindGroupEntry[]
 function GLDevice:createBindGroup(entries)
 	return GLBindGroup.new(entries)
+end
+
+---@param desc gfx.SamplerDescriptor
+function GLDevice:createSampler(desc)
+	return GLSampler.new(desc)
 end
 
 return GLDevice

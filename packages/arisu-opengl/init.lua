@@ -87,6 +87,12 @@ local nonCoreFnDefs = {
 	glNamedFramebufferTextureLayer = "void(*)(GLuint, GLenum, GLuint, GLint, GLint)",
 	glCheckNamedFramebufferStatus = "GLenum(*)(GLuint, GLenum)",
 	glDeleteFramebuffers = "void(*)(GLsizei, const GLuint*)",
+
+	glGenSamplers = "void(*)(GLsizei, GLuint*)",
+	glDeleteSamplers = "void(*)(GLsizei, const GLuint*)",
+	glSamplerParameteri = "void(*)(GLuint, GLenum, GLint)",
+	glSamplerParameterf = "void(*)(GLuint, GLenum, GLfloat)",
+	glBindSampler = "void(*)(GLuint, GLuint)",
 }
 
 ---@type fun(name: string): function
@@ -174,12 +180,24 @@ return {
 
 	TEXTURE_WRAP_S = 0x2802,
 	TEXTURE_WRAP_T = 0x2803,
+	TEXTURE_WRAP_R = 0x8072,
 	CLAMP_TO_EDGE = 0x812F,
 	TEXTURE_MIN_FILTER = 0x2801,
 	TEXTURE_MAG_FILTER = 0x2800,
 	NEAREST = 0x2600,
 	REPEAT = 0x2901,
+	MIRRORED_REPEAT = 0x8370,
 	LINEAR = 0x2601,
+
+	TEXTURE_COMPARE_MODE = 0x884C,
+	TEXTURE_COMPARE_FUNC = 0x884D,
+	COMPARE_REF_TO_TEXTURE = 0x884E,
+	NONE = 0x0000,
+
+	TEXTURE_MIN_LOD = 0x813A,
+	TEXTURE_MAX_LOD = 0x813B,
+
+	TEXTURE_MAX_ANISOTROPY = 0x84FE,
 
 	UNIFORM_BUFFER = 0x8A11,
 	SHADER_STORAGE_BUFFER = 0x90D2,
@@ -203,6 +221,10 @@ return {
 	LESS_EQUAL = 0x0203,
 	GREATER = 0x0204,
 	GREATER_EQUAL = 0x0206,
+	EQUAL = 0x0202,
+	NOTEQUAL = 0x0205,
+	ALWAYS = 0x0207,
+	NEVER = 0x0200,
 
 	FRAMEBUFFER = 0x8D40,
 	COLOR_ATTACHMENT0 = 0x8CE0,
@@ -398,4 +420,29 @@ return {
 
 	---@type fun(n: number, framebuffers: userdata)
 	deleteFramebuffers = C.glDeleteFramebuffers,
+
+	---@type fun(n: number): number[]
+	genSamplers = function(n)
+		local handle = ffi.new("GLuint[?]", n)
+		C.glGenSamplers(n, handle)
+
+		local samplerIds = {}
+		for i = 0, n - 1 do
+			samplerIds[i + 1] = handle[i]
+		end
+
+		return samplerIds
+	end,
+
+	---@type fun(n: number, samplers: ffi.cdata*)
+	deleteSamplers = C.glDeleteSamplers,
+
+	---@type fun(sampler: number, pname: number, param: number)
+	samplerParameteri = C.glSamplerParameteri,
+
+	---@type fun(sampler: number, pname: number, param: number)
+	samplerParameterf = C.glSamplerParameterf,
+
+	---@type fun(unit: number, sampler: number)
+	bindSampler = C.glBindSampler,
 }

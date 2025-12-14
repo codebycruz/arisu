@@ -1,5 +1,8 @@
-local gl = require("arisu-opengl")
 local ffi = require("ffi")
+
+local util = require("arisu-util")
+local gl = require("arisu-opengl")
+local gfx = require("arisu-gfx")
 
 local Image = require("arisu-image")
 
@@ -13,42 +16,44 @@ local maxLayers = 256
 ---@class TextureManager
 ---@field textures TextureMetadata[]
 ---@field textureCount number
----@field textureDims number[]
----@field textureDimsUniform UniformBlock
----@field sampler2DArray Uniform
----@field textureUnit number
+---@field textureDimsBuffer gfx.Buffer
 ---@field textureHandle number
+---@field sampler gfx.Sampler
 ---@field whiteTexture Texture
 ---@field errorTexture Texture
 local TextureManager = {}
 TextureManager.__index = TextureManager
 
----@param sampler2DArray Uniform
----@param textureDims UniformBlock
----@param textureUnit number
-function TextureManager.new(sampler2DArray, textureDims, textureUnit)
-	assert(sampler2DArray.type == "sampler2DArray", "sampler2DArray must be of type sampler2DArray")
-	assert(textureUnit, "textureUnit is required")
-
+---@param device gfx.Device
+function TextureManager.new(device)
 	local textureId = ffi.new("GLuint[1]")
 	gl.createTextures(gl.TEXTURE_2D_ARRAY, 1, textureId)
 	local textureHandle = textureId[0]
 
 	gl.textureStorage3D(textureHandle, 1, gl.RGBA8, maxWidth, maxHeight, maxLayers)
-	gl.textureParameteri(textureHandle, gl.TEXTURE_MIN_FILTER, gl.NEAREST)
-	gl.textureParameteri(textureHandle, gl.TEXTURE_MAG_FILTER, gl.NEAREST)
-	gl.textureParameteri(textureHandle, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
-	gl.textureParameteri(textureHandle, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
+
+	local sampler = device:createSampler({
+		minFilter = gfx.FilterMode.NEAREST,
+		magFilter = gfx.FilterMode.NEAREST,
+		addressModeU = gfx.AddressMode.CLAMP_TO_EDGE,
+		addressModeV = gfx.AddressMode.CLAMP_TO_EDGE,
+		addressModeW = gfx.AddressMode.CLAMP_TO_EDGE,
+	})
+
+	-- Use vec4 for proper alignment
+	local textureDimsBuffer = device:createBuffer({
+		size = maxLayers * util.sizeof("f32") * 4,
+		usages = { "UNIFORM", "COPY_DST" },
+	})
 
 	local this = setmetatable({
 		textureCount = 0,
-		textureDims = {},
-		textureDimsUniform = textureDims,
+		textureDimsBuffer = textureDimsBuffer,
 		textureHandle = textureHandle,
-		textureUnit = textureUnit,
-		sampler2DArray = sampler2DArray,
+		sampler = sampler,
 		textures = {},
 	}, TextureManager)
+
 	this.whiteTexture = this:upload(Image.new(1, 1, 3, ffi.new("uint8_t[?]", 3, { 255, 255, 255 }), ""))
 	this.errorTexture = this:upload(Image.new(
 		2,
@@ -56,8 +61,7 @@ function TextureManager.new(sampler2DArray, textureDims, textureUnit)
 		4,
 		ffi.new(
 			"uint8_t[?]",
-			12,
-			-- stylua: ignore
+			16,
 			{
 				255, 0, 255, 255,
 				0, 0, 0, 255,
@@ -72,7 +76,9 @@ function TextureManager.new(sampler2DArray, textureDims, textureUnit)
 end
 
 function TextureManager:destroy()
-	gl.deleteTextures(1, ffi.new("GLuint[1]", self.sampler2DArray.id))
+	gl.deleteTextures(1, ffi.new("GLuint[1]", self.textureHandle))
+	self.textureDimsBuffer:destroy()
+	self.sampler:destroy()
 end
 
 ---@param width number
@@ -86,11 +92,9 @@ function TextureManager:allocate(width, height)
 
 	self.textures[layer] = { width = width, height = height }
 
-	self.textureDims[layer * 4 + 1] = width
-	self.textureDims[layer * 4 + 2] = height
-	self.textureDims[layer * 4 + 3] = 0 -- padding
-	self.textureDims[layer * 4 + 4] = 0 -- padding
-	self.textureDimsUniform:set("u32", self.textureDims)
+	-- Update dimensions in buffer
+	local dims = ffi.new("float[4]", width, height, 0, 0)
+	self.textureDimsBuffer:setData(dims, layer * 16, 16)
 
 	self.textureCount = self.textureCount + 1
 
@@ -137,9 +141,9 @@ function TextureManager:update(texture, image)
 
 	assert(format, "Unsupported number of channels: " .. tostring(image.channels))
 
-	self.textureDims[texture * 4 + 1] = image.width
-	self.textureDims[texture * 4 + 2] = image.height
-	self.textureDimsUniform:set("u32", self.textureDims)
+	-- Update dimensions
+	local dims = ffi.new("float[4]", image.width, image.height, 0, 0)
+	self.textureDimsBuffer:write(dims, texture * 16, 16)
 
 	gl.textureSubImage3D(
 		self.textureHandle,
@@ -163,14 +167,29 @@ function TextureManager:upload(image)
 	return texture
 end
 
-function TextureManager:bind()
-	gl.bindTextureUnit(self.textureUnit, self.textureHandle)
-	gl.bindBufferBase(gl.UNIFORM_BUFFER, self.textureDimsUniform.location, self.textureDimsUniform.buffer.id)
-	self.sampler2DArray:set(self.textureUnit)
-end
-
-function TextureManager:unbind()
-	gl.bindTextureUnit(self.textureUnit, 0)
+---Create a bind group for this texture manager
+---@param binding number The binding index for the texture array
+---@param samplerBinding number The binding index for the sampler
+---@param dimsBinding number The binding index for the dimensions buffer
+---@return gfx.BindGroup
+function TextureManager:createBindGroup(binding, samplerBinding, dimsBinding)
+	return gfx.BindGroup.new({
+		{
+			binding = binding,
+			texture = self.textureHandle,
+			visibility = { gfx.ShaderStage.FRAGMENT },
+		},
+		{
+			binding = samplerBinding,
+			sampler = self.sampler,
+			visibility = { gfx.ShaderStage.FRAGMENT },
+		},
+		{
+			binding = dimsBinding,
+			buffer = self.textureDimsBuffer,
+			visibility = { gfx.ShaderStage.FRAGMENT },
+		},
+	})
 end
 
 return TextureManager
