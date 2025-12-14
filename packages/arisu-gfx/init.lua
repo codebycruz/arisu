@@ -48,4 +48,10 @@ gfx.CompareFunction = {
 	ALWAYS = 8,
 }
 
+---@enum gfx.IndexFormat
+gfx.IndexType = {
+	u16 = 1,
+	u32 = 2,
+}
+
 return gfx

@@ -24,11 +24,26 @@ local function executeOp(op)
 	end
 end
 
+---@type table<gfx.gl.Context, gfx.gl.VAO>
+local vaos = setmetatable({}, {
+	__mode = "k",
+})
+
+---@type table<gfx.IndexFormat, number>
+local indexFormatToGL = {
+	[gfx.IndexType.u16] = gl.UNSIGNED_SHORT,
+	[gfx.IndexType.u32] = gl.UNSIGNED_INT,
+}
+
 function GLCommandBuffer:execute()
 	---@type gfx.gl.Pipeline?
 	local pipeline
-	local vao = GLVAO.new()
-	vao:bind()
+
+	--- TODO: absolutely cache the vao somewhere instead of recreating it every frame
+	---@type gfx.gl.VAO?
+	local vao
+
+	local indexType = gl.UNSIGNED_INT
 
 	for _, command in ipairs(self.commands) do
 		if command.type == "beginRendering" then
@@ -41,6 +56,15 @@ function GLCommandBuffer:execute()
 				end
 
 				texture.context:makeCurrent()
+				if not vaos[texture.context] then
+					local vao = GLVAO.new()
+					vaos[texture.context] = vao
+
+					print("created vao", vao.id)
+				end
+				vao = vaos[texture.context]
+				vao:bind()
+
 				gl.bindFramebuffer(gl.FRAMEBUFFER, texture.framebuffer)
 				executeOp(attachment.op)
 			end
@@ -68,13 +92,14 @@ function GLCommandBuffer:execute()
 			vao:setVertexBuffer(command.buffer, descriptor, command.slot)
 		elseif command.type == "setIndexBuffer" then
 			vao:setIndexBuffer(command.buffer)
+			indexType = indexFormatToGL[command.format]
 		elseif command.type == "writeBuffer" then
 			local buffer = command.buffer --[[@as gfx.gl.Buffer]]
 			buffer:setSlice(command.size, command.offset, command.data)
 		elseif command.type == "setBindGroup" then
 			-- I don't think this needs to exist for OpenGL
 		elseif command.type == "drawIndexed" then
-			gl.drawElements(gl.TRIANGLES, command.indexCount, gl.UNSIGNED_INT, nil)
+			gl.drawElements(gl.TRIANGLES, command.indexCount, indexType, nil)
 		else
 			print("Unknown command type: " .. tostring(command.type))
 		end

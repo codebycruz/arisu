@@ -164,9 +164,9 @@ function RenderPlugin:draw(ctx)
 				op = {
 					type = "clear",
 					color = {
-						r = (math.sin(os.clock() * 10) + 1) / 2,
+						r = (math.sin(os.clock()) + 1) / 2,
 						g = 0,
-						b = (math.cos(os.clock() * 10) + 1) / 2,
+						b = (math.cos(os.clock()) + 1) / 2,
 						a = 1
 					}
 				},
@@ -178,26 +178,17 @@ function RenderPlugin:draw(ctx)
 	encoder:setBindGroup(0, self.sharedResources.bindGroup)
 	encoder:setViewport(0, 0, ctx.window.width, ctx.window.height)
 	encoder:setVertexBuffer(0, ctx.quadVertex)
-	encoder:setIndexBuffer(ctx.quadIndex)
-	encoder:drawIndexed(ctx.nIndices, 1)
+	encoder:setIndexBuffer(ctx.quadIndex, gfx.IndexType.u32)
+	encoder:drawIndexed(0, 1)
 	encoder:endRendering()
 
 	local commandBuffer = encoder:finish()
 	self.device.queue:submit(commandBuffer)
 
-	-- gl.enable(gl.BLEND)
-	-- gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
-
+	-- last things that need to be implemented
 	-- gl.enable(gl.DEPTH_TEST)
 	-- gl.depthFunc(gl.LESS_EQUAL)
 	-- gl.clear(bit.bor(gl.COLOR_BUFFER_BIT, gl.DEPTH_BUFFER_BIT))
-
-	-- gl.viewport(0, 0, ctx.window.width, ctx.window.height)
-
-	-- ctx.quadPipeline:bind()
-	-- self.sharedResources.textureManager:bind()
-	-- ctx.quadVAO:bind()
-	-- gl.drawElements(gl.TRIANGLES, ctx.nIndices, gl.UNSIGNED_INT, nil)
 end
 
 ---@param event winit.Event

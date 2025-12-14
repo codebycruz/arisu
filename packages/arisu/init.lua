@@ -672,6 +672,14 @@ end
 ---@param event winit.Event
 ---@param handler winit.EventManager
 function App:event(event, handler)
+	-- handler:setMode("poll")
+
+	-- if event.name == "aboutToWait" then
+	-- 	for window in pairs(self.plugins.window.contexts) do
+	-- 		handler:requestRedraw(window)
+	-- 	end
+	-- end
+
 	local windowUpdate = self.plugins.window:event(event, handler)
 	if windowUpdate then
 		return windowUpdate
