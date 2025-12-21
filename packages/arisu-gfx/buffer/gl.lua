@@ -39,6 +39,10 @@ function GLBuffer:destroy()
 end
 
 function GLBuffer:__tostring()
+	if not gl.isBuffer(self.id) then
+		return "GLBuffer(NULL)"
+	end
+
 	return "GLBuffer(" .. tostring(self.id) .. ")"
 end
 

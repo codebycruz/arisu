@@ -59,4 +59,12 @@ function GLVAO:destroy()
 	self.id = 0
 end
 
+function GLVAO:__tostring()
+	if not gl.isVertexArray(self.id) then
+		return "GLVAO(NULL)"
+	end
+
+	return "GLVAO(" .. tostring(self.id) .. ")"
+end
+
 return GLVAO

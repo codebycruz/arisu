@@ -46,4 +46,8 @@ function GLPipeline:destroy()
 	gl.deleteProgramPipelines(1, ffi.new("GLuint[1]", self.id))
 end
 
+function GLPipeline:__tostring()
+	return "GLPipeline(" .. tostring(self.id) .. ")"
+end
+
 return GLPipeline

@@ -3,7 +3,7 @@ local ffi = require("ffi")
 
 --- @class gfx.gl.GLPipeline
 --- @field id number
---- @field stages table<gl.ShaderType, Program>
+--- @field stages table<gl.ShaderType, gfx.gl.Program>
 local GLPipeline = {}
 GLPipeline.__index = GLPipeline
 
@@ -13,7 +13,7 @@ function GLPipeline.new()
 end
 
 ---@param type gl.ShaderType
----@param program Program
+---@param program gfx.gl.Program
 function GLPipeline:setProgram(type, program)
 	local stage = ({
 		[gl.ShaderType.VERTEX] = gl.VERTEX_SHADER_BIT,

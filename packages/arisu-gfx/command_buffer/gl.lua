@@ -93,7 +93,9 @@ function GLCommandBuffer:execute()
 				executeDepthOp(depthStencilAttachment.op)
 			end
 		elseif command.type == "setPipeline" then
+			-- todo: pipelines need to be fixed as they are created in the headless context atm
 			pipeline = command.pipeline
+			pipeline:bind()
 
 			if pipeline.depthStencil then
 				gl.enable(gl.DEPTH_TEST)
