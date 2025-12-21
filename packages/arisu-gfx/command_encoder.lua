@@ -2,8 +2,11 @@
 --- | { type: "clear", color: gfx.Color }
 --- | { type: "load" }
 
+---@alias gfx.DepthOp "clear"
+
 ---@class gfx.RenderPassDescriptor
 ---@field colorAttachments { op: gfx.LoadOp, texture: gfx.Texture }[]
+---@field depthStencilAttachment? { op: gfx.DepthOp } # TODO: This will probably store texture later
 
 ---@class gfx.CommandEncoder
 ---@field finish fun(self: gfx.CommandEncoder): gfx.CommandBuffer

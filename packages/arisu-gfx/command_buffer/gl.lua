@@ -24,6 +24,13 @@ local function executeOp(op)
 	end
 end
 
+---@param op gfx.DepthOp
+local function executeDepthOp(op)
+	if op == "clear" then
+		gl.clear(gl.DEPTH_BUFFER_BIT)
+	end
+end
+
 ---@type table<gfx.gl.Context, gfx.gl.VAO>
 local vaos = setmetatable({}, {
 	__mode = "k",
@@ -33,6 +40,18 @@ local vaos = setmetatable({}, {
 local indexFormatToGL = {
 	[gfx.IndexType.u16] = gl.UNSIGNED_SHORT,
 	[gfx.IndexType.u32] = gl.UNSIGNED_INT,
+}
+
+---@type table<gfx.CompareFunction, number>
+local compareFnsMap = {
+	[gfx.CompareFunction.NEVER] = gl.NEVER,
+	[gfx.CompareFunction.LESS] = gl.LESS,
+	[gfx.CompareFunction.EQUAL] = gl.EQUAL,
+	[gfx.CompareFunction.LESS_EQUAL] = gl.LESS_EQUAL,
+	[gfx.CompareFunction.GREATER] = gl.GREATER,
+	[gfx.CompareFunction.NOT_EQUAL] = gl.NOTEQUAL,
+	[gfx.CompareFunction.GREATER_EQUAL] = gl.GREATER_EQUAL,
+	[gfx.CompareFunction.ALWAYS] = gl.ALWAYS,
 }
 
 function GLCommandBuffer:execute()
@@ -59,8 +78,6 @@ function GLCommandBuffer:execute()
 				if not vaos[texture.context] then
 					local vao = GLVAO.new()
 					vaos[texture.context] = vao
-
-					print("created vao", vao.id)
 				end
 				vao = vaos[texture.context]
 				vao:bind()
@@ -68,8 +85,28 @@ function GLCommandBuffer:execute()
 				gl.bindFramebuffer(gl.FRAMEBUFFER, texture.framebuffer)
 				executeOp(attachment.op)
 			end
+
+			-- TODO: Support separate depth/stencil textures
+			local depthStencilAttachment = command.descriptor.depthStencilAttachment
+			if depthStencilAttachment then
+				executeDepthOp(depthStencilAttachment.op)
+			end
 		elseif command.type == "setPipeline" then
 			pipeline = command.pipeline
+
+			if pipeline.depthStencil then
+				if pipeline.depthStencil.depthWriteEnabled then
+					gl.enable(gl.DEPTH_TEST)
+				else
+					gl.disable(gl.DEPTH_TEST)
+				end
+
+				local compareFunc = pipeline.depthStencil.depthCompare
+				local glCompareFunc = compareFnsMap[compareFunc]
+				gl.depthFunc(glCompareFunc)
+			else
+				gl.disable(gl.DEPTH_TEST)
+			end
 
 			for _, target in ipairs(pipeline.fragment.targets) do
 				if target.blend == gfx.BlendState.ALPHA_BLENDING then

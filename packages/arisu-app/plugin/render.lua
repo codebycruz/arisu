@@ -89,6 +89,11 @@ function RenderPlugin:register(window)
 					format = gfx.TextureFormat.RGBA8_UNORM
 				}
 			}
+		},
+		depthStencil = {
+			depthWriteEnabled = true,
+			depthCompare = gfx.CompareFunction.LESS_EQUAL,
+			format = gfx.TextureFormat.RGBA8_UNORM -- TODO: This is useless atm
 		}
 	})
 
@@ -169,7 +174,8 @@ function RenderPlugin:draw(ctx)
 				},
 				texture = ctx.swapchain:getCurrentTexture()
 			}
-		}
+		},
+		depthStencilAttachment = { op = "clear" }
 	})
 	encoder:setPipeline(ctx.quadPipeline)
 	encoder:setBindGroup(0, self.sharedResources.bindGroup)
@@ -181,11 +187,6 @@ function RenderPlugin:draw(ctx)
 
 	local commandBuffer = encoder:finish()
 	self.device.queue:submit(commandBuffer)
-
-	-- last things that need to be implemented
-	-- gl.enable(gl.DEPTH_TEST)
-	-- gl.depthFunc(gl.LESS_EQUAL)
-	-- gl.clear(bit.bor(gl.COLOR_BUFFER_BIT, gl.DEPTH_BUFFER_BIT))
 end
 
 ---@param event winit.Event

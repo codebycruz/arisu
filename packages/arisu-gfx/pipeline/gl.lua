@@ -7,6 +7,7 @@ local GLProgram = require("arisu-gfx.gl_program")
 ---@field private id number
 ---@field fragment gfx.FragmentState
 ---@field vertex gfx.VertexState
+---@field depthStencil? gfx.DepthStencilState
 local GLPipeline = {}
 GLPipeline.__index = GLPipeline
 
@@ -29,7 +30,12 @@ function GLPipeline.new(device, descriptor)
 		gl.useProgramStages(pipeline, stage, program.id)
 	end
 
-	return setmetatable({ id = pipeline, fragment = descriptor.fragment, vertex = descriptor.vertex }, GLPipeline)
+	return setmetatable({
+		id = pipeline,
+		fragment = descriptor.fragment,
+		vertex = descriptor.vertex,
+		depthStencil = descriptor.depthStencil
+	}, GLPipeline)
 end
 
 function GLPipeline:bind()
