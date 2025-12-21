@@ -95,7 +95,7 @@ function GLCommandBuffer:execute()
 			indexType = indexFormatToGL[command.format]
 		elseif command.type == "writeBuffer" then
 			local buffer = command.buffer --[[@as gfx.gl.Buffer]]
-			buffer:setSlice(command.size, command.offset, command.data)
+			buffer:setSlice(command.size, command.data, command.offset)
 		elseif command.type == "setBindGroup" then
 			-- I don't think this needs to exist for OpenGL
 		elseif command.type == "drawIndexed" then

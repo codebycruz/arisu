@@ -3,6 +3,8 @@ local ffi = require("ffi")
 
 ---@class gfx.gl.Buffer
 ---@field id number
+---@field isUniform boolean
+---@field descriptor gfx.BufferDescriptor
 local GLBuffer = {}
 GLBuffer.__index = GLBuffer
 
@@ -10,24 +12,31 @@ GLBuffer.__index = GLBuffer
 function GLBuffer.new(descriptor)
 	local handle = ffi.new("GLuint[1]")
 	gl.createBuffers(1, handle)
-	return setmetatable({ id = handle[0], descriptor = descriptor }, GLBuffer)
+
+	local isUniform = false
+	for _, usage in ipairs(descriptor.usages) do
+		if usage == "uniform" then
+			isUniform = true
+			break
+		end
+	end
+
+	return setmetatable({ id = handle[0], isUniform = isUniform, descriptor = descriptor }, GLBuffer)
 end
 
 ---@param size number
 ---@param data ffi.cdata*
-function GLBuffer:setData(size, data)
-	gl.namedBufferData(self.id, size, data, 0x88E4)
-end
-
----@param len number
----@param offset number
----@param data ffi.cdata*
-function GLBuffer:setSlice(len, offset, data)
-	gl.namedBufferSubData(self.id, offset, len, data)
+---@param offset number?
+function GLBuffer:setSlice(size, data, offset)
+	gl.namedBufferSubData(self.id, offset or 0, size, data)
 end
 
 function GLBuffer:destroy()
 	gl.deleteBuffers(1, ffi.new("GLuint[1]", self.id))
+end
+
+function GLBuffer:__tostring()
+	return "GLBuffer(" .. tostring(self.id) .. ")"
 end
 
 return GLBuffer

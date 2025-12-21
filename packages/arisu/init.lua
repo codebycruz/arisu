@@ -14,7 +14,7 @@ local LayoutPlugin = require("arisu-app.plugin.layout")
 local TextPlugin = require("arisu-app.plugin.text")
 local UIPlugin = require("arisu-app.plugin.ui")
 
-local OverlayPlugin = require("arisu.plugin.overlay")
+-- local OverlayPlugin = require("arisu.plugin.overlay")
 
 ---@alias Message
 --- | { type: "onWindowCreate", window: winit.Window }
