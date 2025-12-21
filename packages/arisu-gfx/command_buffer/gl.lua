@@ -97,7 +97,22 @@ function GLCommandBuffer:execute()
 			local buffer = command.buffer --[[@as gfx.gl.Buffer]]
 			buffer:setSlice(command.size, command.data, command.offset)
 		elseif command.type == "setBindGroup" then
-			-- I don't think this needs to exist for OpenGL
+			for _, entry in ipairs(command.bindGroup.entries) do
+				if entry.type == "buffer" then
+					local buffer = entry.buffer --[[@as gfx.gl.Buffer]]
+					if buffer.isUniform then
+						gl.bindBufferBase(gl.UNIFORM_BUFFER, entry.binding, buffer.id)
+					else
+						error("Only uniform buffers are supported in bind groups for now")
+					end
+				elseif entry.type == "texture" then
+					local texture = entry.texture --[[@as gfx.gl.Texture]]
+					gl.bindTextureUnit(entry.binding, texture.id)
+				elseif entry.type == "sampler" then
+					local sampler = entry.sampler --[[@as gfx.gl.Sampler]]
+					gl.bindSampler(entry.binding, sampler.id)
+				end
+			end
 		elseif command.type == "drawIndexed" then
 			gl.drawElements(gl.TRIANGLES, command.indexCount, indexType, nil)
 		else

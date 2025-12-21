@@ -5,6 +5,7 @@ local gl = require("arisu-opengl")
 local gfx = require("arisu-gfx")
 
 local Image = require("arisu-image")
+local Texture = require("arisu-gfx.texture.gl")
 
 local maxWidth = 1024
 local maxHeight = 1024
@@ -177,16 +178,19 @@ end
 function TextureManager:createBindGroup(binding, samplerBinding, dimsBinding)
 	return self.device:createBindGroup({
 		{
+			type = "texture",
 			binding = binding,
-			texture = self.textureHandle,
+			texture = Texture.new(0, self.textureHandle),
 			visibility = { "FRAGMENT" },
 		},
 		{
+			type = "sampler",
 			binding = samplerBinding,
 			sampler = self.sampler,
 			visibility = { "FRAGMENT" },
 		},
 		{
+			type = "buffer",
 			binding = dimsBinding,
 			buffer = self.textureDimsBuffer,
 			visibility = { "FRAGMENT" },

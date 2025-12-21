@@ -15,7 +15,7 @@ function GLBuffer.new(descriptor)
 
 	local isUniform = false
 	for _, usage in ipairs(descriptor.usages) do
-		if usage == "uniform" then
+		if usage == "UNIFORM" then
 			isUniform = true
 			break
 		end
