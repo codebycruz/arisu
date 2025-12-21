@@ -16,7 +16,7 @@ end
 ---@param device gfx.gl.Device
 ---@param config gfx.SurfaceConfig
 function GLSurface:configure(device, config)
-	local context = GLContext.fromWindow(self.window, device.globalContext)
+	local context = GLContext.fromWindow(self.window, device.ctx)
 	return GLSwapchain.new(context)
 end
 

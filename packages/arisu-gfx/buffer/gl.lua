@@ -13,7 +13,7 @@ function GLBuffer.new(descriptor)
 	local handle = ffi.new("GLuint[1]")
 	gl.createBuffers(1, handle)
 
-	-- Allocate the buffer (necessary for setSlice to work)
+	-- Allocate the buffer (might be necessary for setSlice to work)
 	gl.namedBufferData(handle[0], descriptor.size, nil, gl.DYNAMIC_DRAW)
 
 	local isUniform = false

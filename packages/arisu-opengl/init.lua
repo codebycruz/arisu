@@ -13,6 +13,7 @@ ffi.cdef([[
 	typedef intptr_t GLintptr;
 	typedef intptr_t GLsizeiptr;
 	typedef void* GLsync;
+	typedef uint8_t GLboolean;
 
 	typedef void (*GLDEBUGPROC)(unsigned int, unsigned int, unsigned int, unsigned int, int, const char*, const void*);
 ]])
@@ -25,6 +26,8 @@ ffi.cdef([[
 	void glDrawElements(GLenum mode, GLsizei count, GLenum type, const void* indices);
 	void glDeleteTextures(GLsizei n, const GLuint* textures);
 	char* glGetString(GLenum name);
+	void glGetIntegerv(GLenum pname, GLint* data);
+	GLenum glGetError();
 	void glEnable(GLenum cap);
 	void glDisable(GLenum cap);
 	void glBlendFunc(GLenum sfactor, GLenum dfactor);
@@ -95,6 +98,9 @@ local nonCoreFnDefs = {
 	glSamplerParameteri = "void(*)(GLuint, GLenum, GLint)",
 	glSamplerParameterf = "void(*)(GLuint, GLenum, GLfloat)",
 	glBindSampler = "void(*)(GLuint, GLuint)",
+
+	glIsVertexArray = "GLboolean(*)(GLuint)",
+	glIsBuffer = "GLboolean(*)(GLuint)",
 }
 
 ---@type fun(name: string): function
@@ -471,4 +477,24 @@ return {
 
 	---@type fun(source: number, type: number, severity: number, count: number, ids: ffi.cdata*, enabled: number)
 	debugMessageControl = C.glDebugMessageControl,
+
+	---@type fun(pname: number): number
+	getInteger = function(pname)
+		local data = ffi.new("GLint[1]")
+		C.glGetIntegerv(pname, data)
+		return data[0]
+	end,
+
+	---@type fun(): number
+	getError = C.glGetError,
+
+	---@type fun(id: number): boolean
+	isVertexArray = function(id)
+		return C.glIsVertexArray(id) ~= 0
+	end,
+
+	---@type fun(id: number): boolean
+	isBuffer = function(id)
+		return C.glIsBuffer(id) ~= 0
+	end,
 }

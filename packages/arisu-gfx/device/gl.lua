@@ -8,7 +8,7 @@ local GLSampler = require("arisu-gfx.sampler.gl")
 
 ---@class gfx.gl.Device
 ---@field public queue gfx.gl.Queue
----@field private ctx gfx.gl.Context
+---@field ctx gfx.gl.Context
 local GLDevice = {}
 GLDevice.__index = GLDevice
 

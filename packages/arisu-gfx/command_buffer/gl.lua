@@ -63,7 +63,6 @@ function GLCommandBuffer:execute()
 					print("created vao", vao.id)
 				end
 				vao = vaos[texture.context]
-				print("binding vao")
 				vao:bind()
 
 				gl.bindFramebuffer(gl.FRAMEBUFFER, texture.framebuffer)
