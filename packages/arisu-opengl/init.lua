@@ -414,7 +414,9 @@ return {
 	depthFunc = C.glDepthFunc,
 
 	---@type fun(flag: boolean)
-	depthMask = C.glDepthMask,
+	depthMask = function(flag)
+		C.glDepthMask(flag and 1 or 0)
+	end,
 
 	---@type fun(depth: number)
 	clearDepthf = C.glClearDepthf,

@@ -91,8 +91,8 @@ function RenderPlugin:register(window)
 			}
 		},
 		depthStencil = {
-			depthWriteEnabled = false,
-			depthCompare = gfx.CompareFunction.ALWAYS,
+			depthWriteEnabled = true,
+			depthCompare = gfx.CompareFunction.LESS_EQUAL,
 			format = gfx.TextureFormat.RGBA8_UNORM -- TODO: This is useless atm
 		}
 	})

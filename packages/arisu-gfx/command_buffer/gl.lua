@@ -37,6 +37,12 @@ local vaos = setmetatable({}, {
 	__mode = "k",
 })
 
+--- TODO: Probably need to support multiple contexts too?
+---@type table<gfx.gl.Pipeline, gfx.gl.RawPipeline>
+local pipelines = setmetatable({}, {
+	__mode = "k",
+})
+
 ---@type table<gfx.IndexFormat, number>
 local indexFormatToGL = {
 	[gfx.IndexType.u16] = gl.UNSIGNED_SHORT,
@@ -95,7 +101,13 @@ function GLCommandBuffer:execute()
 		elseif command.type == "setPipeline" then
 			-- todo: pipelines need to be fixed as they are created in the headless context atm
 			pipeline = command.pipeline
-			pipeline:bind()
+
+			local rawPipeline = pipelines[pipeline]
+			if not rawPipeline then
+				rawPipeline = pipeline:genForCurrentContext()
+				pipelines[pipeline] = rawPipeline
+			end
+			rawPipeline:bind()
 
 			if pipeline.depthStencil then
 				gl.enable(gl.DEPTH_TEST)
