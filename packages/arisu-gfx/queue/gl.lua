@@ -17,7 +17,7 @@ function GLQueue:submit(buffer)
 end
 
 --- Helper method to write data to a buffer
----@param buffer gfx.Buffer
+---@param buffer gfx.gl.Buffer
 ---@param size number
 ---@param data ffi.cdata*
 ---@param offset number?

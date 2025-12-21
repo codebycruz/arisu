@@ -72,8 +72,8 @@ function RenderPlugin:register(window)
 		:withAttribute({ type = "f32", size = 2, offset = 28 }) -- uv
 		:withAttribute({ type = "f32", size = 1, offset = 36 }) -- texture id
 
-	local quadVertex = self.device:createBuffer({ size = vertexDescriptor:getStride() * 1000, usages = { "VERTEX" } })
-	local quadIndex = self.device:createBuffer({ size = util.sizeof("u32") * 1000, usages = { "INDEX" } })
+	local quadVertex = self.device:createBuffer({ size = vertexDescriptor:getStride() * 100000, usages = { "VERTEX" } })
+	local quadIndex = self.device:createBuffer({ size = util.sizeof("u32") * 10000, usages = { "INDEX" } })
 
 	local quadPipeline = self.device:createPipeline({
 		vertex = {
@@ -174,7 +174,6 @@ function RenderPlugin:draw(ctx)
 	encoder:setPipeline(ctx.quadPipeline)
 	encoder:setBindGroup(0, self.sharedResources.bindGroup)
 	encoder:setViewport(0, 0, ctx.window.width, ctx.window.height)
-	print(ctx.quadVertex, ctx.quadIndex)
 	encoder:setVertexBuffer(0, ctx.quadVertex)
 	encoder:setIndexBuffer(ctx.quadIndex, gfx.IndexType.u32)
 	encoder:drawIndexed(ctx.nIndices, 1)
