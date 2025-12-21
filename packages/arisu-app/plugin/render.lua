@@ -91,8 +91,8 @@ function RenderPlugin:register(window)
 			}
 		},
 		depthStencil = {
-			depthWriteEnabled = true,
-			depthCompare = gfx.CompareFunction.LESS_EQUAL,
+			depthWriteEnabled = false,
+			depthCompare = gfx.CompareFunction.ALWAYS,
 			format = gfx.TextureFormat.RGBA8_UNORM -- TODO: This is useless atm
 		}
 	})
@@ -175,7 +175,7 @@ function RenderPlugin:draw(ctx)
 				texture = ctx.swapchain:getCurrentTexture()
 			}
 		},
-		depthStencilAttachment = { op = "clear" }
+		depthStencilAttachment = { op = { type = "clear", depth = 1 } }
 	})
 	encoder:setPipeline(ctx.quadPipeline)
 	encoder:setBindGroup(0, self.sharedResources.bindGroup)

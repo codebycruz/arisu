@@ -34,6 +34,8 @@ ffi.cdef([[
 	void glFinish();
 	void glFlush();
 	void glDepthFunc(GLenum func);
+	void glDepthMask(GLboolean flag);
+	void glClearDepthf(GLfloat depth);
 	void glDebugMessageCallback(GLDEBUGPROC callback, const void* userParam);
 	void glDebugMessageControl(GLenum source, GLenum type, GLenum severity, GLsizei count, const GLuint* ids, unsigned char enabled);
 ]])
@@ -410,6 +412,12 @@ return {
 
 	---@type fun(func: number)
 	depthFunc = C.glDepthFunc,
+
+	---@type fun(flag: boolean)
+	depthMask = C.glDepthMask,
+
+	---@type fun(depth: number)
+	clearDepthf = C.glClearDepthf,
 
 	---@return number
 	createFramebuffer = function()

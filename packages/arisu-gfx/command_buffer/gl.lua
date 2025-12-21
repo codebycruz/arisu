@@ -26,7 +26,8 @@ end
 
 ---@param op gfx.DepthOp
 local function executeDepthOp(op)
-	if op == "clear" then
+	if op.type == "clear" then
+		gl.clearDepthf(op.depth)
 		gl.clear(gl.DEPTH_BUFFER_BIT)
 	end
 end
@@ -75,6 +76,7 @@ function GLCommandBuffer:execute()
 				end
 
 				texture.context:makeCurrent()
+				print("dbg", gl.getInteger(0x0D56))
 				if not vaos[texture.context] then
 					local vao = GLVAO.new()
 					vaos[texture.context] = vao
@@ -95,15 +97,12 @@ function GLCommandBuffer:execute()
 			pipeline = command.pipeline
 
 			if pipeline.depthStencil then
-				if pipeline.depthStencil.depthWriteEnabled then
-					gl.enable(gl.DEPTH_TEST)
-				else
-					gl.disable(gl.DEPTH_TEST)
-				end
+				gl.enable(gl.DEPTH_TEST)
 
 				local compareFunc = pipeline.depthStencil.depthCompare
 				local glCompareFunc = compareFnsMap[compareFunc]
 				gl.depthFunc(glCompareFunc)
+				gl.depthMask(pipeline.depthStencil.depthWriteEnabled)
 			else
 				gl.disable(gl.DEPTH_TEST)
 			end

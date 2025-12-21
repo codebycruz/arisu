@@ -2,7 +2,8 @@
 --- | { type: "clear", color: gfx.Color }
 --- | { type: "load" }
 
----@alias gfx.DepthOp "clear"
+---@alias gfx.DepthOp
+--- | { type: "clear", depth: number }
 
 ---@class gfx.RenderPassDescriptor
 ---@field colorAttachments { op: gfx.LoadOp, texture: gfx.Texture }[]
