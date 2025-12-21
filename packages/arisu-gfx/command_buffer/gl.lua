@@ -76,7 +76,6 @@ function GLCommandBuffer:execute()
 				end
 
 				texture.context:makeCurrent()
-				print("dbg", gl.getInteger(0x0D56))
 				if not vaos[texture.context] then
 					local vao = GLVAO.new()
 					vaos[texture.context] = vao

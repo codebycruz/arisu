@@ -125,7 +125,7 @@ function RenderPlugin:register(window)
 	-- Initialize shared resources
 	if not self.mainCtx then
 		local textureManager = TextureManager.new(self.device)
-		local bindGroup = textureManager:createBindGroup(0, 1, 2)
+		local bindGroup = textureManager:createBindGroup(0, 0, 1)
 		local fontManager = FontManager.new(textureManager)
 
 		self.sharedResources = {

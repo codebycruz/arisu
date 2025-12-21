@@ -4,9 +4,8 @@
 #define MAX_WIDTH 1024
 #define MAX_HEIGHT 1024
 
-layout(location = 0) uniform sampler2DArray uTextureArray;
-
-layout(std140, binding = 0) uniform TextureDims {
+layout(binding = 0) uniform sampler2DArray uTextureArray;
+layout(std140, binding = 1) uniform TextureDims {
     uvec2 textureDims[MAX_LAYERS];
 };
 
