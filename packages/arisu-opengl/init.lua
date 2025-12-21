@@ -31,6 +31,8 @@ ffi.cdef([[
 	void glFinish();
 	void glFlush();
 	void glDepthFunc(GLenum func);
+	void glDebugMessageCallback(GLDEBUGPROC callback, const void* userParam);
+	void glDebugMessageControl(GLenum source, GLenum type, GLenum severity, GLsizei count, const GLuint* ids, unsigned char enabled);
 ]])
 
 ---@type table<string, string>
@@ -142,6 +144,11 @@ local coreFns =
 setmetatable(C, { __index = coreFns })
 
 return {
+	DEBUG_OUTPUT = 0x92E0,
+	DEBUG_OUTPUT_SYNCHRONOUS = 0x8242,
+
+	DONT_CARE = 0x1100,
+
 	INVALID_VALUE = 0x0501,
 	INVALID_OPERATION = 0x0502,
 
@@ -447,4 +454,21 @@ return {
 
 	---@type fun(unit: number, sampler: number)
 	bindSampler = C.glBindSampler,
+
+	---@alias gl.DebugMessageCallback fun(source: number, type: number, id: number, severity: number, length: number, message: string)
+
+	---@type fun(callback: gl.DebugMessageCallback)
+	debugMessageCallback = function(callback)
+		local cCallback = ffi.cast(
+			"GLDEBUGPROC",
+			function(source, type, id, severity, length, message, _userParam)
+				callback(source, type, id, severity, length, ffi.string(message, length))
+			end
+		)
+
+		C.glDebugMessageCallback(cCallback, nil)
+	end,
+
+	---@type fun(source: number, type: number, severity: number, count: number, ids: ffi.cdata*, enabled: number)
+	debugMessageControl = C.glDebugMessageControl,
 }
