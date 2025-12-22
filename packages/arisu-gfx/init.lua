@@ -60,4 +60,8 @@ gfx.IndexType = {
 	u32 = 2,
 }
 
+---@alias gfx.ShaderModule
+---| { type: "glsl", source: string }
+---| { type: "spirv", source: string }
+
 return gfx

@@ -2,7 +2,7 @@ package.path = package.path .. ";./packages/?/init.lua;./packages/?.lua"
 
 local Image = require("arisu-image")
 
--- local Compute = require("arisu.tools.compute")
+local Compute = require("arisu.tools.compute")
 
 local Arisu = require("arisu-app")
 local Element = require("arisu-app.ui.element")
@@ -147,7 +147,7 @@ function App:makeResources() ---@return App.Resources
 			canvas = canvas
 		},
 
-		-- compute = Compute.new(textureManager, canvas)
+		compute = Compute.new(textureManager, canvas, self.plugins.render.device)
 	}
 end
 
@@ -970,10 +970,11 @@ function App:update(message, window)
 		self.currentAction = { tool = message.tool }
 		self.plugins.ui:refreshView(window)
 	elseif message.type == "ClearClicked" then
+		-- TODO: this is awful since we dont free the old resources
 		local textureManager = self.plugins.render.sharedResources.textureManager
 		local canvas = textureManager:allocate(800, 600)
 		self.resources.textures.canvas = canvas
-		self.resources.compute = Compute.new(textureManager, canvas)
+		self.resources.compute = Compute.new(textureManager, canvas, self.plugins.render.device)
 		self.plugins.ui:refreshView(window)
 	elseif message.type == "OpenClicked" then
 		print("Open clicked - not implemented")

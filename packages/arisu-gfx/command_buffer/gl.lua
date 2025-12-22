@@ -44,6 +44,11 @@ local pipelines = setmetatable({}, {
 	__mode = "k",
 })
 
+---@type table<gfx.gl.ComputePipeline, gfx.gl.RawComputePipeline>
+local computePipelines = setmetatable({}, {
+	__mode = "k",
+})
+
 ---@type table<gfx.IndexFormat, number>
 local indexFormatToGL = {
 	[gfx.IndexType.u16] = gl.UNSIGNED_SHORT,
@@ -62,7 +67,17 @@ local compareFnsMap = {
 	[gfx.CompareFunction.ALWAYS] = gl.ALWAYS,
 }
 
+---@type table<gfx.StorageAccess, number>
+local accessMap = {
+	["READ_ONLY"] = gl.READ_ONLY,
+	["WRITE_ONLY"] = gl.WRITE_ONLY,
+	["READ_WRITE"] = gl.READ_WRITE,
+}
+
 function GLCommandBuffer:execute()
+	---@type gfx.gl.ComputePipeline?
+	local computePipeline
+
 	---@type gfx.gl.Pipeline?
 	local pipeline
 
@@ -164,10 +179,26 @@ function GLCommandBuffer:execute()
 				elseif entry.type == "sampler" then
 					local sampler = entry.sampler --[[@as gfx.gl.Sampler]]
 					gl.bindSampler(entry.binding, sampler.id)
+				elseif entry.type == "storageTexture" then
+					-- TODO: Look into the format here
+					local texture = entry.texture --[[@as gfx.gl.Texture]]
+					gl.bindImageTexture(entry.binding, texture.id, 0, 1, 0, accessMap[entry.access], gl.RGBA8)
 				end
 			end
 		elseif command.type == "drawIndexed" then
 			gl.drawElements(gl.TRIANGLES, command.indexCount, indexType, nil)
+		elseif command.type == "beginComputePass" then
+		elseif command.type == "setComputePipeline" then
+			computePipeline = command.pipeline
+
+			local rawComputePipeline = computePipelines[computePipeline]
+			if not rawComputePipeline then
+				rawComputePipeline = computePipeline:genForCurrentContext()
+				computePipelines[computePipeline] = rawComputePipeline
+			end
+			rawComputePipeline:bind()
+		elseif command.type == "dispatchWorkgroups" then
+			gl.dispatchCompute(command.x, command.y, command.z)
 		else
 			print("Unknown command type: " .. tostring(command.type))
 		end

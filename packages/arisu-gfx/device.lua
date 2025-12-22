@@ -6,6 +6,7 @@
 ---@field createBindGroup fun(self: gfx.Device, entries: gfx.BindGroupEntry[]): gfx.BindGroup
 ---@field createSampler fun(self: gfx.Device, descriptor: gfx.SamplerDescriptor): gfx.Sampler
 ---@field createTexture fun(self: gfx.Device, descriptor: gfx.TextureDescriptor): gfx.Texture
+---@field createComputePipeline fun(self: gfx.Device, descriptor: gfx.ComputePipelineDescriptor): gfx.ComputePipeline
 local Device = require("arisu-gfx.device.gl") --[[@as gfx.Device]]
 
 return Device

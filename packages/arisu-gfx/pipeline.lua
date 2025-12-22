@@ -1,7 +1,3 @@
----@alias gfx.ShaderModule
----| { type: "glsl", source: string }
----| { type: "spirv", source: string }
-
 ---@class gfx.DepthStencilState
 ---@field depthWriteEnabled boolean
 ---@field depthCompare gfx.CompareFunction

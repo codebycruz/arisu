@@ -3,24 +3,25 @@
 layout(local_size_x = 16, local_size_y = 16) in;
 
 layout(rgba8, binding = 0) uniform image2DArray imgOutput;
+layout(std140, binding = 1) uniform ComputeInputs {
+    ivec2 center;
+    float radius;
+    int writeLayer;
+    vec4 color;
 
-layout(location = 0) uniform ivec2 center;
-layout(location = 1) uniform float radius;
-layout(location = 2) uniform int writeLayer;
-layout(location = 3) uniform vec4 color;
+    // 0 - Brush
+    // 1 - Eraser
+    // 2 - Fill
+    // 3 - Line
+    // 4 - Rectangle
+    // 5 - Circle
+    int tool;
 
-// 0 - Brush
-// 1 - Eraser
-// 2 - Fill
-// 3 - Line
-// 4 - Rectangle
-// 5 - Circle
-layout(location = 4) uniform int tool;
-
-layout(location = 5) uniform int readLayer;
-layout(location = 6) uniform vec2 selectTopLeft;
-layout(location = 7) uniform vec2 selectBottomRight;
-layout(location = 8) uniform ivec2 lineEnd;
+    int readLayer;
+    vec2 selectTopLeft;
+    vec2 selectBottomRight;
+    ivec2 lineEnd;
+};
 
 float colorDistance(vec3 color1, vec3 color2) {
     vec3 diff = color1 - color2;

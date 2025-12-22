@@ -30,7 +30,7 @@ function X11Context.new(display, sharedCtx, window)
 
 	local ctx = glx.createContextAttribsARB(display, fbConfig, sharedCtx and sharedCtx.ctx, 1, {
 		glx.CONTEXT_MAJOR_VERSION_ARB,
-		3,
+		4,
 		glx.CONTEXT_MINOR_VERSION_ARB,
 		3,
 	})

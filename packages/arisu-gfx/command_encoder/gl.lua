@@ -12,6 +12,10 @@ local GLCommandBuffer = require("arisu-gfx.command_buffer.gl")
 ---| { type: "drawIndexed", indexCount: number, instanceCount: number, firstIndex: number, baseVertex: number, firstInstance: number }
 ---| { type: "writeBuffer", buffer: gfx.gl.Buffer, size: number, data: ffi.cdata*, offset: number }
 ---| { type: "writeTexture", texture: gfx.gl.Texture, descriptor: gfx.TextureWriteDescriptor, data: ffi.cdata* }
+--- # Compute
+---| { type: "beginComputePass", descriptor: gfx.ComputePassDescriptor }
+---| { type: "dispatchWorkgroups", x: number, y: number, z: number }
+---| { type: "setComputePipeline", pipeline: gfx.gl.ComputePipeline }
 
 ---@class gfx.gl.Encoder
 ---@field commands gfx.gl.Command[]
@@ -117,6 +121,27 @@ function GLCommandEncoder:writeTexture(texture, descriptor, data)
 		descriptor = descriptor,
 		data = data
 	}
+end
+
+--[[
+	Compute Functions
+]]
+
+---@param descriptor gfx.ComputePassDescriptor
+function GLCommandEncoder:beginComputePass(descriptor)
+	self.commands[#self.commands + 1] = { type = "beginComputePass", descriptor = descriptor }
+end
+
+---@param x number
+---@param y number
+---@param z number
+function GLCommandEncoder:dispatchWorkgroups(x, y, z)
+	self.commands[#self.commands + 1] = { type = "dispatchWorkgroups", x = x, y = y, z = z }
+end
+
+---@param pipeline gfx.gl.ComputePipeline
+function GLCommandEncoder:setComputePipeline(pipeline)
+	self.commands[#self.commands + 1] = { type = "setComputePipeline", pipeline = pipeline }
 end
 
 function GLCommandEncoder:finish()

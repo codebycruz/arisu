@@ -6,6 +6,7 @@ local GLPipeline = require("arisu-gfx.pipeline.gl")
 local GLBindGroup = require("arisu-gfx.bind_group")
 local GLSampler = require("arisu-gfx.sampler.gl")
 local GLTexture = require("arisu-gfx.texture.gl")
+local GLComputePipeline = require("arisu-gfx.compute_pipeline.gl")
 
 ---@class gfx.gl.Device
 ---@field public queue gfx.gl.Queue
@@ -52,6 +53,12 @@ end
 function GLDevice:createTexture(descriptor)
 	self.ctx:makeCurrent()
 	return GLTexture.new(self, descriptor)
+end
+
+---@param descriptor gfx.ComputePipelineDescriptor
+function GLDevice:createComputePipeline(descriptor)
+	self.ctx:makeCurrent()
+	return GLComputePipeline.new(self, descriptor)
 end
 
 return GLDevice

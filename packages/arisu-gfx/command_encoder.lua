@@ -19,6 +19,8 @@
 ---@field colorAttachments { op: gfx.LoadOp, texture: gfx.Texture }[]
 ---@field depthStencilAttachment? { op: gfx.DepthOp, texture: gfx.Texture }
 
+---@class gfx.ComputePassDescriptor
+
 ---@class gfx.CommandEncoder
 ---@field finish fun(self: gfx.CommandEncoder): gfx.CommandBuffer
 ---@field beginRendering fun(self: gfx.CommandEncoder, descriptor: gfx.RenderPassDescriptor)
@@ -32,6 +34,10 @@
 ---@field drawIndexed fun(self: gfx.CommandEncoder, indexCount: number, instanceCount: number, firstIndex: number?, baseVertex: number?, firstInstance: number?)
 ---@field writeBuffer fun(self: gfx.CommandEncoder, buffer: gfx.Buffer, size: number, data: ffi.cdata*, offset: number?)
 ---@field writeTexture fun(self: gfx.CommandEncoder, texture: gfx.Texture, descriptor: gfx.TextureWriteDescriptor, data: ffi.cdata*)
+--- Compute
+---@field beginComputePass fun(self: gfx.CommandEncoder, descriptor: gfx.ComputePassDescriptor)
+---@field dispatchWorkgroups fun(self: gfx.CommandEncoder, x: number, y: number, z: number)
+---@field setComputePipeline fun(self: gfx.CommandEncoder, pipeline: gfx.ComputePipeline)
 local Encoder = require("arisu-gfx.encoder.gl") --[[@as gfx.CommandEncoder]]
 
 return Encoder
