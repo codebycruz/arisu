@@ -16,7 +16,7 @@ local maxLayers = 256
 ---@field device gfx.Device
 ---@field textures TextureMetadata[]
 ---@field textureCount number
----@field textureDimsBuffer gfx.Buffer
+---@field textureUVScaleBuffer gfx.Buffer
 ---@field texture gfx.Texture
 ---@field sampler gfx.Sampler
 ---@field whiteTexture Texture
@@ -41,14 +41,14 @@ function TextureManager.new(device)
 	})
 
 	-- Use vec4 for proper alignment
-	local textureDimsBuffer = device:createBuffer({
-		size = maxLayers * util.sizeof("f32") * 4,
-		usages = { "UNIFORM", "COPY_DST" },
+	local textureUVScaleBuffer = device:createBuffer({
+		size = maxLayers * util.sizeof("f32") * 2,
+		usages = { "STORAGE", "COPY_DST" },
 	})
 
 	local this = setmetatable({
 		textureCount = 0,
-		textureDimsBuffer = textureDimsBuffer,
+		textureUVScaleBuffer = textureUVScaleBuffer,
 		texture = texture,
 		sampler = sampler,
 		device = device,
@@ -78,7 +78,7 @@ end
 
 function TextureManager:destroy()
 	self.texture:destroy()
-	self.textureDimsBuffer:destroy()
+	self.textureUVScaleBuffer:destroy()
 	self.sampler:destroy()
 end
 
@@ -91,8 +91,9 @@ function TextureManager:setTextureDimensions(id, width, height)
 
 	texture.width, texture.height = width, height
 
-	local dims = ffi.new("float[4]", width, height, 0, 0)
-	self.device.queue:writeBuffer(self.textureDimsBuffer, 16, dims, id * 16)
+	-- Using std430, don't need to align to vec4
+	local uvScale = ffi.new("float[2]", width / maxWidth, height / maxHeight)
+	self.device.queue:writeBuffer(self.textureUVScaleBuffer, 8, uvScale, id * 8)
 end
 
 ---@param width number
@@ -152,7 +153,7 @@ function TextureManager:createBindGroup(binding, samplerBinding, dimsBinding)
 		{
 			type = "buffer",
 			binding = dimsBinding,
-			buffer = self.textureDimsBuffer,
+			buffer = self.textureUVScaleBuffer,
 			visibility = { "FRAGMENT" },
 		},
 	})
