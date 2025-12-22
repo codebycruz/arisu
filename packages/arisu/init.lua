@@ -661,7 +661,7 @@ function App:view(window)
 					width = "auto",
 				})
 				:withChildren({
-					Element.from("arisu v0.4.0"):withStyle({
+					Element.from("arisu v0.5.0-beta"):withStyle({
 						align = "center",
 						padding = { left = 10 },
 					}),
