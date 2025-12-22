@@ -5,6 +5,7 @@ local GLQueue = require("arisu-gfx.queue.gl")
 local GLPipeline = require("arisu-gfx.pipeline.gl")
 local GLBindGroup = require("arisu-gfx.bind_group")
 local GLSampler = require("arisu-gfx.sampler.gl")
+local GLTexture = require("arisu-gfx.texture.gl")
 
 ---@class gfx.gl.Device
 ---@field public queue gfx.gl.Queue
@@ -45,6 +46,12 @@ end
 function GLDevice:createSampler(desc)
 	self.ctx:makeCurrent()
 	return GLSampler.new(desc)
+end
+
+---@param desc gfx.TextureDescriptor
+function GLDevice:createTexture(desc)
+	self.ctx:makeCurrent()
+	return GLTexture.new(self, desc)
 end
 
 return GLDevice

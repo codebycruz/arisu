@@ -20,7 +20,13 @@ gfx.ColorWrites = {
 
 ---@enum gfx.TextureFormat
 gfx.TextureFormat = {
-	RGBA8_UNORM = 1,
+	-- Equates to OpenGL's gl.RGBA + gl.UNSIGNED_BYTE
+	Rgba8UNorm = 1,
+	Rgba8Uint = 2,
+
+	Depth16Unorm = 3,
+	Depth24Plus = 4,
+	Depth32Float = 5
 }
 
 ---@enum gfx.AddressMode

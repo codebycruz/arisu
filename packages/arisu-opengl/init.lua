@@ -74,10 +74,12 @@ local nonCoreFnDefs = {
 	glNamedBufferSubData = "void(*)(GLuint, GLintptr, GLsizeiptr, const void*)",
 
 	glCreateTextures = "void(*)(GLenum, GLsizei, GLuint*)",
+	glTextureStorage1D = "void(*)(GLuint, GLsizei, GLenum, GLsizei)",
+	glTextureStorage2D = "void(*)(GLuint, GLsizei, GLenum, GLsizei, GLsizei)",
+	glTextureSubImage2D = "void(*)(GLuint, GLsizei, GLint, GLint, GLsizei, GLsizei, GLenum, GLenum, const void*)",
 	glTextureStorage3D = "void(*)(GLuint, GLsizei, GLenum, GLsizei, GLsizei, GLsizei)",
 	glTextureSubImage3D =
 	"void(*)(GLuint, GLsizei, GLint, GLint, GLint, GLsizei, GLsizei, GLsizei, GLenum, GLenum, const void*)",
-	glTextureParameteri = "void(*)(GLuint, GLenum, GLint)",
 	glBindTextureUnit = "void(*)(GLuint, GLuint)",
 	glCopyImageSubData =
 	"void(*)(GLuint, GLenum, GLint, GLint, GLint, GLint, GLuint, GLenum, GLint, GLint, GLint, GLint, GLsizei, GLsizei, GLsizei)",
@@ -103,6 +105,8 @@ local nonCoreFnDefs = {
 
 	glIsVertexArray = "GLboolean(*)(GLuint)",
 	glIsBuffer = "GLboolean(*)(GLuint)",
+
+
 }
 
 ---@type fun(name: string): function
@@ -186,7 +190,12 @@ return {
 		COMPUTE = 0x91B9,
 	},
 
+	TEXTURE_1D = 0x0DE0,
+	TEXTURE_1D_ARRAY = 0x8C18,
+	TEXTURE_2D = 0x0DE1,
 	TEXTURE_2D_ARRAY = 0x8C1A,
+	TEXTURE_3D = 0x806F,
+
 	RGBA8 = 0x8058,
 
 	RG = 0x8227,
@@ -362,8 +371,27 @@ return {
 	---@type fun(pId: number, uId: number, count: number, transpose: number, value: userdata)
 	programUniformMatrix4fv = C.glProgramUniformMatrix4fv,
 
-	---@type fun(target: number, n: number, textures: userdata)
-	createTextures = C.glCreateTextures,
+	---@type fun(target: number, n: number): number[]
+	createTextures = function(target, n)
+		local handle = ffi.new("GLuint[?]", n)
+		C.glCreateTextures(target, n, handle)
+
+		local textureIds = {}
+		for i = 0, n - 1 do
+			textureIds[i + 1] = handle[i]
+		end
+
+		return textureIds
+	end,
+
+	---@type fun(texture: number, levels: number, internalformat: number, width: number)
+	textureStorage1D = C.glTextureStorage1D,
+
+	---@type fun(texture: number, levels: number, internalformat: number, width: number, height: number)
+	textureStorage2D = C.glTextureStorage2D,
+
+	---@type fun(texture: number, level: number, xoffset: number, yoffset: number, width: number, height: number, format: number, type: number, pixels: userdata)
+	textureSubImage2D = C.glTextureSubImage2D,
 
 	---@type fun(texture: number, levels: number, internalformat: number, width: number, height: number, depth: number)
 	textureStorage3D = C.glTextureStorage3D,
@@ -371,8 +399,6 @@ return {
 	---@type fun(texture: number, level: number, xoffset: number, yoffset: number, zoffset: number, width: number, height: number, depth: number, format: number, type: number, pixels: userdata)
 	textureSubImage3D = C.glTextureSubImage3D,
 
-	---@type fun(texture: number, pname: number, param: number)
-	textureParameteri = C.glTextureParameteri,
 
 	---@type fun(unit: number, texture: number)
 	bindTextureUnit = C.glBindTextureUnit,

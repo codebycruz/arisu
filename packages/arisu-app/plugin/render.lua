@@ -86,14 +86,14 @@ function RenderPlugin:register(window)
 				{
 					blend = gfx.BlendState.ALPHA_BLENDING,
 					writeMask = gfx.ColorWrites.ALL,
-					format = gfx.TextureFormat.RGBA8_UNORM
+					format = gfx.TextureFormat.Rgba8UNorm
 				}
 			}
 		},
 		depthStencil = {
 			depthWriteEnabled = true,
 			depthCompare = gfx.CompareFunction.LESS_EQUAL,
-			format = gfx.TextureFormat.RGBA8_UNORM -- TODO: This is useless atm
+			format = gfx.TextureFormat.Depth24Plus
 		}
 	})
 

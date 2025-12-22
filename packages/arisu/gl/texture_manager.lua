@@ -5,7 +5,6 @@ local gl = require("arisu-opengl")
 local gfx = require("arisu-gfx")
 
 local Image = require("arisu-image")
-local Texture = require("arisu-gfx.texture.gl")
 
 local maxWidth = 1024
 local maxHeight = 1024
@@ -19,7 +18,7 @@ local maxLayers = 256
 ---@field textures TextureMetadata[]
 ---@field textureCount number
 ---@field textureDimsBuffer gfx.Buffer
----@field textureHandle number
+---@field texture gfx.gl.Texture
 ---@field sampler gfx.Sampler
 ---@field whiteTexture Texture
 ---@field errorTexture Texture
@@ -28,11 +27,11 @@ TextureManager.__index = TextureManager
 
 ---@param device gfx.Device
 function TextureManager.new(device)
-	local textureId = ffi.new("GLuint[1]")
-	gl.createTextures(gl.TEXTURE_2D_ARRAY, 1, textureId)
-	local textureHandle = textureId[0]
-
-	gl.textureStorage3D(textureHandle, 1, gl.RGBA8, maxWidth, maxHeight, maxLayers)
+	local texture = device:createTexture({
+		extents = { dim = "2d", width = maxWidth, height = maxHeight, count = maxLayers },
+		format = gfx.TextureFormat.Rgba8UNorm,
+		usages = { "TEXTURE_BINDING", "COPY_DST", "COPY_SRC" },
+	})
 
 	local sampler = device:createSampler({
 		minFilter = gfx.FilterMode.NEAREST,
@@ -51,7 +50,7 @@ function TextureManager.new(device)
 	local this = setmetatable({
 		textureCount = 0,
 		textureDimsBuffer = textureDimsBuffer,
-		textureHandle = textureHandle,
+		texture = texture,
 		sampler = sampler,
 		device = device,
 		textures = {},
@@ -79,7 +78,7 @@ function TextureManager.new(device)
 end
 
 function TextureManager:destroy()
-	gl.deleteTextures(1, ffi.new("GLuint[1]", self.textureHandle))
+	self.texture:destroy()
 	self.textureDimsBuffer:destroy()
 	self.sampler:destroy()
 end
@@ -114,13 +113,13 @@ function TextureManager:copy(source, destination)
 	local height = math.min(self.textures[source].height, self.textures[destination].height)
 
 	gl.copyImageSubData(
-		self.textureHandle,
+		self.texture.id,
 		gl.TEXTURE_2D_ARRAY,
 		0,
 		0,
 		0,
 		source,
-		self.textureHandle,
+		self.texture.id,
 		gl.TEXTURE_2D_ARRAY,
 		0,
 		0,
@@ -149,7 +148,7 @@ function TextureManager:update(texture, image)
 	self.device.queue:writeBuffer(self.textureDimsBuffer, 16, dims, texture * 16)
 
 	gl.textureSubImage3D(
-		self.textureHandle,
+		self.texture.id,
 		0,
 		0,
 		0,
@@ -180,7 +179,7 @@ function TextureManager:createBindGroup(binding, samplerBinding, dimsBinding)
 		{
 			type = "texture",
 			binding = binding,
-			texture = Texture.new(0, self.textureHandle),
+			texture = self.texture,
 			visibility = { "FRAGMENT" },
 		},
 		{
