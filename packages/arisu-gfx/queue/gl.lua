@@ -27,4 +27,14 @@ function GLQueue:writeBuffer(buffer, size, data, offset)
 	self:submit(cmd:finish())
 end
 
+--- Helper method to write data to a texture
+---@param texture gfx.gl.Texture
+---@param descriptor gfx.TextureDataDescriptor
+---@param data ffi.cdata*
+function GLQueue:writeTexture(texture, descriptor, data)
+	local cmd = GLCommandEncoder.new()
+	cmd:writeTexture(texture, descriptor, data)
+	self:submit(cmd:finish())
+end
+
 return GLQueue

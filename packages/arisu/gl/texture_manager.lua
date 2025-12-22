@@ -56,7 +56,7 @@ function TextureManager.new(device)
 		textures = {},
 	}, TextureManager)
 
-	this.whiteTexture = this:upload(Image.new(1, 1, 3, ffi.new("uint8_t[?]", 3, { 255, 255, 255 }), ""))
+	this.whiteTexture = this:upload(Image.new(1, 1, 4, ffi.new("uint8_t[?]", 3, { 255, 255, 255, 255 }), ""))
 	this.errorTexture = this:upload(Image.new(
 		2,
 		2,
@@ -135,31 +135,12 @@ end
 function TextureManager:update(texture, image)
 	assert(self.textures[texture], "Texture does not exist")
 
-	local format = ({
-		[2] = gl.RG,
-		[3] = gl.RGB,
-		[4] = gl.RGBA,
-	})[image.channels]
-
-	assert(format, "Unsupported number of channels: " .. tostring(image.channels))
-
 	-- Update dimensions
 	local dims = ffi.new("float[4]", image.width, image.height, 0, 0)
 	self.device.queue:writeBuffer(self.textureDimsBuffer, 16, dims, texture * 16)
 
-	gl.textureSubImage3D(
-		self.texture.id,
-		0,
-		0,
-		0,
-		texture,
-		image.width,
-		image.height,
-		1,
-		format,
-		gl.UNSIGNED_BYTE,
-		image.pixels
-	)
+	self.device.queue:writeTexture(self.texture, { layer = texture, width = image.width, height = image.height },
+		image.pixels)
 end
 
 ---@param image Image

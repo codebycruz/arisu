@@ -143,8 +143,9 @@ function GLCommandBuffer:execute()
 			vao:setIndexBuffer(command.buffer)
 			indexType = indexFormatToGL[command.format]
 		elseif command.type == "writeBuffer" then
-			local buffer = command.buffer --[[@as gfx.gl.Buffer]]
-			buffer:setSlice(command.size, command.data, command.offset)
+			command.buffer:setSlice(command.size, command.data, command.offset)
+		elseif command.type == "writeTexture" then
+			command.texture:writeData(command.descriptor, command.data)
 		elseif command.type == "setBindGroup" then
 			for _, entry in ipairs(command.bindGroup.entries) do
 				if entry.type == "buffer" then

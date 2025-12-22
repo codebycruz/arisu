@@ -75,6 +75,7 @@ local nonCoreFnDefs = {
 
 	glCreateTextures = "void(*)(GLenum, GLsizei, GLuint*)",
 	glTextureStorage1D = "void(*)(GLuint, GLsizei, GLenum, GLsizei)",
+	glTextureSubImage1D = "void(*)(GLuint, GLsizei, GLint, GLsizei, GLenum, GLenum, const void*)",
 	glTextureStorage2D = "void(*)(GLuint, GLsizei, GLenum, GLsizei, GLsizei)",
 	glTextureSubImage2D = "void(*)(GLuint, GLsizei, GLint, GLint, GLsizei, GLsizei, GLenum, GLenum, const void*)",
 	glTextureStorage3D = "void(*)(GLuint, GLsizei, GLenum, GLsizei, GLsizei, GLsizei)",
@@ -106,7 +107,7 @@ local nonCoreFnDefs = {
 	glIsVertexArray = "GLboolean(*)(GLuint)",
 	glIsBuffer = "GLboolean(*)(GLuint)",
 
-
+	glPixelStorei = "void(*)(GLenum, GLint)",
 }
 
 ---@type fun(name: string): function
@@ -256,6 +257,10 @@ return {
 	COLOR_ATTACHMENT0 = 0x8CE0,
 	FRAMEBUFFER_COMPLETE = 0x8CD5,
 
+	UNPACK_ALIGNMENT = 0x0CF5,
+	UNPACK_ROW_LENGTH = 0x0CF2,
+	UNPACK_IMAGE_HEIGHT = 0x806E,
+
 	--- @param type gl.ShaderType
 	--- @param src string
 	--- @return number
@@ -387,6 +392,9 @@ return {
 	---@type fun(texture: number, levels: number, internalformat: number, width: number)
 	textureStorage1D = C.glTextureStorage1D,
 
+	---@type fun(texture: number, level: number, xoffset: number, width: number, format: number, type: number, pixels: userdata)
+	textureSubImage1D = C.glTextureSubImage1D,
+
 	---@type fun(texture: number, levels: number, internalformat: number, width: number, height: number)
 	textureStorage2D = C.glTextureStorage2D,
 
@@ -403,8 +411,12 @@ return {
 	---@type fun(unit: number, texture: number)
 	bindTextureUnit = C.glBindTextureUnit,
 
-	---@type fun(n: number, textures: userdata)
-	deleteTextures = C.glDeleteTextures,
+	---@type fun(textures: number[])
+	deleteTextures = function(textures)
+		local n = #textures
+		local handle = ffi.new("GLuint[?]", n, textures)
+		C.glDeleteTextures(n, handle)
+	end,
 
 	---@type fun(target: number, index: number, buffer: number)
 	bindBufferBase = C.glBindBufferBase,
@@ -533,4 +545,7 @@ return {
 	isBuffer = function(id)
 		return C.glIsBuffer(id) ~= 0
 	end,
+
+	---@type fun(pname: number, param: number)
+	pixelStorei = C.glPixelStorei,
 }

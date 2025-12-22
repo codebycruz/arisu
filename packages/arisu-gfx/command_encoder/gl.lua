@@ -11,6 +11,7 @@ local GLCommandBuffer = require("arisu-gfx.command_buffer.gl")
 ---| { type: "draw", vertexCount: number, instanceCount: number, firstVertex: number, firstInstance: number }
 ---| { type: "drawIndexed", indexCount: number, instanceCount: number, firstIndex: number, baseVertex: number, firstInstance: number }
 ---| { type: "writeBuffer", buffer: gfx.gl.Buffer, size: number, data: ffi.cdata*, offset: number }
+---| { type: "writeTexture", texture: gfx.gl.Texture, descriptor: gfx.TextureDataDescriptor, data: ffi.cdata* }
 
 ---@class gfx.gl.Encoder
 ---@field commands gfx.gl.Command[]
@@ -103,6 +104,18 @@ function GLCommandEncoder:writeBuffer(buffer, size, data, offset)
 		size = size,
 		data = data,
 		offset = offset or 0
+	}
+end
+
+---@param texture gfx.gl.Texture
+---@param descriptor gfx.TextureDataDescriptor
+---@param data ffi.cdata*
+function GLCommandEncoder:writeTexture(texture, descriptor, data)
+	self.commands[#self.commands + 1] = {
+		type = "writeTexture",
+		texture = texture,
+		descriptor = descriptor,
+		data = data
 	}
 end
 

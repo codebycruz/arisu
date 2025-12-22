@@ -26,6 +26,39 @@ do
 	end
 end
 
+---@param done table<any, number>
+local function stringify(val, depth, done)
+	if done[val] then
+		return "<self " .. done[val] .. ">"
+	end
+
+	local ty = type(val)
+	if ty == "table" then
+		local out = { "{" }
+		local indent = string.rep("    ", depth + 1)
+
+		done[val] = depth
+		for k, v in pairs(val) do
+			local key = stringify(k, depth + 1, done)
+			local value = stringify(v, depth + 1, done)
+
+			out[#out + 1] = indent .. "[" .. key .. "] = " .. value .. ","
+		end
+		done[val] = nil
+
+		out[#out + 1] = string.sub(indent, 1, -4) .. "}"
+		return table.concat(out, "\n")
+	elseif ty == "string" then
+		return string.format("%q", val)
+	else
+		return tostring(val)
+	end
+end
+
+function util.dbg(val)
+	print(stringify(val, 0, {}))
+end
+
 function util.isWindows()
 	return ffi.os == "Windows"
 end

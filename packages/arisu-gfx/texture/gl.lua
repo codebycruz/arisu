@@ -5,11 +5,20 @@ local gfx = require("arisu-gfx")
 ---@field framebuffer number
 ---@field id number? # if nil, it is the backbuffer (default framebuffer)
 ---@field context gfx.gl.Context? # only present if id is nil
+---@field private descriptor gfx.TextureDescriptor
 local GLTexture = {}
 GLTexture.__index = GLTexture
 
-local formatMap = {
+local glInternalFormatMap = {
 	[gfx.TextureFormat.Rgba8UNorm] = gl.RGBA8,
+}
+
+local glFormatMap = {
+	[gfx.TextureFormat.Rgba8UNorm] = gl.RGBA,
+}
+
+local glTypeMap = {
+	[gfx.TextureFormat.Rgba8UNorm] = gl.UNSIGNED_BYTE,
 }
 
 ---@param device gfx.gl.Device
@@ -17,7 +26,7 @@ local formatMap = {
 function GLTexture.new(device, descriptor)
 	local levels = descriptor.mipLevelCount or 1
 	local extents = descriptor.extents
-	local format = assert(formatMap[descriptor.format], "Unsupported texture format")
+	local format = assert(glInternalFormatMap[descriptor.format], "Unsupported texture format")
 
 	local id ---@type number
 	if extents.dim == "1d" then
@@ -45,7 +54,52 @@ function GLTexture.new(device, descriptor)
 		error("Unsupported texture extents")
 	end
 
-	return setmetatable({ framebuffer = 0, id = id }, GLTexture)
+	return setmetatable({ framebuffer = 0, id = id, descriptor = descriptor }, GLTexture)
+end
+
+---@param desc gfx.TextureDataDescriptor
+---@param data ffi.cdata*
+function GLTexture:writeData(desc, data)
+	local extents = self.descriptor.extents
+	local mip = desc.mip or 0
+	local layer = desc.layer or 0
+
+	local format = assert(glFormatMap[self.descriptor.format], "Unsupported texture format")
+	local type = assert(glTypeMap[self.descriptor.format], "Unsupported texture format")
+
+	data = data + (desc.offset or 0)
+	local bytesPerRow = desc.bytesPerRow
+	local rowsPerImage = desc.rowsPerImage
+
+	local width = desc.width or extents.width
+	local height = desc.height or extents.height
+	local depth = desc.depth or extents.depth
+
+	gl.pixelStorei(gl.UNPACK_ALIGNMENT, 1)
+	gl.pixelStorei(gl.UNPACK_IMAGE_HEIGHT, rowsPerImage or 0)
+	gl.pixelStorei(gl.UNPACK_ROW_LENGTH, bytesPerRow and (bytesPerRow / 4) or 0)
+
+	if extents.dim == "1d" then
+		if extents.count then
+			gl.textureSubImage2D(self.id, mip, 0, layer, width, 1, format, type, data)
+		else
+			gl.textureSubImage1D(self.id, mip, 0, width, format, type, data)
+		end
+	elseif extents.dim == "2d" then
+		if extents.count then
+			gl.textureSubImage3D(self.id, mip, 0, 0, layer, width, height, 1, format, type, data)
+		else
+			gl.textureSubImage2D(self.id, mip, 0, 0, width, height, format, type, data)
+		end
+	elseif extents.dim == "3d" then
+		gl.textureSubImage3D(self.id, mip, 0, 0, 0, width, height, depth, format, type, data)
+	else
+		error("Unsupported texture extents")
+	end
+
+	gl.pixelStorei(gl.UNPACK_ALIGNMENT, 4)
+	gl.pixelStorei(gl.UNPACK_IMAGE_HEIGHT, 0)
+	gl.pixelStorei(gl.UNPACK_ROW_LENGTH, 0)
 end
 
 ---@param framebuffer number
@@ -61,6 +115,15 @@ function GLTexture.forContextViewport(context)
 end
 
 function GLTexture:destroy()
+	gl.deleteTextures({ self.id })
+end
+
+function GLTexture:__tostring()
+	if self.context then
+		return "GLBackbuffer(" .. tostring(self.context) .. ")"
+	end
+
+	return "GLTexture(" .. tostring(self.id) .. ")"
 end
 
 return GLTexture
