@@ -57,7 +57,7 @@ function GLTexture.new(device, descriptor)
 	return setmetatable({ framebuffer = 0, id = id, descriptor = descriptor }, GLTexture)
 end
 
----@param desc gfx.TextureDataDescriptor
+---@param desc gfx.TextureWriteDescriptor
 ---@param data ffi.cdata*
 function GLTexture:writeData(desc, data)
 	local extents = self.descriptor.extents

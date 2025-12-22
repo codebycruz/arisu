@@ -29,7 +29,7 @@ end
 
 --- Helper method to write data to a texture
 ---@param texture gfx.gl.Texture
----@param descriptor gfx.TextureDataDescriptor
+---@param descriptor gfx.TextureWriteDescriptor
 ---@param data ffi.cdata*
 function GLQueue:writeTexture(texture, descriptor, data)
 	local cmd = GLCommandEncoder.new()

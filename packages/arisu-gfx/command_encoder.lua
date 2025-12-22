@@ -1,4 +1,4 @@
----@class gfx.TextureDataDescriptor
+---@class gfx.TextureWriteDescriptor
 ---@field width number
 ---@field height number
 ---@field depth number? # For 3D textures
@@ -31,7 +31,7 @@
 ---@field draw fun(self: gfx.CommandEncoder, vertexCount: number, instanceCount: number, firstVertex: number?, firstInstance: number?)
 ---@field drawIndexed fun(self: gfx.CommandEncoder, indexCount: number, instanceCount: number, firstIndex: number?, baseVertex: number?, firstInstance: number?)
 ---@field writeBuffer fun(self: gfx.CommandEncoder, buffer: gfx.Buffer, size: number, data: ffi.cdata*, offset: number?)
----@field writeTexture fun(self: gfx.CommandEncoder, texture: gfx.Texture, descriptor: gfx.TextureDataDescriptor, data: ffi.cdata*)
+---@field writeTexture fun(self: gfx.CommandEncoder, texture: gfx.Texture, descriptor: gfx.TextureWriteDescriptor, data: ffi.cdata*)
 local Encoder = require("arisu-gfx.encoder.gl") --[[@as gfx.CommandEncoder]]
 
 return Encoder
