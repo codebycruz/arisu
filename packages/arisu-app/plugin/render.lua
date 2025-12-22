@@ -117,7 +117,7 @@ function RenderPlugin:register(window)
 				{
 					blend = gfx.BlendState.ALPHA_BLENDING,
 					writeMask = gfx.ColorWrites.ALL,
-					format = gfx.TextureFormat.RGBA8_UNORM
+					format = gfx.TextureFormat.Rgba8UNorm
 				}
 			}
 		}
