@@ -1,8 +1,8 @@
 local util = require("arisu-util")
 local ffi = require("ffi")
 local VertexLayout = require("arisu-gfx.vertex_layout")
-local TextureManager = require("arisu.gl.texture_manager")
-local FontManager = require("arisu.gl.font_manager")
+local TextureManager = require("arisu.util.texture_manager")
+local FontManager = require("arisu.util.font_manager")
 local gfx = require("arisu-gfx")
 
 local Instance = require("arisu-gfx.instance")
