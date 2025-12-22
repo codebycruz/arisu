@@ -49,11 +49,11 @@ function Compute.new(textureManager, canvas, device)
 
 	local inputsBuffer = device:createBuffer({
 		size = sizeofComputeInputs,
-		usages = { "UNIFORM", "COPY_DST" }
+		usages = { "STORAGE", "COPY_DST" }
 	})
 
 	local bindGroup = device:createBindGroup({
-		{ type = "storageTexture", binding = 0, texture = textureManager.texture, visibility = { "COMPUTE" }, access = "WRITE_ONLY" },
+		{ type = "storageTexture", binding = 0, texture = textureManager.texture, visibility = { "COMPUTE" }, access = "READ_WRITE" },
 		{ type = "buffer",         binding = 1, buffer = inputsBuffer,            visibility = { "COMPUTE" } },
 	})
 
@@ -105,7 +105,6 @@ function Compute:setSelection(x1, y1, x2, y2)
 	self.inputs.selectTopLeft[1] = y1
 	self.inputs.selectBottomRight[0] = x2
 	self.inputs.selectBottomRight[1] = y2
-	self:updateInputs()
 end
 
 ---@param x number
@@ -122,12 +121,12 @@ function Compute:stamp(x, y, radius, color)
 	self.inputs.color[2] = color.b
 	self.inputs.color[3] = color.a
 	self.inputs.tool = TOOL_BRUSH
-	self:updateInputs()
 
 	local diameter = radius * 2
 	local groupsX = math.ceil(diameter / WORK_GROUP_SIZE)
 	local groupsY = math.ceil(diameter / WORK_GROUP_SIZE)
 
+	self:updateInputs()
 	local encoder = self.device:createCommandEncoder()
 	encoder:beginComputePass({})
 	encoder:setComputePipeline(self.pipeline)

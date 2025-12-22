@@ -645,14 +645,14 @@ function App:view(window)
 								elementHeight = elementHeight,
 							}
 						end),
-					Element.new("div")
-						:withStyle({
-							-- bgImage = assert(self.plugins.overlay:getTexture(window), "Overlay texture not found"),
-							width = { rel = 1 },
-							height = { rel = 1 },
-							margin = { right = 20, left = 20, top = 20, bottom = 20 },
-							position = "relative",
-						}),
+					-- Element.new("div")
+					-- 	:withStyle({
+					-- 		-- bgImage = assert(self.plugins.overlay:getTexture(window), "Overlay texture not found"),
+					-- 		width = { rel = 1 },
+					-- 		height = { rel = 1 },
+					-- 		margin = { right = 20, left = 20, top = 20, bottom = 20 },
+					-- 		position = "relative",
+					-- 	}),
 				}),
 
 			Element.new("div")
