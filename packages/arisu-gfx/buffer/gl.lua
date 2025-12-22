@@ -4,6 +4,7 @@ local ffi = require("ffi")
 ---@class gfx.gl.Buffer
 ---@field id number
 ---@field isUniform boolean
+---@field isStorage boolean
 ---@field descriptor gfx.BufferDescriptor
 local GLBuffer = {}
 GLBuffer.__index = GLBuffer
@@ -16,15 +17,25 @@ function GLBuffer.new(descriptor)
 	-- Allocate the buffer (might be necessary for setSlice to work)
 	gl.namedBufferData(handle[0], descriptor.size, nil, gl.DYNAMIC_DRAW)
 
-	local isUniform = false
+	local isUniform, isStorage = false, false
 	for _, usage in ipairs(descriptor.usages) do
 		if usage == "UNIFORM" then
 			isUniform = true
 			break
 		end
+
+		if usage == "STORAGE" then
+			isStorage = true
+			break
+		end
 	end
 
-	return setmetatable({ id = handle[0], isUniform = isUniform, descriptor = descriptor }, GLBuffer)
+	return setmetatable({
+		id = handle[0],
+		isUniform = isUniform,
+		isStorage = isStorage,
+		descriptor = descriptor
+	}, GLBuffer)
 end
 
 ---@param size number

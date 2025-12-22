@@ -4,6 +4,7 @@
 --- | "VERTEX"
 --- | "INDEX"
 --- | "UNIFORM"
+--- | "STORAGE"
 
 ---@class gfx.BufferDescriptor
 ---@field size number

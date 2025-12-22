@@ -170,8 +170,10 @@ function GLCommandBuffer:execute()
 					local buffer = entry.buffer --[[@as gfx.gl.Buffer]]
 					if buffer.isUniform then
 						gl.bindBufferBase(gl.UNIFORM_BUFFER, entry.binding, buffer.id)
+					elseif buffer.isStorage then
+						gl.bindBufferBase(gl.SHADER_STORAGE_BUFFER, entry.binding, buffer.id)
 					else
-						error("Only uniform buffers are supported in bind groups for now")
+						error("Only uniform or storage buffers are supported in bind groups for now")
 					end
 				elseif entry.type == "texture" then
 					local texture = entry.texture --[[@as gfx.gl.Texture]]
