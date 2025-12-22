@@ -29,7 +29,7 @@ function TextureManager.new(device)
 	local texture = device:createTexture({
 		extents = { dim = "2d", width = maxWidth, height = maxHeight, count = maxLayers },
 		format = gfx.TextureFormat.Rgba8UNorm,
-		usages = { "TEXTURE_BINDING", "COPY_DST", "COPY_SRC" },
+		usages = { "TEXTURE_BINDING", "STORAGE_BINDING", "COPY_DST", "COPY_SRC" },
 	})
 
 	local sampler = device:createSampler({

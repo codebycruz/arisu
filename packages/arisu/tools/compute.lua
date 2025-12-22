@@ -48,7 +48,7 @@ function Compute.new(textureManager, canvas, device)
 	local inputs = ffi.new("ComputeInputs")
 
 	local inputsBuffer = device:createBuffer({
-		size = assert(sizeofComputeInputs),
+		size = sizeofComputeInputs,
 		usages = { "UNIFORM", "COPY_DST" }
 	})
 
@@ -122,6 +122,7 @@ function Compute:stamp(x, y, radius, color)
 	self.inputs.color[2] = color.b
 	self.inputs.color[3] = color.a
 	self.inputs.tool = TOOL_BRUSH
+	self:updateInputs()
 
 	local diameter = radius * 2
 	local groupsX = math.ceil(diameter / WORK_GROUP_SIZE)
