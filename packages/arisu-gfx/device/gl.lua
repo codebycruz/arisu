@@ -42,16 +42,16 @@ function GLDevice:createBindGroup(entries)
 	return GLBindGroup.new(entries)
 end
 
----@param desc gfx.SamplerDescriptor
-function GLDevice:createSampler(desc)
+---@param descriptor gfx.SamplerDescriptor
+function GLDevice:createSampler(descriptor)
 	self.ctx:makeCurrent()
-	return GLSampler.new(desc)
+	return GLSampler.new(descriptor)
 end
 
----@param desc gfx.TextureDescriptor
-function GLDevice:createTexture(desc)
+---@param descriptor gfx.TextureDescriptor
+function GLDevice:createTexture(descriptor)
 	self.ctx:makeCurrent()
-	return GLTexture.new(self, desc)
+	return GLTexture.new(self, descriptor)
 end
 
 return GLDevice

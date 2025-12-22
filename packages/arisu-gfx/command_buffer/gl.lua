@@ -27,6 +27,7 @@ end
 ---@param op gfx.DepthOp
 local function executeDepthOp(op)
 	if op.type == "clear" then
+		gl.depthMask(true)
 		gl.clearDepthf(op.depth)
 		gl.clear(gl.DEPTH_BUFFER_BIT)
 	end
@@ -89,6 +90,7 @@ function GLCommandBuffer:execute()
 				vao = vaos[texture.context]
 				vao:bind()
 
+				assert(texture.framebuffer == 0, "Unimplemented: support for different frame buffers")
 				gl.bindFramebuffer(gl.FRAMEBUFFER, texture.framebuffer)
 				executeOp(attachment.op)
 			end
@@ -96,6 +98,7 @@ function GLCommandBuffer:execute()
 			-- TODO: Support separate depth/stencil textures
 			local depthStencilAttachment = command.descriptor.depthStencilAttachment
 			if depthStencilAttachment then
+				local texture = depthStencilAttachment.texture --[[@as gfx.gl.Texture]]
 				executeDepthOp(depthStencilAttachment.op)
 			end
 		elseif command.type == "setPipeline" then

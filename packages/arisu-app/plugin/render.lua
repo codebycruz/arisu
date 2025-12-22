@@ -16,6 +16,7 @@ local Instance = require("arisu-gfx.instance")
 ---@field overlayPipeline gfx.Pipeline
 ---@field overlayVertex gfx.Buffer
 ---@field overlayIndex gfx.Buffer
+---@field depthBuffer gfx.Texture
 ---@field ui? arisu.Element
 ---@field layoutTree? arisu.Layout
 ---@field computedLayout? arisu.ComputedLayout
@@ -77,11 +78,11 @@ function RenderPlugin:register(window)
 
 	local quadPipeline = self.device:createPipeline({
 		vertex = {
-			module = { type = "glsl", source = io.open("packages/arisu/shaders/main.vert.glsl", "r"):read("*a") },
+			module = { type = "glsl", source = io.open("packages/arisu-app/shaders/main.vert.glsl", "r"):read("*a") },
 			buffers = { vertexDescriptor }
 		},
 		fragment = {
-			module = { type = "glsl", source = io.open("packages/arisu/shaders/main.frag.glsl", "r"):read("*a") },
+			module = { type = "glsl", source = io.open("packages/arisu-app/shaders/main.frag.glsl", "r"):read("*a") },
 			targets = {
 				{
 					blend = gfx.BlendState.ALPHA_BLENDING,
@@ -122,6 +123,12 @@ function RenderPlugin:register(window)
 		}
 	})
 
+	local depthBuffer = self.device:createTexture({
+		extents = { dim = "2d", width = window.width, height = window.height },
+		format = gfx.TextureFormat.Depth24Plus,
+		usages = { "RENDER_ATTACHMENT" }
+	})
+
 	-- Initialize shared resources
 	if not self.mainCtx then
 		local textureManager = TextureManager.new(self.device)
@@ -145,7 +152,8 @@ function RenderPlugin:register(window)
 		overlayPipeline = overlayPipeline,
 		overlayVertex = overlayVertex,
 		overlayIndex = overlayIndex,
-		nIndices = 0
+		nIndices = 0,
+		depthBuffer = depthBuffer
 	}
 
 	self.contexts[window] = ctx
@@ -175,7 +183,10 @@ function RenderPlugin:draw(ctx)
 				texture = ctx.swapchain:getCurrentTexture()
 			}
 		},
-		depthStencilAttachment = { op = { type = "clear", depth = 1 } }
+		depthStencilAttachment = {
+			op = { type = "clear", depth = 1 },
+			texture = ctx.depthBuffer
+		}
 	})
 	encoder:setPipeline(ctx.quadPipeline)
 	encoder:setBindGroup(0, self.sharedResources.bindGroup)

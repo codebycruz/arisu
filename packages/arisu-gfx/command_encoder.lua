@@ -17,7 +17,7 @@
 
 ---@class gfx.RenderPassDescriptor
 ---@field colorAttachments { op: gfx.LoadOp, texture: gfx.Texture }[]
----@field depthStencilAttachment? { op: gfx.DepthOp } # TODO: This will probably store texture later
+---@field depthStencilAttachment? { op: gfx.DepthOp, texture: gfx.Texture }
 
 ---@class gfx.CommandEncoder
 ---@field finish fun(self: gfx.CommandEncoder): gfx.CommandBuffer

@@ -198,6 +198,7 @@ return {
 	TEXTURE_3D = 0x806F,
 
 	RGBA8 = 0x8058,
+	DEPTH_COMPONENT24 = 0x81A6,
 
 	RG = 0x8227,
 	RGB = 0x1907,
@@ -260,6 +261,8 @@ return {
 	UNPACK_ALIGNMENT = 0x0CF5,
 	UNPACK_ROW_LENGTH = 0x0CF2,
 	UNPACK_IMAGE_HEIGHT = 0x806E,
+
+	CULL_FACE = 0x0B44,
 
 	--- @param type gl.ShaderType
 	--- @param src string

@@ -116,9 +116,9 @@ local function generateLayoutQuads(layout, parentX, parentY, vertices, indices, 
 
 		-- Bottom border
 		if borderBottom and borderBottom.width and borderBottom.width > 0 and borderBottom.style ~= "none" then
-			addBorderQuad(x, y + height - borderBottom.width, width, z, borderBottom.width, borderBottom.color,
-				windowWidth,
-				windowHeight, vertices, indices)
+			addBorderQuad(x, y + height - borderBottom.width, width, borderBottom.width, borderBottom.color, z,
+				windowWidth, windowHeight,
+				vertices, indices)
 		end
 
 		-- Left border

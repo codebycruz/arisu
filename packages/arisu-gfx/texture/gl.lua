@@ -11,6 +11,7 @@ GLTexture.__index = GLTexture
 
 local glInternalFormatMap = {
 	[gfx.TextureFormat.Rgba8UNorm] = gl.RGBA8,
+	[gfx.TextureFormat.Depth24Plus] = gl.DEPTH_COMPONENT24,
 }
 
 local glFormatMap = {

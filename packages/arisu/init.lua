@@ -4,20 +4,6 @@ local Image = require("arisu-image")
 
 -- local Compute = require("arisu.tools.compute")
 
-do
-	local ffi = require("ffi")
-	local gl = require("arisu-opengl")
-
-	gl.enable(gl.DEBUG_OUTPUT)
-	gl.enable(gl.DEBUG_OUTPUT_SYNCHRONOUS)
-
-	gl.debugMessageCallback(function(source, type, id, severity, length, message)
-		print("debug message calblack")
-	end)
-
-	gl.debugMessageControl(gl.DONT_CARE, gl.DONT_CARE, gl.DONT_CARE, 0, nil, 1)
-end
-
 local Arisu = require("arisu-app")
 local Element = require("arisu-app.ui.element")
 

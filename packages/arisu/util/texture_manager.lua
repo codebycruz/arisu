@@ -17,7 +17,7 @@ local maxLayers = 256
 ---@field textures TextureMetadata[]
 ---@field textureCount number
 ---@field textureDimsBuffer gfx.Buffer
----@field texture gfx.gl.Texture
+---@field texture gfx.Texture
 ---@field sampler gfx.Sampler
 ---@field whiteTexture Texture
 ---@field errorTexture Texture
@@ -82,6 +82,19 @@ function TextureManager:destroy()
 	self.sampler:destroy()
 end
 
+---@param id Texture
+---@param width number
+---@param height number
+function TextureManager:setTextureDimensions(id, width, height)
+	local texture = self.textures[id]
+	assert(texture, "Texture does not exist")
+
+	texture.width, texture.height = width, height
+
+	local dims = ffi.new("float[4]", width, height, 0, 0)
+	self.device.queue:writeBuffer(self.textureDimsBuffer, 16, dims, id * 16)
+end
+
 ---@param width number
 ---@param height number
 ---@return Texture
@@ -92,11 +105,7 @@ function TextureManager:allocate(width, height)
 	end
 
 	self.textures[layer] = { width = width, height = height }
-
-	-- todo: is this right?
-	local dims = ffi.new("float[4]", width, height, 0, 0)
-	self.device.queue:writeBuffer(self.textureDimsBuffer, 16, dims, layer * 16)
-
+	self:setTextureDimensions(layer, width, height)
 	self.textureCount = self.textureCount + 1
 
 	return layer
@@ -106,12 +115,12 @@ end
 function TextureManager:update(texture, image)
 	assert(self.textures[texture], "Texture does not exist")
 
-	-- Update dimensions
-	local dims = ffi.new("float[4]", image.width, image.height, 0, 0)
-	self.device.queue:writeBuffer(self.textureDimsBuffer, 16, dims, texture * 16)
-
-	self.device.queue:writeTexture(self.texture, { layer = texture, width = image.width, height = image.height },
-		image.pixels)
+	self:setTextureDimensions(texture, image.width, image.height)
+	self.device.queue:writeTexture(
+		self.texture,
+		{ layer = texture, width = image.width, height = image.height },
+		image.pixels
+	)
 end
 
 ---@param image Image
