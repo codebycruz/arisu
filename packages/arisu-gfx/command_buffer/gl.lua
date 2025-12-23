@@ -92,18 +92,15 @@ function GLCommandBuffer:execute()
 			local attachments = command.descriptor.colorAttachments
 			for _, attachment in ipairs(attachments) do
 				local texture = attachment.texture --[[@as gfx.gl.Texture]]
-				if texture.id then
-					-- Rendering to a texture rather than a framebuffer
-					error("Haven't handled this case yet")
+				if not texture.id then -- rendering to a framebuffer
+					texture.context:makeCurrent()
+					if not vaos[texture.context] then
+						local vao = GLVAO.new()
+						vaos[texture.context] = vao
+					end
+					vao = vaos[texture.context]
+					vao:bind()
 				end
-
-				texture.context:makeCurrent()
-				if not vaos[texture.context] then
-					local vao = GLVAO.new()
-					vaos[texture.context] = vao
-				end
-				vao = vaos[texture.context]
-				vao:bind()
 
 				assert(texture.framebuffer == 0, "Unimplemented: support for different frame buffers")
 				gl.bindFramebuffer(gl.FRAMEBUFFER, texture.framebuffer)

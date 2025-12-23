@@ -1,15 +1,17 @@
-local gl = require("arisu-opengl")
-local Uniform = require("arisu.gl.uniform")
+local ffi = require("ffi")
+local util = require("arisu-util")
+local gfx = require("arisu-gfx")
 
 ---@class plugin.Overlay.Context
 ---@field window winit.Window
 ---@field vertices number[]
 ---@field indices number[]
 ---@field nIndices number
----@field timeUniform Uniform
----@field patternTypeUniform Uniform
----@field overlayTexture Texture
----@field framebuffer number
+---@field uniformBuffer gfx.Buffer
+---@field bindGroup gfx.BindGroup
+---@field overlayTexture number
+---@field vertexBuffer gfx.Buffer
+---@field indexBuffer gfx.Buffer
 
 ---@alias OverlayPattern "solid" | "dashed" | "marching_ants"
 
@@ -23,6 +25,19 @@ local PATTERN_SOLID = 0
 local PATTERN_DASHED = 1
 local PATTERN_MARCHING_ANTS = 2
 
+ffi.cdef [[
+typedef struct {
+    float time;
+    int32_t patternType;
+} OverlayUniforms;
+]]
+
+---@class OverlayUniforms: ffi.cdata*
+---@field time number
+---@field patternType number
+
+local sizeofOverlayUniforms = assert(ffi.sizeof("OverlayUniforms"))
+
 ---@param renderPlugin arisu.plugin.Render
 function OverlayPlugin.new(renderPlugin)
 	return setmetatable({ renderPlugin = renderPlugin, contexts = {} }, OverlayPlugin)
@@ -33,22 +48,33 @@ function OverlayPlugin:register(window)
 	local renderCtx = self.renderPlugin:getContext(window)
 	assert(renderCtx, "Render context not found for overlay plugin")
 
-	renderCtx.swapchain.ctx:makeCurrent()
-
+	local device = self.renderPlugin.device
 	local textureManager = self.renderPlugin.sharedResources.textureManager
 	local overlayTexture = textureManager:allocate(800, 600)
 
-	local framebuffer = gl.createFramebuffer()
+	local uniformBuffer = device:createBuffer({
+		size = sizeofOverlayUniforms,
+		usages = { "STORAGE", "COPY_DST" }
+	})
 
-	gl.namedFramebufferTextureLayer(framebuffer, gl.COLOR_ATTACHMENT0, textureManager.textureHandle, 0, overlayTexture)
+	local bindGroup = device:createBindGroup({
+		{
+			binding = 0,
+			type = "buffer",
+			buffer = uniformBuffer,
+			visibility = { "FRAGMENT" }
+		}
+	})
 
-	local status = gl.checkNamedFramebufferStatus(framebuffer, gl.FRAMEBUFFER)
-	if status ~= gl.FRAMEBUFFER_COMPLETE then
-		error("Framebuffer is not complete: " .. tostring(status))
-	end
+	local vertexBuffer = device:createBuffer({
+		size = 36 * 1000,
+		usages = { "VERTEX", "COPY_DST" }
+	})
 
-	local timeUniform = Uniform.new(self.renderPlugin.sharedResources.overlayFragmentProgram, "float", 0)
-	local patternTypeUniform = Uniform.new(self.renderPlugin.sharedResources.overlayFragmentProgram, "int", 1)
+	local indexBuffer = device:createBuffer({
+		size = util.sizeof("u32") * 6000,
+		usages = { "INDEX", "COPY_DST" }
+	})
 
 	---@type plugin.Overlay.Context
 	local ctx = {
@@ -56,10 +82,11 @@ function OverlayPlugin:register(window)
 		vertices = {},
 		indices = {},
 		nIndices = 0,
-		timeUniform = timeUniform,
-		patternTypeUniform = patternTypeUniform,
+		uniformBuffer = uniformBuffer,
+		bindGroup = bindGroup,
 		overlayTexture = overlayTexture,
-		framebuffer = framebuffer
+		vertexBuffer = vertexBuffer,
+		indexBuffer = indexBuffer
 	}
 
 	self.contexts[window] = ctx
@@ -238,34 +265,44 @@ function OverlayPlugin:draw(window, pattern, time)
 		patternType = PATTERN_MARCHING_ANTS
 	end
 
-	renderCtx.swapchain.ctx:makeCurrent()
+	local device = self.renderPlugin.device
+	local textureManager = self.renderPlugin.sharedResources.textureManager
 
-	gl.bindFramebuffer(gl.FRAMEBUFFER, ctx.framebuffer)
-	gl.viewport(0, 0, 800, 600)
-	gl.clearColor(0, 0, 0, 0)
-	gl.clear(gl.COLOR_BUFFER_BIT)
+	local uniforms = ffi.new("OverlayUniforms") --[[@as OverlayUniforms]]
+	uniforms.time = time
+	uniforms.patternType = patternType
+	device.queue:writeBuffer(ctx.uniformBuffer, sizeofOverlayUniforms, uniforms)
 
 	if ctx.nIndices > 0 then
-		gl.enable(gl.BLEND)
-		gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
+		local vertexSize = util.sizeof("f32") * #ctx.vertices
+		device.queue:writeBuffer(ctx.vertexBuffer, vertexSize, ffi.new("float[?]", #ctx.vertices, ctx.vertices))
 
-		renderCtx.overlayVertex:setData("f32", ctx.vertices)
-		renderCtx.overlayIndex:setData("u32", ctx.indices)
+		local indexSize = util.sizeof("u32") * #ctx.indices
+		device.queue:writeBuffer(ctx.indexBuffer, indexSize, ffi.new("uint32_t[?]", #ctx.indices, ctx.indices))
 
-		renderCtx.overlayPipeline:bind()
+		local encoder = device:createCommandEncoder()
+		encoder:beginRendering({
+			colorAttachments = {
+				{
+					op = { type = "clear", color = { r = 0, g = 0, b = 0, a = 0 } },
+					texture = textureManager.texture,
+					layer = ctx.overlayTexture
+				}
+			}
+		})
+		encoder:setPipeline(renderCtx.overlayPipeline)
+		encoder:setBindGroup(0, ctx.bindGroup)
+		encoder:setVertexBuffer(0, ctx.vertexBuffer)
+		encoder:setIndexBuffer(ctx.indexBuffer, gfx.IndexType.u32)
+		encoder:drawIndexed(ctx.nIndices, 1)
+		encoder:endRendering()
 
-		ctx.timeUniform:set(time)
-		ctx.patternTypeUniform:set(patternType)
-
-		renderCtx.overlayVAO:bind()
-		gl.drawElements(gl.TRIANGLES, ctx.nIndices, gl.UNSIGNED_INT, nil)
+		device.queue:submit(encoder:finish())
 	end
-
-	gl.bindFramebuffer(gl.FRAMEBUFFER, 0)
 end
 
 ---@param window winit.Window
----@return Texture?
+---@return number?
 function OverlayPlugin:getTexture(window)
 	local ctx = self:getContext(window)
 	return ctx and ctx.overlayTexture

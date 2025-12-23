@@ -1,17 +1,18 @@
 #version 430 core
 
-in vec4 vertexColor;
-in vec2 texCoord;
+layout(location = 0) in vec4 vertexColor;
+layout(location = 1) in vec2 texCoord;
 
-out vec4 fragColor;
+layout(location = 0) out vec4 fragColor;
 
-// For marching ants
-layout(location = 0) uniform float time;
+layout(std430, binding = 0) buffer OverlayUniforms {
+    float time;
+    int patternType;
+};
 
 #define PATTERN_SOLID 0
 #define PATTERN_DASHED 1
 #define PATTERN_MARCHING_ANTS 2
-layout(location = 1) uniform int patternType;
 
 void main() {
     if (patternType == PATTERN_SOLID) {
