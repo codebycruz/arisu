@@ -14,6 +14,7 @@ local parser = {}
 
 ---@class slang.DeclarationNode: slang.Spanned
 ---@field type "let"
+---@field annotation slang.TypeNode?
 ---@field name slang.IdentNode
 ---@field value slang.Node
 
@@ -33,7 +34,7 @@ local parser = {}
 
 ---@class slang.TypeNode: slang.Spanned
 ---@field type "type"
----@field name string
+---@field slangType slang.Type
 
 ---@class slang.AddNode: slang.Spanned
 ---@field type "add"
@@ -71,6 +72,20 @@ local parser = {}
 ---@field type "not"
 ---@field value slang.Node
 
+---@class slang.IfNode: slang.Spanned
+---@field type "if"
+---@field condition slang.Node
+---@field body slang.Node[]
+---@field elseStmt slang.Node|nil
+
+---@class slang.ReturnNode: slang.Spanned
+---@field type "return"
+---@field value slang.Node
+
+---@class slang.BlockNode: slang.Spanned
+---@field type "block"
+---@field statements slang.Node[]
+
 ---@alias slang.Node
 --- | slang.NumberNode
 --- | slang.StringNode
@@ -86,6 +101,8 @@ local parser = {}
 --- | slang.IndexNode
 --- | slang.FunctionNode
 --- | slang.NotNode
+--- | slang.IfNode
+--- | slang.ReturnNode
 
 ---@param tokens slang.Token[]
 function parser.parse(tokens)
@@ -102,6 +119,13 @@ function parser.parse(tokens)
 	local function pop()
 		idx = idx + 1
 		return tokens[idx - 1]
+	end
+
+	---@param start slang.Token
+	---@param finish slang.Token?
+	local function spanned(start, finish) ---@return slang.Spanned
+		finish = finish or prev()
+		return { start = start.span.start, finish = finish.span.finish }
 	end
 
 	local function consume(ty) ---@return slang.Token?
@@ -131,6 +155,35 @@ function parser.parse(tokens)
 		idx = idx - 1
 	end
 
+	---@param inner fun(): slang.Node?
+	---@param ops string[]
+	local function foldLeft(inner, ops) ---@return slang.Node?
+		local lhs = inner()
+		if not lhs then
+			return
+		end
+
+		while idx <= len do
+			local op
+			for _, opType in ipairs(ops) do
+				local matched = consume(opType)
+				if matched then
+					op = matched
+					break
+				end
+			end
+
+			if not op then
+				break
+			end
+
+			local rhs = assert(inner(), "Expected expression after '" .. op.type .. "'")
+			lhs = { type = op.type, lhs = lhs, rhs = rhs, span = spanned(lhs, rhs) }
+		end
+
+		return lhs
+	end
+
 	local function expression()
 		if consume("!") then
 			return {
@@ -140,17 +193,14 @@ function parser.parse(tokens)
 			}
 		end
 
-		return atom()
+		return foldLeft(function()
+			return foldLeft(function()
+				return foldLeft(atom, { "*", "/" })
+			end, { "+", "-" })
+		end, { "<", ">", "<=", ">=", "==", "!=" })
 	end
 
-	---@param start slang.Token
-	---@param finish slang.Token?
-	local function spanned(start, finish) ---@return slang.Spanned
-		finish = finish or prev()
-		return { start = start.span.start, finish = finish.span.finish }
-	end
-
-	local function type()
+	local function type() ---@return slang.TypeNode?
 		local token = pop()
 
 		if not token then
@@ -158,6 +208,22 @@ function parser.parse(tokens)
 		end
 
 		if token.type == "ident" then
+			if consume("<") then
+				local inner = assert(type(), "Expected type inside generic type")
+				assert(consume(">"), "Expected '>' after generic type")
+
+				if token.value == "vec2" or token.value == "vec3" or token.value == "vec4" then
+					return {
+						type = "type",
+						slangType = {
+							type = "vec",
+							len = tonumber(string.sub(token.value, 4)),
+							elementType = inner.slangType,
+						},
+					}
+				end
+			end
+
 			return { type = "type", name = token.value, span = token.span }
 		end
 
@@ -166,7 +232,7 @@ function parser.parse(tokens)
 	end
 
 	local statement
-	local function block() ---@return slang.Node[]?
+	local function block() ---@return slang.Node?
 		if not consume("{") then
 			return
 		end
@@ -178,7 +244,7 @@ function parser.parse(tokens)
 			stmts[#stmts + 1] = stmt
 		end
 
-		return stmts
+		return { type = "block", statements = stmts, span = spanned(prev()) }
 	end
 
 	function statement() ---@return slang.Node?
@@ -186,9 +252,15 @@ function parser.parse(tokens)
 
 		if token.type == "let" then
 			local name = assert(ident(), "Expected identifier after 'let'")
+
+			local annotation
+			if consume(":") then
+				annotation = assert(type(), "Expected type after ':' in declaration")
+			end
+
 			assert(consume("="), "Expected '=' after identifier in declaration")
 			local value = assert(expression(), "Expected expression after '=' in declaration")
-			return { type = "let", name = name, value = value, span = spanned(token, value) }
+			return { type = "let", name = name, value = value, annotation = annotation, span = spanned(token) }
 		end
 
 		if token.type == "fn" then
@@ -216,8 +288,31 @@ function parser.parse(tokens)
 			}
 		end
 
+		if token.type == "if" then
+			local condition = assert(expression(), "Expected condition after 'if'")
+			local body = assert(block(), "Expected block after 'if' condition")
+			local elseStmt = consume("else") and assert(statement() or block(), "Expected 'else' block or statement")
+
+			return {
+				type = "if",
+				condition = condition,
+				body = body,
+				elseStmt = elseStmt,
+				span = spanned(token),
+			}
+		end
+
+		if token.type == "return" then
+			local value = assert(expression(), "Expected expression after 'return'")
+			return {
+				type = "return",
+				value = value,
+				span = spanned(token),
+			}
+		end
+
 		local varStorageType = token.type
-		if varStorageType == "uniform" or "storage" then
+		if varStorageType == "uniform" or varStorageType == "storage" then
 			local binding
 			local group = 0
 
