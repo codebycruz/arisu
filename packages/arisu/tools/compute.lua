@@ -16,13 +16,13 @@ Compute.__index = Compute
 
 ffi.cdef [[
 typedef struct {
-    int center[2];
-    float radius;
     float color[4];
-    int tool;
     float selectTopLeft[2];
     float selectBottomRight[2];
-    int lineEnd[2];
+    int32_t center[2];
+    int32_t lineEnd[2];
+    float radius;
+    int32_t tool;
 } ComputeInputs;
 ]]
 
@@ -143,149 +143,116 @@ function Compute:stamp(x, y, radius, color)
 	self.device.queue:submit(encoder:finish())
 end
 
--- ---@param x number
--- ---@param y number
--- ---@param radius number
--- function Compute:erase(x, y, radius)
--- 	self.center:set({ x, y })
--- 	self.radius:set(radius)
--- 	self.writeLayer:set(self.canvas)
--- 	self.tool:set(TOOL_ERASER)
+---@param x number
+---@param y number
+---@param radius number
+function Compute:erase(x, y, radius)
+	self.inputs.center[0] = x
+	self.inputs.center[1] = y
+	self.inputs.radius = radius
+	self.inputs.tool = TOOL_ERASER
 
--- 	gl.bindImageTexture(0, self.textureManager.textureHandle, 0, 1, 0, gl.WRITE_ONLY, gl.RGBA8)
+	local diameter = radius * 2
+	local groupsX = math.ceil(diameter / WORK_GROUP_SIZE)
+	local groupsY = math.ceil(diameter / WORK_GROUP_SIZE)
 
--- 	local diameter = radius * 2
--- 	local groupsX = math.ceil(diameter / WORK_GROUP_SIZE)
--- 	local groupsY = math.ceil(diameter / WORK_GROUP_SIZE)
--- 	self.pipeline:dispatchCompute(groupsX, groupsY, 1)
--- 	gl.memoryBarrier(gl.SHADER_IMAGE_ACCESS_BARRIER_BIT)
--- 	gl.finish()
--- end
+	self:updateInputs()
+	local encoder = self.device:createCommandEncoder()
+	encoder:beginComputePass({})
+	encoder:setComputePipeline(self.pipeline)
+	encoder:setBindGroup(0, self.bindGroup)
+	encoder:dispatchWorkgroups(groupsX, groupsY, 1)
+	self.device.queue:submit(encoder:finish())
+end
 
--- ---@param x number
--- ---@param y number
--- ---@param color { r: number, g: number, b: number, a: number }
--- function Compute:fill(x, y, color)
--- 	self.pipeline:bind()
+---@param x1 number
+---@param y1 number
+---@param x2 number
+---@param y2 number
+---@param thickness number
+---@param color { r: number, g: number, b: number, a: number }
+function Compute:drawLine(x1, y1, x2, y2, thickness, color)
+	self.inputs.center[0] = x1
+	self.inputs.center[1] = y1
+	self.inputs.lineEnd[0] = x2
+	self.inputs.lineEnd[1] = y2
+	self.inputs.radius = thickness
+	self.inputs.color[0] = color.r
+	self.inputs.color[1] = color.g
+	self.inputs.color[2] = color.b
+	self.inputs.color[3] = color.a
+	self.inputs.tool = TOOL_LINE
 
--- 	self.textureManager:copy(self.canvas, self.temp)
--- 	gl.memoryBarrier(gl.SHADER_IMAGE_ACCESS_BARRIER_BIT)
--- 	gl.finish()
+	local groupsX = math.ceil(800 / WORK_GROUP_SIZE)
+	local groupsY = math.ceil(600 / WORK_GROUP_SIZE)
 
--- 	self.center:set({ x, y })
--- 	self.color:set({ color.r, color.g, color.b, color.a })
--- 	self.tool:set(TOOL_FILL)
+	self:updateInputs()
+	local encoder = self.device:createCommandEncoder()
+	encoder:beginComputePass({})
+	encoder:setComputePipeline(self.pipeline)
+	encoder:setBindGroup(0, self.bindGroup)
+	encoder:dispatchWorkgroups(groupsX, groupsY, 1)
+	self.device.queue:submit(encoder:finish())
+end
 
--- 	gl.bindImageTexture(0, self.textureManager.textureHandle, 0, 1, 0, gl.READ_WRITE, gl.RGBA8)
+---@param x1 number
+---@param y1 number
+---@param x2 number
+---@param y2 number
+---@param thickness number
+---@param color { r: number, g: number, b: number, a: number }
+function Compute:drawRectangle(x1, y1, x2, y2, thickness, color)
+	self.inputs.center[0] = x1
+	self.inputs.center[1] = y1
+	self.inputs.lineEnd[0] = x2
+	self.inputs.lineEnd[1] = y2
+	self.inputs.radius = thickness
+	self.inputs.color[0] = color.r
+	self.inputs.color[1] = color.g
+	self.inputs.color[2] = color.b
+	self.inputs.color[3] = color.a
+	self.inputs.tool = TOOL_RECTANGLE
 
--- 	local canvasInfo = self.textureManager.textures[self.canvas]
+	local groupsX = math.ceil(800 / WORK_GROUP_SIZE)
+	local groupsY = math.ceil(600 / WORK_GROUP_SIZE)
 
--- 	local canvasWidth = canvasInfo.width
--- 	local canvasHeight = canvasInfo.height
+	self:updateInputs()
+	local encoder = self.device:createCommandEncoder()
+	encoder:beginComputePass({})
+	encoder:setComputePipeline(self.pipeline)
+	encoder:setBindGroup(0, self.bindGroup)
+	encoder:dispatchWorkgroups(groupsX, groupsY, 1)
+	self.device.queue:submit(encoder:finish())
+end
 
--- 	-- This one needs to run iteratively.
--- 	for i = 1, 1 do
--- 		-- Ping pong between the two to avoid constant copies
--- 		-- Need to do this so the parallel reads/writes don't conflict
--- 		if i % 2 == 1 then
--- 			self.readLayer:set(self.temp)
--- 			self.writeLayer:set(self.canvas)
--- 		else
--- 			self.readLayer:set(self.canvas)
--- 			self.writeLayer:set(self.temp)
--- 		end
+---@param x1 number
+---@param y1 number
+---@param x2 number
+---@param y2 number
+---@param thickness number
+---@param color { r: number, g: number, b: number, a: number }
+function Compute:drawEllipse(x1, y1, x2, y2, thickness, color)
+	self.inputs.center[0] = x1
+	self.inputs.center[1] = y1
+	self.inputs.lineEnd[0] = x2
+	self.inputs.lineEnd[1] = y2
+	self.inputs.radius = thickness
+	self.inputs.color[0] = color.r
+	self.inputs.color[1] = color.g
+	self.inputs.color[2] = color.b
+	self.inputs.color[3] = color.a
+	self.inputs.tool = TOOL_CIRCLE
 
--- 		self.pipeline:dispatchCompute(canvasWidth / WORK_GROUP_SIZE, canvasHeight / WORK_GROUP_SIZE, 1)
+	local groupsX = math.ceil(800 / WORK_GROUP_SIZE)
+	local groupsY = math.ceil(600 / WORK_GROUP_SIZE)
 
--- 		gl.memoryBarrier(gl.SHADER_IMAGE_ACCESS_BARRIER_BIT)
--- 	end
--- end
-
--- ---@param x1 number
--- ---@param y1 number
--- ---@param x2 number
--- ---@param y2 number
--- ---@param thickness number
--- ---@param color { r: number, g: number, b: number, a: number }
--- function Compute:drawLine(x1, y1, x2, y2, thickness, color)
--- 	self.pipeline:bind()
-
--- 	self.center:set({ x1, y1 })
--- 	self.lineEnd:set({ x2, y2 })
--- 	self.radius:set(thickness)
--- 	self.writeLayer:set(self.canvas)
--- 	self.color:set({ color.r, color.g, color.b, color.a })
--- 	self.tool:set(TOOL_LINE)
-
--- 	gl.bindImageTexture(0, self.textureManager.textureHandle, 0, 1, 0, gl.WRITE_ONLY, gl.RGBA8)
-
--- 	local canvasInfo = self.textureManager.textures[self.canvas]
--- 	local canvasWidth = canvasInfo.width
--- 	local canvasHeight = canvasInfo.height
-
--- 	local groupsX = math.ceil(canvasWidth / WORK_GROUP_SIZE)
--- 	local groupsY = math.ceil(canvasHeight / WORK_GROUP_SIZE)
--- 	self.pipeline:dispatchCompute(groupsX, groupsY, 1)
--- 	gl.memoryBarrier(gl.SHADER_IMAGE_ACCESS_BARRIER_BIT)
--- 	gl.finish()
--- end
-
--- ---@param x1 number
--- ---@param y1 number
--- ---@param x2 number
--- ---@param y2 number
--- ---@param thickness number
--- ---@param color { r: number, g: number, b: number, a: number }
--- function Compute:drawRectangle(x1, y1, x2, y2, thickness, color)
--- 	self.pipeline:bind()
-
--- 	self.center:set({ x1, y1 })
--- 	self.lineEnd:set({ x2, y2 })
--- 	self.radius:set(thickness)
--- 	self.writeLayer:set(self.canvas)
--- 	self.color:set({ color.r, color.g, color.b, color.a })
--- 	self.tool:set(TOOL_RECTANGLE)
-
--- 	gl.bindImageTexture(0, self.textureManager.textureHandle, 0, 1, 0, gl.WRITE_ONLY, gl.RGBA8)
-
--- 	local canvasInfo = self.textureManager.textures[self.canvas]
--- 	local canvasWidth = canvasInfo.width
--- 	local canvasHeight = canvasInfo.height
-
--- 	local groupsX = math.ceil(canvasWidth / WORK_GROUP_SIZE)
--- 	local groupsY = math.ceil(canvasHeight / WORK_GROUP_SIZE)
--- 	self.pipeline:dispatchCompute(groupsX, groupsY, 1)
--- 	gl.memoryBarrier(gl.SHADER_IMAGE_ACCESS_BARRIER_BIT)
--- 	gl.finish()
--- end
-
--- ---@param x1 number
--- ---@param y1 number
--- ---@param x2 number
--- ---@param y2 number
--- ---@param thickness number
--- ---@param color { r: number, g: number, b: number, a: number }
--- function Compute:drawEllipse(x1, y1, x2, y2, thickness, color)
--- 	self.pipeline:bind()
-
--- 	self.center:set({ x1, y1 })
--- 	self.lineEnd:set({ x2, y2 })
--- 	self.radius:set(thickness)
--- 	self.writeLayer:set(self.canvas)
--- 	self.color:set({ color.r, color.g, color.b, color.a })
--- 	self.tool:set(TOOL_CIRCLE)
-
--- 	gl.bindImageTexture(0, self.textureManager.textureHandle, 0, 1, 0, gl.WRITE_ONLY, gl.RGBA8)
-
--- 	local canvasInfo = self.textureManager.textures[self.canvas]
--- 	local canvasWidth = canvasInfo.width
--- 	local canvasHeight = canvasInfo.height
-
--- 	local groupsX = math.ceil(canvasWidth / WORK_GROUP_SIZE)
--- 	local groupsY = math.ceil(canvasHeight / WORK_GROUP_SIZE)
--- 	self.pipeline:dispatchCompute(groupsX, groupsY, 1)
--- 	gl.memoryBarrier(gl.SHADER_IMAGE_ACCESS_BARRIER_BIT)
--- 	gl.finish()
--- end
+	self:updateInputs()
+	local encoder = self.device:createCommandEncoder()
+	encoder:beginComputePass({})
+	encoder:setComputePipeline(self.pipeline)
+	encoder:setBindGroup(0, self.bindGroup)
+	encoder:dispatchWorkgroups(groupsX, groupsY, 1)
+	self.device.queue:submit(encoder:finish())
+end
 
 return Compute

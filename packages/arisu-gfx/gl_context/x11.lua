@@ -33,6 +33,8 @@ function X11Context.new(display, sharedCtx, window)
 		4,
 		glx.CONTEXT_MINOR_VERSION_ARB,
 		3,
+		glx.CONTEXT_PROFILE_MASK_ARB,
+		glx.CONTEXT_CORE_PROFILE_BIT_ARB,
 	})
 	if not ctx then
 		error("Failed to create GLX context with attributes")
