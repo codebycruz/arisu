@@ -1,0 +1,35 @@
+uniform(0) screenSize: vec2f;
+storage(0) outputBuffer: array<vec4f>;
+
+// Compiler should ensure the output of this contains a position: vec4 field
+fn vertex(
+    aPos: vec3f,
+    aColor: vec4f,
+    aTexCoord: vec2f,
+    aTexIndex: f32
+) {
+    return {
+        position: vec4f(aPos, 1.0),
+        vColor: aColor,
+        vTexCoord: aTexCoord,
+        vTexIndex: aTexIndex
+    };
+}
+
+// Input will be the output of the vertex function, minus the built-in position
+// Compiler should ensure the output of this is a vec4
+fn fragment(
+    smooth vColor: vec4f,
+    smooth vTexCoord: vec2f,
+    smooth vTexIndex: f32
+) {
+    return vec4f(1.0, 0.0, 0.0, 1.0);
+}
+
+fn compute(id: u32) {
+
+}
+
+test "foo" {
+
+}

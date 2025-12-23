@@ -2,6 +2,17 @@ local ffi = require("ffi")
 
 local util = {}
 
+---@generic T
+---@param tbl T[]
+---@return table<T, number>
+function util.toLookupTable(tbl)
+	local lookup = {}
+	for i, v in ipairs(tbl) do
+		lookup[v] = i
+	end
+	return lookup
+end
+
 do
 	---@alias util.SizeofType
 	---|'u8'
@@ -17,7 +28,7 @@ do
 		u32 = 4,
 		u64 = 8,
 		f32 = 4,
-		f64 = 8
+		f64 = 8,
 	}
 
 	---@param type util.SizeofType
