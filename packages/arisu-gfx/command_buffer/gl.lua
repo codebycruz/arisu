@@ -183,7 +183,16 @@ function GLCommandBuffer:execute()
 					gl.bindSampler(entry.binding, sampler.id)
 				elseif entry.type == "storageTexture" then
 					local texture = entry.texture --[[@as gfx.gl.Texture]]
-					gl.bindImageTexture(entry.binding, texture.id, 0, 1, 0, accessMap[entry.access], texture.format)
+
+					gl.bindImageTexture(
+						entry.binding,
+						texture.id,
+						0,
+						entry.layer and 0 or 1,
+						entry.layer or 0,
+						accessMap[entry.access],
+						texture.format
+					)
 				end
 			end
 		elseif command.type == "drawIndexed" then

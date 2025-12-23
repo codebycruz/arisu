@@ -18,10 +18,8 @@ ffi.cdef [[
 typedef struct {
     int center[2];
     float radius;
-    int writeLayer;
     float color[4];
     int tool;
-    int readLayer;
     float selectTopLeft[2];
     float selectBottomRight[2];
     int lineEnd[2];
@@ -33,10 +31,8 @@ local sizeofComputeInputs = assert(ffi.sizeof("ComputeInputs"))
 ---@class ComputeInputs: ffi.cdata*
 ---@field center number[2]
 ---@field radius number
----@field writeLayer number
 ---@field color number[4]
 ---@field tool number
----@field readLayer number
 ---@field selectTopLeft number[2]
 ---@field selectBottomRight number[2]
 ---@field lineEnd number[2]
@@ -53,8 +49,21 @@ function Compute.new(textureManager, canvas, device)
 	})
 
 	local bindGroup = device:createBindGroup({
-		{ type = "storageTexture", binding = 0, texture = textureManager.texture, visibility = { "COMPUTE" }, access = "READ_WRITE" },
-		{ type = "buffer",         binding = 1, buffer = inputsBuffer,            visibility = { "COMPUTE" } },
+		{
+			binding = 0,
+			type = "storageTexture",
+			texture = textureManager.texture,
+			visibility = { "COMPUTE" },
+			layer = canvas,
+			access = "WRITE_ONLY"
+		},
+
+		{
+			binding = 1,
+			type = "buffer",
+			buffer = inputsBuffer,
+			visibility = { "COMPUTE" }
+		},
 	})
 
 	local computePipeline = device:createComputePipeline({
@@ -115,7 +124,6 @@ function Compute:stamp(x, y, radius, color)
 	self.inputs.center[0] = x
 	self.inputs.center[1] = y
 	self.inputs.radius = radius
-	self.inputs.writeLayer = self.canvas
 	self.inputs.color[0] = color.r
 	self.inputs.color[1] = color.g
 	self.inputs.color[2] = color.b
