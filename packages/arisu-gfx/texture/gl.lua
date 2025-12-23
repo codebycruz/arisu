@@ -5,7 +5,8 @@ local gfx = require("arisu-gfx")
 ---@field framebuffer number
 ---@field id number? # if nil, it is the backbuffer (default framebuffer)
 ---@field context gfx.gl.Context? # only present if id is nil
----@field private descriptor gfx.TextureDescriptor
+---@field descriptor gfx.TextureDescriptor
+---@field format gfx.TextureFormat
 local GLTexture = {}
 GLTexture.__index = GLTexture
 
@@ -55,7 +56,7 @@ function GLTexture.new(device, descriptor)
 		error("Unsupported texture extents")
 	end
 
-	return setmetatable({ framebuffer = 0, id = id, descriptor = descriptor }, GLTexture)
+	return setmetatable({ framebuffer = 0, id = id, format = format, descriptor = descriptor }, GLTexture)
 end
 
 ---@param desc gfx.TextureWriteDescriptor

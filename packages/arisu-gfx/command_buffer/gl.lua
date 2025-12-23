@@ -182,14 +182,14 @@ function GLCommandBuffer:execute()
 					local sampler = entry.sampler --[[@as gfx.gl.Sampler]]
 					gl.bindSampler(entry.binding, sampler.id)
 				elseif entry.type == "storageTexture" then
-					-- TODO: Look into the format here
 					local texture = entry.texture --[[@as gfx.gl.Texture]]
-					gl.bindImageTexture(entry.binding, texture.id, 0, 1, 0, accessMap[entry.access], gl.RGBA8)
+					gl.bindImageTexture(entry.binding, texture.id, 0, 1, 0, accessMap[entry.access], texture.format)
 				end
 			end
 		elseif command.type == "drawIndexed" then
 			gl.drawElements(gl.TRIANGLES, command.indexCount, indexType, nil)
 		elseif command.type == "beginComputePass" then
+			gl.bindVertexArray(0)
 		elseif command.type == "setComputePipeline" then
 			computePipeline = command.pipeline
 
@@ -201,6 +201,8 @@ function GLCommandBuffer:execute()
 			rawComputePipeline:bind()
 		elseif command.type == "dispatchWorkgroups" then
 			gl.dispatchCompute(command.x, command.y, command.z)
+			gl.memoryBarrier(gl.ALL_BARRIER_BITS)
+			gl.finish()
 		else
 			print("Unknown command type: " .. tostring(command.type))
 		end
