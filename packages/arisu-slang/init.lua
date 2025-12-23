@@ -7,12 +7,7 @@ local parser = require("arisu-slang.parser")
 
 local tokens = lexer.lex([[
 	fn compute() {
-		let x: i32 = 42;
-		if x > 10 + 52 {
-			return x;
-		} else {
-			return 0;
-		}
+		let x = vec4(1, 0, 1, 0);
 	}
 ]])
 

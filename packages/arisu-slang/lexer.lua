@@ -32,6 +32,12 @@ local util = require("arisu-util")
 ---@class slang.RightParenToken: slang.Spanned
 ---@field type ")"
 
+---@class slang.LeftSquareToken: slang.Spanned
+---@field type "["
+
+---@class slang.RightSquareToken: slang.Spanned
+---@field type "]"
+
 ---@class slang.CommaToken: slang.Spanned
 ---@field type ","
 
@@ -177,6 +183,8 @@ local operators = util.toLookupTable({
 	"}",
 	"(",
 	")",
+	"[",
+	"]",
 	"!",
 })
 

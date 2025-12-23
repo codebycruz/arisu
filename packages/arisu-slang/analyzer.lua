@@ -7,12 +7,11 @@
 ---@class slang.SamplerType
 ---@field type "sampler"
 
----@class slang.VecType<T>: { type: "vec", elementType: T }
----@field type "vec4"
+---@class slang.VecType<T>: { type: "vec", len: number, elementType: T }
+---@field type "vec"
 ---@field len number
 ---@field elementType slang.Type
 
---- TODO: Probably want to make an unresolved and resolved type system separately.
 ---@alias slang.Type
 --- | slang.F32Type
 --- | slang.I32Type

@@ -23,18 +23,18 @@ local parser = {}
 ---@field name slang.IdentNode
 ---@field binding number
 ---@field group number
----@field slangType slang.TypeNode
+---@field annotation slang.TypeNode
 
 ---@class slang.StorageBufferDefinitionNode: slang.Spanned
 ---@field type "storage_buffer"
 ---@field name slang.IdentNode
 ---@field binding number
 ---@field group number
----@field slangType slang.TypeNode
+---@field annotation slang.TypeNode
 
 ---@class slang.TypeNode: slang.Spanned
 ---@field type "type"
----@field slangType slang.Type
+---@field parsed slang.ParsedType
 
 ---@class slang.AddNode: slang.Spanned
 ---@field type "add"
@@ -86,6 +86,11 @@ local parser = {}
 ---@field type "block"
 ---@field statements slang.Node[]
 
+---@class slang.CallNode: slang.Spanned
+---@field type "call"
+---@field callee slang.Node
+---@field arguments slang.Node[]
+
 ---@alias slang.Node
 --- | slang.NumberNode
 --- | slang.StringNode
@@ -103,6 +108,38 @@ local parser = {}
 --- | slang.NotNode
 --- | slang.IfNode
 --- | slang.ReturnNode
+--- | slang.BlockNode
+--- | slang.CallNode
+
+---@class slang.ParsedExternType # name
+---@field type "extern"
+---@field name string
+
+---@class slang.ParsedGenericDesc # name<inner>
+---@field type "generic"
+---@field name string
+---@field inner slang.ParsedType
+
+---@class slang.ParsedArrayType # [inner; size]
+---@field type "array"
+---@field inner slang.ParsedType
+---@field size number
+
+---@class slang.ParsedTupleType # (type, type, ...)
+---@field type "tuple"
+---@field elements slang.ParsedType[]
+
+---@class slang.ParsedRecordType # { field: type, ... }
+---@field type "record"
+---@field format "packed" | "std140" | "std430"
+---@field fields { name: string, fieldType: slang.ParsedType }[]
+
+---@alias slang.ParsedType
+--- | slang.ParsedExternType
+--- | slang.ParsedGenericDesc
+--- | slang.ParsedArrayType
+--- | slang.ParsedTupleType
+--- | slang.ParsedRecordType
 
 ---@param tokens slang.Token[]
 function parser.parse(tokens)
@@ -121,8 +158,8 @@ function parser.parse(tokens)
 		return tokens[idx - 1]
 	end
 
-	---@param start slang.Token
-	---@param finish slang.Token?
+	---@param start slang.Spanned
+	---@param finish slang.Spanned?
 	local function spanned(start, finish) ---@return slang.Spanned
 		finish = finish or prev()
 		return { start = start.span.start, finish = finish.span.finish }
@@ -137,22 +174,83 @@ function parser.parse(tokens)
 	end
 
 	local function ident()
-		return consume("ident") --[[@as slang.IdentNode|nil]]
+		return consume("ident") --[[@as slang.IdentToken|nil]]
 	end
 
 	local function number()
-		return consume("number") --[[@as slang.NumberNode|nil]]
+		return consume("number") --[[@as slang.NumberToken|nil]]
 	end
 
+	local expression
 	local function atom()
 		local token = pop()
 
-		if token.type == "number" or token.type == "string" or token.type == "ident" then
-			return token
+		if token.type == "(" then
+			local expr = assert(expression(), "Expected expression after '('")
+			assert(consume(")"), "Expected ')' after expression")
+			return expr
 		end
 
-		-- Failed to match, rewind
-		idx = idx - 1
+		local e ---@type slang.Node?
+		if token.type == "number" or token.type == "string" or token.type == "ident" then
+			e = token --[[@as slang.Node]]
+		end
+
+		if e.type == "ident" then
+			repeat
+				local cont = false
+
+				if consume(".") then
+					local name = assert(ident(), "Expected identifier after '.'")
+					e = {
+						type = "index",
+						object = e,
+						index = { type = "string", value = name.value, span = name.span },
+						span = spanned(e, name),
+					}
+
+					cont = true
+				end
+
+				if consume("[") then
+					local indexExpr = assert(expression(), "Expected expression after '['")
+					assert(consume("]"), "Expected ']' after index expression")
+
+					e = {
+						type = "index",
+						object = e,
+						index = indexExpr,
+						span = spanned(e, indexExpr),
+					}
+
+					cont = true
+				end
+
+				if consume("(") then
+					local args = {}
+					while not consume(")") do
+						local argExpr = assert(expression(), "Expected expression in function call")
+						args[#args + 1] = argExpr
+						consume(",")
+					end
+
+					e = {
+						type = "call",
+						callee = e,
+						arguments = args,
+						span = spanned(e, prev()),
+					}
+
+					cont = true
+				end
+			until not cont
+		end
+
+		if not e then -- Failed to match, rewind
+			idx = idx - 1
+		end
+
+		return e
 	end
 
 	---@param inner fun(): slang.Node?
@@ -184,7 +282,7 @@ function parser.parse(tokens)
 		return lhs
 	end
 
-	local function expression()
+	function expression()
 		if consume("!") then
 			return {
 				type = "not",
@@ -212,16 +310,11 @@ function parser.parse(tokens)
 				local inner = assert(type(), "Expected type inside generic type")
 				assert(consume(">"), "Expected '>' after generic type")
 
-				if token.value == "vec2" or token.value == "vec3" or token.value == "vec4" then
-					return {
-						type = "type",
-						slangType = {
-							type = "vec",
-							len = tonumber(string.sub(token.value, 4)),
-							elementType = inner.slangType,
-						},
-					}
-				end
+				return {
+					type = "type",
+					parsed = { type = "generic", name = token.value, inner = inner },
+					span = spanned(token),
+				}
 			end
 
 			return { type = "type", name = token.value, span = token.span }
