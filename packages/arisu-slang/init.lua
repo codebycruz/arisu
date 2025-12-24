@@ -12,7 +12,7 @@ local src = [[
 	fn compute() {
 		let x = vec4f(1, 0, 1, 0);
 		let y = vec4f(0, 1, 0, 1);
-		let z = x + ii;
+		let z = x + y;
 		return z;
 	}
 ]]

@@ -23,6 +23,9 @@
 ---@field params slang.Type[]
 ---@field ret slang.Type
 
+---@class slang.VoidType
+---@field type "void"
+
 ---@alias slang.Type<T>
 --- | slang.F32Type
 --- | slang.I32Type
@@ -31,6 +34,7 @@
 --- | slang.SamplerType
 --- | slang.FnType
 --- | slang.VecType<T>
+--- | slang.VoidType
 
 local typing = {}
 
@@ -48,6 +52,7 @@ typing.vec2i = { type = "vec", len = 2, elementType = typing.i32 }
 
 typing.string = { type = "string" }
 typing.bool = { type = "bool" }
+typing.void = { type = "void" }
 
 ---@param params slang.Type[]
 ---@param ret slang.Type

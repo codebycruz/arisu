@@ -112,6 +112,11 @@ function analyzer.analyze(ast, src)
 				vec3f = { mut = false, type = typing.fn({ typing.f32, typing.f32, typing.f32 }, typing.vec3f) },
 				vec2f = { mut = false, type = typing.fn({ typing.f32, typing.f32 }, typing.vec2f) },
 			},
+			types = {
+				vec4f = typing.vec4f,
+				vec3f = typing.vec3f,
+				vec2f = typing.vec2f,
+			},
 		},
 	}
 
@@ -185,7 +190,7 @@ function analyzer.analyze(ast, src)
 		elseif s.variant == "storage" then
 			s.type = type(s.annotation)
 			scopes[#scopes].vars[s.name.value] = { mut = false, type = s.type }
-		elseif s.variant == "add" then
+		elseif s.variant == "+" then
 			local lhsType = node(s.lhs).type
 			local rhsType = node(s.rhs).type
 
@@ -194,7 +199,7 @@ function analyzer.analyze(ast, src)
 			end
 
 			s.type = lhsType
-		elseif s.variant == "sub" then
+		elseif s.variant == "-" then
 			local lhsType = node(s.lhs).type
 			local rhsType = node(s.rhs).type
 
@@ -203,7 +208,7 @@ function analyzer.analyze(ast, src)
 			end
 
 			s.type = lhsType
-		elseif s.variant == "mul" then
+		elseif s.variant == "*" then
 			local lhsType = node(s.lhs).type
 			local rhsType = node(s.rhs).type
 
@@ -212,7 +217,7 @@ function analyzer.analyze(ast, src)
 			end
 
 			s.type = lhsType
-		elseif s.variant == "div" then
+		elseif s.variant == "/" then
 			local lhsType = node(s.lhs).type
 			local rhsType = node(s.rhs).type
 
@@ -269,6 +274,18 @@ function analyzer.analyze(ast, src)
 			node(s.body)
 			popScope()
 		elseif s.variant == "type" then
+			error("Type nodes should not be analyzed directly")
+		elseif s.variant == "recordInit" then
+			local fieldTypes = {}
+			for _, field in ipairs(s.fields) do
+				fieldTypes[field.name] = node(field.value).type
+			end
+			s.type = typing.record(fieldTypes)
+		elseif s.variant == "typedef" then
+			scopes[#scopes].types[s.name.value] = type(s.type)
+			s.type = typing.void
+		else
+			error("Unimplemented analyzer for variant: " .. s.variant)
 		end
 
 		return s

@@ -39,22 +39,22 @@ local parser = {}
 ---@field parsed slang.ParsedType
 
 ---@class slang.AddNode: slang.Spanned
----@field variant "add"
+---@field variant "+"
 ---@field lhs slang.Node
 ---@field rhs slang.Node
 
 ---@class slang.SubNode: slang.Spanned
----@field variant "sub"
+---@field variant "-"
 ---@field lhs slang.Node
 ---@field rhs slang.Node
 
 ---@class slang.MulNode: slang.Spanned
----@field variant "mul"
+---@field variant "*"
 ---@field lhs slang.Node
 ---@field rhs slang.Node
 
 ---@class slang.DivNode: slang.Spanned
----@field variant "div"
+---@field variant "/"
 ---@field lhs slang.Node
 ---@field rhs slang.Node
 
@@ -354,7 +354,7 @@ function parser.parse(tokens, src)
 				}
 			end
 
-			return { variant = "type", name = token.value, span = token.span }
+			return { variant = "type", parsed = { variant = "extern", name = token.value }, span = spanned(token) }
 		end
 
 		-- Failed to match, rewind
