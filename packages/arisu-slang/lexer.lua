@@ -108,6 +108,9 @@ local util = require("arisu-util")
 ---@class slang.TestToken: slang.Spanned
 ---@field variant "test"
 
+---@class slang.TypeToken: slang.Spanned
+---@field variant "type"
+
 ---@alias slang.Token
 --- | slang.IdentToken
 --- | slang.NumberToken
@@ -142,6 +145,7 @@ local util = require("arisu-util")
 --- | slang.WhileToken
 --- | slang.ForToken
 --- | slang.TestToken
+--- | slang.TypeToken
 
 local lexer = {}
 
@@ -156,6 +160,7 @@ local keywords = util.toLookupTable({
 	"while",
 	"for",
 	"test",
+	"type",
 })
 
 local operators = util.toLookupTable({

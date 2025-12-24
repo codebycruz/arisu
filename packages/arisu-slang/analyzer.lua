@@ -75,6 +75,10 @@ local analyzer = {}
 ---@field variant "test"
 ---@field type slang.Type
 
+---@class slang.TypedRecordInitNode: slang.RecordInitNode
+---@field variant "recordInit"
+---@field type slang.Type
+
 ---@alias slang.TypedNode
 --- | slang.TypedNumberNode
 --- | slang.TypedStringNode
@@ -94,6 +98,7 @@ local analyzer = {}
 --- | slang.TypedBlockNode
 --- | slang.TypedCallNode
 --- | slang.TypedTestNode
+--- | slang.TypedRecordInitNode
 
 ---@param ast slang.Node
 ---@param src string
@@ -173,13 +178,13 @@ function analyzer.analyze(ast, src)
 			s.type = var.type
 		elseif s.variant == "let" then
 			s.type = node(s.value).type
-			scopes[#scopes].vars[s.name] = { mut = false, type = s.type }
+			scopes[#scopes].vars[s.name.value] = { mut = false, type = s.type }
 		elseif s.variant == "uniform" then
 			s.type = type(s.annotation)
-			scopes[#scopes].vars[s.name] = { mut = false, type = s.type }
+			scopes[#scopes].vars[s.name.value] = { mut = false, type = s.type }
 		elseif s.variant == "storage" then
 			s.type = type(s.annotation)
-			scopes[#scopes].vars[s.name] = { mut = false, type = s.type }
+			scopes[#scopes].vars[s.name.value] = { mut = false, type = s.type }
 		elseif s.variant == "add" then
 			local lhsType = node(s.lhs).type
 			local rhsType = node(s.rhs).type

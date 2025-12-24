@@ -98,6 +98,15 @@ local parser = {}
 ---@field name slang.StringNode
 ---@field body slang.Node
 
+---@class slang.RecordInitNode: slang.Spanned
+---@field variant "recordInit"
+---@field fields { name: string, value: slang.Node }[]
+
+---@class slang.TypeDefinitionNode: slang.Spanned
+---@field variant "typedef"
+---@field name slang.IdentNode
+---@field type slang.TypeNode
+
 ---@alias slang.Node
 --- | slang.NumberNode
 --- | slang.StringNode
@@ -118,6 +127,8 @@ local parser = {}
 --- | slang.BlockNode
 --- | slang.CallNode
 --- | slang.TestNode
+--- | slang.RecordInitNode
+--- | slang.TypeDefinitionNode
 
 ---@class slang.ParsedExternType # name
 ---@field variant "extern"
@@ -198,6 +209,23 @@ function parser.parse(tokens, src)
 			local expr = assert(expression(), "Expected expression after '('")
 			assert(consume(")"), "Expected ')' after expression")
 			return expr
+		end
+
+		if token.variant == "{" then
+			local fields = {}
+			while not consume("}") do
+				local fieldNameToken = assert(ident(), "Expected field name in record initialization")
+				assert(consume(":"), "Expected ':' after field name in record initialization")
+				local fieldValue = assert(expression(), "Expected expression for field value in record initialization")
+				fields[#fields + 1] = { name = fieldNameToken.value, value = fieldValue }
+				consume(",")
+			end
+
+			return {
+				variant = "recordInit",
+				fields = fields,
+				span = spanned(token, prev()),
+			}
 		end
 
 		local e ---@type slang.Node?
@@ -352,6 +380,19 @@ function parser.parse(tokens, src)
 	function statement() ---@return slang.Node?
 		local token = pop()
 
+		if token.variant == "type" then
+			local name = assert(ident(), "Expected identifier after 'type'")
+			assert(consume("="), "Expected '=' after type name")
+			local slangType = assert(type(), "Expected type after '=' in type definition")
+
+			return {
+				variant = "typedef",
+				name = name,
+				type = slangType,
+				span = spanned(token, slangType),
+			}
+		end
+
 		if token.variant == "let" then
 			local name = assert(ident(), "Expected identifier after 'let'")
 
@@ -459,7 +500,11 @@ function parser.parse(tokens, src)
 	while idx <= len do
 		local stmt = statement()
 		if not stmt then
-			error("Unexpected token: " .. tostring(peek() and peek().variant or "EOF"))
+			local token = peek()
+			local variant = token and token.variant or "EOF"
+			local resolved = span.resolve(src, (token or prev()).span)
+
+			error("Unexpected token: " .. variant .. " at line " .. resolved.start.line .. ", col " .. resolved.start.col)
 		end
 
 		consume(";")
