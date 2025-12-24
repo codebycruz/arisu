@@ -1,3 +1,5 @@
+local typing = require("arisu-slang.typing")
+
 local analyzer = {}
 
 ---@class slang.TypedNumberNode: slang.NumberNode
@@ -94,6 +96,177 @@ local analyzer = {}
 
 ---@param ast slang.Node
 ---@return slang.TypedNode
-function analyzer.analyze(ast) end
+function analyzer.analyze(ast)
+	---@type { vars: table<string, { mut: boolean, type: slang.Type }>, types: table<string, slang.Type> }[]
+	local scopes = {
+		{
+			vars = {
+				vec4f = { mut = false, type = typing.fn({ typing.f32, typing.f32, typing.f32, typing.f32 }, typing.vec4f) },
+				vec3f = { mut = false, type = typing.fn({ typing.f32, typing.f32, typing.f32 }, typing.vec3f) },
+				vec2f = { mut = false, type = typing.fn({ typing.f32, typing.f32 }, typing.vec2f) },
+			},
+		},
+	}
+
+	local function pushScope()
+		local scope = { vars = {} }
+		scopes[#scopes + 1] = scope
+		return scope
+	end
+
+	local function popScope()
+		scopes[#scopes] = nil
+	end
+
+	local function lookupVar(name)
+		for i = #scopes, 1, -1 do
+			local scope = scopes[i]
+			if scope.vars[name] then
+				return scope.vars[name]
+			end
+		end
+		return nil
+	end
+
+	local function lookupType(name)
+		for i = #scopes, 1, -1 do
+			local scope = scopes[i]
+			if scope.types and scope.types[name] then
+				return scope.types[name]
+			end
+		end
+		return nil
+	end
+
+	---@param n slang.TypeNode
+	---@return slang.Type
+	local function type(n)
+		if n.parsed.variant == "extern" then
+			local parsed = n.parsed ---@cast parsed slang.ParsedExternType
+			local ty = lookupType(parsed.name)
+			if not ty then
+				error("Unknown type: " .. parsed.name)
+			end
+
+			return ty
+		end
+
+		error("Unimplemented type resolution for variant: " .. n.parsed.variant)
+	end
+
+	---@param s slang.Node
+	---@return slang.TypedNode
+	local function node(s)
+		if s.variant == "number" then
+			s.type = typing.f32
+		elseif s.variant == "string" then
+			s.type = typing.string
+		elseif s.variant == "ident" then
+			local var = lookupVar(s.value)
+			if not var then
+				error("Undefined variable: " .. s.value)
+			end
+
+			s.type = var.type
+		elseif s.variant == "let" then
+			s.type = node(s.value).type
+			scopes[#scopes].vars[s.name] = { type = s.type }
+		elseif s.variant == "uniform" then
+			s.type = type(s.annotation)
+			scopes[#scopes].vars[s.name] = { type = s.type }
+		elseif s.variant == "storage" then
+			s.type = type(s.annotation)
+			scopes[#scopes].vars[s.name] = { type = s.type }
+		elseif s.variant == "add" then
+			local lhsType = node(s.lhs).type
+			local rhsType = node(s.rhs).type
+
+			if lhsType ~= rhsType then
+				error("Type mismatch in addition: " .. lhsType.type .. " + " .. rhsType.type)
+			end
+
+			s.type = lhsType
+		elseif s.variant == "sub" then
+			local lhsType = node(s.lhs).type
+			local rhsType = node(s.rhs).type
+
+			if lhsType ~= rhsType then
+				error("Type mismatch in subtraction: " .. lhsType.type .. " - " .. rhsType.type)
+			end
+
+			s.type = lhsType
+		elseif s.variant == "mul" then
+			local lhsType = node(s.lhs).type
+			local rhsType = node(s.rhs).type
+
+			if lhsType ~= rhsType then
+				error("Type mismatch in multiplication: " .. lhsType.type .. " * " .. rhsType.type)
+			end
+
+			s.type = lhsType
+		elseif s.variant == "div" then
+			local lhsType = node(s.lhs).type
+			local rhsType = node(s.rhs).type
+
+			if lhsType ~= rhsType then
+				error("Type mismatch in division: " .. lhsType.type .. " / " .. rhsType.type)
+			end
+
+			s.type = lhsType
+		elseif s.variant == "index" then
+			error("index unimplemented")
+		elseif s.variant == "function" then
+			local scope = pushScope()
+			for _, param in ipairs(s.params) do
+				scope.vars[param.name] = { type = type(param.type) }
+			end
+
+			node(s.body)
+			popScope()
+		elseif s.variant == "not" then ---@cast s slang.NotNode
+			local operandType = node(s.value).type
+			if operandType.type ~= "bool" then
+				error("Operand of '!' must be of type bool, got " .. operandType.type)
+			end
+
+			s.type = typing.bool
+		elseif s.variant == "if" then
+			local condType = node(s.condition).type
+			if condType.type ~= "bool" then
+				error("Condition in if statement must be of type bool, got " .. condType.type)
+			end
+
+			pushScope()
+			node(s.body)
+			popScope()
+
+			if s.elseStmt then
+				pushScope()
+				node(s.elseStmt)
+				popScope()
+			end
+		elseif s.variant == "return" then
+			node(s.value)
+		elseif s.variant == "block" then
+			for _, stmt in ipairs(s.statements) do
+				node(stmt)
+			end
+		elseif s.variant == "call" then
+			node(s.callee)
+			for _, arg in ipairs(s.arguments) do
+				node(arg)
+			end
+		elseif s.variant == "test" then
+			pushScope()
+			node(s.body)
+			popScope()
+		elseif s.variant == "type" then
+		end
+
+		return s
+	end
+
+	return node(ast) ---@as slang.TypedNode
+end
 
 return analyzer

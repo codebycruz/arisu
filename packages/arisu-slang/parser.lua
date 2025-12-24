@@ -10,7 +10,7 @@ local parser = {}
 
 ---@class slang.IdentNode: slang.Spanned
 ---@field variant "ident"
----@field name string
+---@field value string
 
 ---@class slang.DeclarationNode: slang.Spanned
 ---@field variant "let"
@@ -26,7 +26,7 @@ local parser = {}
 ---@field annotation slang.TypeNode
 
 ---@class slang.StorageBufferDefinitionNode: slang.Spanned
----@field variant "storage_buffer"
+---@field variant "storage"
 ---@field name slang.IdentNode
 ---@field binding number
 ---@field group number

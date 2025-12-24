@@ -8,18 +8,14 @@ local analyzer = require("arisu-slang.analyzer")
 
 local tokens = lexer.lex([[
 	fn compute() {
-		let x = vec4(1, 0, 1, 0);
-		let y = vec4(0, 1, 0, 1);
-		let z = x + y;
+		let x = vec4f(1, 0, 1, 0);
+		let y = vec4f(0, 1, 0, 1);
+		let z = x + h;
 		return z;
-	}
-
-	test "foo" {
-		let x = 2;
 	}
 ]])
 
 local ast = parser.parse(tokens)
 local tast = analyzer.analyze(ast)
 
-util.dbg(ast)
+-- util.dbg(tast)
