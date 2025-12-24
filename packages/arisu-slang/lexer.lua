@@ -6,112 +6,112 @@ local util = require("arisu-util")
 ---@field span slang.Span
 
 ---@class slang.IdentToken: slang.Spanned
----@field type "ident"
+---@field variant "ident"
 ---@field value string
 
 ---@class slang.NumberToken: slang.Spanned
----@field type "number"
+---@field variant "number"
 ---@field value number
 
 ---@class slang.StringToken: slang.Spanned
----@field type "string"
+---@field variant "string"
 ---@field value string
 
 ---@class slang.FnToken: slang.Spanned
----@field type "fn"
+---@field variant "fn"
 
 ---@class slang.LeftCurlyToken: slang.Spanned
----@field type "{"
+---@field variant "{"
 
 ---@class slang.RightCurlyToken: slang.Spanned
----@field type "}"
+---@field variant "}"
 
 ---@class slang.LeftParenToken: slang.Spanned
----@field type "("
+---@field variant "("
 
 ---@class slang.RightParenToken: slang.Spanned
----@field type ")"
+---@field variant ")"
 
 ---@class slang.LeftSquareToken: slang.Spanned
----@field type "["
+---@field variant "["
 
 ---@class slang.RightSquareToken: slang.Spanned
----@field type "]"
+---@field variant "]"
 
 ---@class slang.CommaToken: slang.Spanned
----@field type ","
+---@field variant ","
 
 ---@class slang.ColonToken: slang.Spanned
----@field type ":"
+---@field variant ":"
 
 ---@class slang.SemicolonToken: slang.Spanned
----@field type ";"
+---@field variant ";"
 
 ---@class slang.EqualToken: slang.Spanned
----@field type "="
+---@field variant "="
 
 ---@class slang.AddToken: slang.Spanned
----@field type "+"
+---@field variant "+"
 
 ---@class slang.SubToken: slang.Spanned
----@field type "-"
+---@field variant "-"
 
 ---@class slang.MulToken: slang.Spanned
----@field type "*"
+---@field variant "*"
 
 ---@class slang.DivToken: slang.Spanned
----@field type "/"
+---@field variant "/"
 
 ---@class slang.DotToken: slang.Spanned
----@field type "."
+---@field variant "."
 
 ---@class slang.NotToken: slang.Spanned
----@field type "!"
+---@field variant "!"
 
 ---@class slang.EqualsToken: slang.Spanned
----@field type "=="
+---@field variant "=="
 
 ---@class slang.NotEqualsToken: slang.Spanned
----@field type "!="
+---@field variant "!="
 
 ---@class slang.LessThanToken: slang.Spanned
----@field type "<"
+---@field variant "<"
 
 ---@class slang.GreaterThanToken: slang.Spanned
----@field type ">"
+---@field variant ">"
 
 ---@class slang.LessThanOrEqualToken: slang.Spanned
----@field type "<="
+---@field variant "<="
 
 ---@class slang.GreaterThanOrEqualToken: slang.Spanned
----@field type ">="
+---@field variant ">="
 
 ---@class slang.UniformToken: slang.Spanned
----@field type "uniform"
+---@field variant "uniform"
 
 ---@class slang.StorageToken: slang.Spanned
----@field type "storage"
+---@field variant "storage"
 
 ---@class slang.LetToken: slang.Spanned
----@field type "let"
+---@field variant "let"
 
 ---@class slang.ReturnToken: slang.Spanned
----@field type "return"
+---@field variant "return"
 
 ---@class slang.IfToken: slang.Spanned
----@field type "if"
+---@field variant "if"
 
 ---@class slang.ElseToken: slang.Spanned
----@field type "else"
+---@field variant "else"
 
 ---@class slang.WhileToken: slang.Spanned
----@field type "while"
+---@field variant "while"
 
 ---@class slang.ForToken: slang.Spanned
----@field type "for"
+---@field variant "for"
 
 ---@class slang.TestToken: slang.Spanned
----@field type "test"
+---@field variant "test"
 
 ---@alias slang.Token
 --- | slang.IdentToken
@@ -216,26 +216,26 @@ function lexer.lex(src)
 
 		local float = consume("^([0-9]+%.[0-9]+)")
 		if float then
-			return { type = "number", value = tonumber(float), span = span(startPtr) }
+			return { variant = "number", value = tonumber(float), span = span(startPtr) }
 		end
 
 		local int = consume("^([0-9]+)")
 		if int then
-			return { type = "number", value = tonumber(int), span = span(startPtr) }
+			return { variant = "number", value = tonumber(int), span = span(startPtr) }
 		end
 
 		-- TODO: replace this with an actual string parser
 		local str = consume('^"([^"]*)"')
 		if str then
-			return { type = "string", value = str, span = span(startPtr) }
+			return { variant = "string", value = str, span = span(startPtr) }
 		end
 
 		local ident = consume("^([a-zA-Z_][a-zA-Z0-9_]*)")
 		if ident then
 			if keywords[ident] then
-				return { type = ident, span = span(startPtr) }
+				return { variant = ident, span = span(startPtr) }
 			else
-				return { type = "ident", value = ident, span = span(startPtr) }
+				return { variant = "ident", value = ident, span = span(startPtr) }
 			end
 		end
 
@@ -243,7 +243,7 @@ function lexer.lex(src)
 			local op3 = string.sub(src, ptr, ptr + 2)
 			if operators[op3] then
 				ptr = ptr + 3
-				return { type = op3, span = span(startPtr) }
+				return { variant = op3, span = span(startPtr) }
 			end
 		end
 
@@ -251,14 +251,14 @@ function lexer.lex(src)
 			local op2 = string.sub(src, ptr, ptr + 1)
 			if operators[op2] then
 				ptr = ptr + 2
-				return { type = op2, span = span(startPtr) }
+				return { variant = op2, span = span(startPtr) }
 			end
 		end
 
 		local op1 = string.sub(src, ptr, ptr)
 		if operators[op1] then
 			ptr = ptr + 1
-			return { type = op1, span = span(startPtr) }
+			return { variant = op1, span = span(startPtr) }
 		end
 
 		error("Lexer: unrecognized token at position " .. ptr)
