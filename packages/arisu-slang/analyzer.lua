@@ -1,4 +1,5 @@
 local typing = require("arisu-slang.typing")
+local span = require("arisu-slang.span")
 
 local analyzer = {}
 
@@ -95,8 +96,9 @@ local analyzer = {}
 --- | slang.TypedTestNode
 
 ---@param ast slang.Node
+---@param src string
 ---@return slang.TypedNode
-function analyzer.analyze(ast)
+function analyzer.analyze(ast, src)
 	---@type { vars: table<string, { mut: boolean, type: slang.Type }>, types: table<string, slang.Type> }[]
 	local scopes = {
 		{
@@ -164,19 +166,20 @@ function analyzer.analyze(ast)
 		elseif s.variant == "ident" then
 			local var = lookupVar(s.value)
 			if not var then
-				error("Undefined variable: " .. s.value)
+				local resolved = span.resolve(src, s.span)
+				error("Undefined variable: " .. s.value .. " at line " .. resolved.start.line .. ", col " .. resolved.start.col)
 			end
 
 			s.type = var.type
 		elseif s.variant == "let" then
 			s.type = node(s.value).type
-			scopes[#scopes].vars[s.name] = { type = s.type }
+			scopes[#scopes].vars[s.name] = { mut = false, type = s.type }
 		elseif s.variant == "uniform" then
 			s.type = type(s.annotation)
-			scopes[#scopes].vars[s.name] = { type = s.type }
+			scopes[#scopes].vars[s.name] = { mut = false, type = s.type }
 		elseif s.variant == "storage" then
 			s.type = type(s.annotation)
-			scopes[#scopes].vars[s.name] = { type = s.type }
+			scopes[#scopes].vars[s.name] = { mut = false, type = s.type }
 		elseif s.variant == "add" then
 			local lhsType = node(s.lhs).type
 			local rhsType = node(s.rhs).type

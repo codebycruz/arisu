@@ -1,3 +1,5 @@
+local span = require("arisu-slang.span")
+
 local parser = {}
 
 ---@class slang.NumberNode: slang.Spanned
@@ -148,7 +150,8 @@ local parser = {}
 --- | slang.ParsedRecordType
 
 ---@param tokens slang.Token[]
-function parser.parse(tokens)
+---@param src string
+function parser.parse(tokens, src)
 	local idx, len = 1, #tokens
 
 	local function peek()

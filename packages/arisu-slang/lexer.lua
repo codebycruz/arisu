@@ -1,10 +1,5 @@
 local util = require("arisu-util")
 
----@alias slang.Span { start: number, finish: number }
-
----@class slang.Spanned
----@field span slang.Span
-
 ---@class slang.IdentToken: slang.Spanned
 ---@field variant "ident"
 ---@field value string
