@@ -100,11 +100,15 @@ local analyzer = {}
 --- | slang.TypedTestNode
 --- | slang.TypedRecordInitNode
 
+---@class slang.AnalyzerScope
+---@field vars table<string, { mut: boolean, type: slang.Type }>
+---@field types table<string, slang.Type>
+
 ---@param ast slang.Node
 ---@param src string
 ---@return slang.TypedNode
 function analyzer.analyze(ast, src)
-	---@type { vars: table<string, { mut: boolean, type: slang.Type }>, types: table<string, slang.Type> }[]
+	---@type slang.AnalyzerScope[]
 	local scopes = {
 		{
 			vars = {
@@ -173,6 +177,8 @@ function analyzer.analyze(ast, src)
 			s.type = typing.f32
 		elseif s.variant == "string" then
 			s.type = typing.string
+		elseif s.variant == "bool" then
+			s.type = typing.bool
 		elseif s.variant == "ident" then
 			local var = lookupVar(s.value)
 			if not var then

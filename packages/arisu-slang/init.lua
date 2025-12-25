@@ -13,6 +13,11 @@ local src = [[
 		let x = vec4f(1, 0, 1, 0);
 		let y = vec4f(0, 1, 0, 1);
 		let z = x + y;
+
+		if true {
+			return z;
+		}
+
 		return z;
 	}
 ]]

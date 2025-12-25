@@ -10,6 +10,10 @@ local parser = {}
 ---@field variant "string"
 ---@field value string
 
+---@class slang.BoolNode: slang.Spanned
+---@field variant "bool"
+---@field value boolean
+
 ---@class slang.IdentNode: slang.Spanned
 ---@field variant "ident"
 ---@field value string
@@ -107,6 +111,10 @@ local parser = {}
 ---@field name slang.IdentNode
 ---@field type slang.TypeNode
 
+---@class slang.ConstBlockNode: slang.Spanned
+---@field variant "constBlock"
+---@field body slang.Node
+
 ---@alias slang.Node
 --- | slang.NumberNode
 --- | slang.StringNode
@@ -129,6 +137,8 @@ local parser = {}
 --- | slang.TestNode
 --- | slang.RecordInitNode
 --- | slang.TypeDefinitionNode
+--- | slang.ConstBlockNode
+--- | slang.BoolNode
 
 ---@class slang.ParsedExternType # name
 ---@field variant "extern"
@@ -201,7 +211,8 @@ function parser.parse(tokens, src)
 		return consume("number") --[[@as slang.NumberToken|nil]]
 	end
 
-	local expression
+	local expression, statement, block
+
 	local function atom()
 		local token = pop()
 
@@ -209,6 +220,15 @@ function parser.parse(tokens, src)
 			local expr = assert(expression(), "Expected expression after '('")
 			assert(consume(")"), "Expected ')' after expression")
 			return expr
+		end
+
+		if token.variant == "const" then
+			local body = assert(block(), "Expected block after 'const'")
+			return {
+				variant = "constBlock",
+				body = body,
+				span = spanned(token, body),
+			}
 		end
 
 		if token.variant == "{" then
@@ -231,6 +251,14 @@ function parser.parse(tokens, src)
 		local e ---@type slang.Node?
 		if token.variant == "number" or token.variant == "string" or token.variant == "ident" then
 			e = token --[[@as slang.Node]]
+		end
+
+		if token.variant == "true" or token.variant == "false" then
+			e = {
+				variant = "bool",
+				value = (token.variant == "true"),
+				span = token.span,
+			}
 		end
 
 		if e.variant == "ident" then
@@ -361,8 +389,7 @@ function parser.parse(tokens, src)
 		idx = idx - 1
 	end
 
-	local statement
-	local function block() ---@return slang.Node?
+	function block() ---@return slang.Node?
 		if not consume("{") then
 			return
 		end
