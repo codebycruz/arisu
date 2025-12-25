@@ -13,7 +13,7 @@
 ---@class slang.BoolType
 ---@field type "bool"
 
----@class slang.VecType<T>: { type: "vec", len: number, elementType: T }
+---@class slang.VecType
 ---@field type "vec"
 ---@field len number
 ---@field elementType slang.Type
@@ -26,14 +26,14 @@
 ---@class slang.VoidType
 ---@field type "void"
 
----@alias slang.Type<T>
+---@alias slang.Type
 --- | slang.F32Type
 --- | slang.I32Type
 --- | slang.StringType
 --- | slang.BoolType
 --- | slang.SamplerType
 --- | slang.FnType
---- | slang.VecType<T>
+--- | slang.VecType<any>
 --- | slang.VoidType
 
 local typing = {}

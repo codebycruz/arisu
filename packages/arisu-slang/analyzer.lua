@@ -1,5 +1,6 @@
 local typing = require("arisu-slang.typing")
 local span = require("arisu-slang.span")
+local intrinsics = require("arisu-slang.stdlib.intrinsics")
 
 local analyzer = {}
 
@@ -48,7 +49,7 @@ local analyzer = {}
 ---@field type slang.Type
 
 ---@class slang.TypedFunctionNode: slang.FunctionNode
----@field variant "fn"
+---@field variant "function"
 ---@field type slang.Type
 
 ---@class slang.TypedNotNode: slang.NotNode
@@ -100,28 +101,21 @@ local analyzer = {}
 --- | slang.TypedTestNode
 --- | slang.TypedRecordInitNode
 
----@class slang.AnalyzerScope
----@field vars table<string, { mut: boolean, type: slang.Type }>
+---@class slang.analyzer.VarInfo
+---@field mut boolean
+---@field type slang.Type
+
+---@class slang.analyzer.Scope
+---@field vars table<string, slang.analyzer.VarInfo>
 ---@field types table<string, slang.Type>
 
 ---@param ast slang.Node
 ---@param src string
 ---@return slang.TypedNode
 function analyzer.analyze(ast, src)
-	---@type slang.AnalyzerScope[]
+	---@type slang.analyzer.Scope[]
 	local scopes = {
-		{
-			vars = {
-				vec4f = { mut = false, type = typing.fn({ typing.f32, typing.f32, typing.f32, typing.f32 }, typing.vec4f) },
-				vec3f = { mut = false, type = typing.fn({ typing.f32, typing.f32, typing.f32 }, typing.vec3f) },
-				vec2f = { mut = false, type = typing.fn({ typing.f32, typing.f32 }, typing.vec2f) },
-			},
-			types = {
-				vec4f = typing.vec4f,
-				vec3f = typing.vec3f,
-				vec2f = typing.vec2f,
-			},
-		},
+		{ vars = intrinsics.asAnalyzerVars(), types = intrinsics.asAnalyzerTypes() },
 	}
 
 	local function pushScope()
@@ -189,6 +183,11 @@ function analyzer.analyze(ast, src)
 			s.type = var.type
 		elseif s.variant == "let" then
 			s.type = node(s.value).type
+
+			if s.type.type == "void" then
+				error("Cannot assign void type to variable " .. s.name.value)
+			end
+
 			scopes[#scopes].vars[s.name.value] = { mut = false, type = s.type }
 		elseif s.variant == "uniform" then
 			s.type = type(s.annotation)
@@ -272,9 +271,16 @@ function analyzer.analyze(ast, src)
 			end
 		elseif s.variant == "call" then
 			node(s.callee)
+
+			if s.callee.type.type ~= "fn" then
+				error("Callee is not a function")
+			end
+
 			for _, arg in ipairs(s.arguments) do
 				node(arg)
 			end
+
+			s.type = s.callee.type.ret
 		elseif s.variant == "test" then
 			pushScope()
 			node(s.body)
