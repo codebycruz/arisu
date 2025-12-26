@@ -93,6 +93,8 @@ function glslcg.generate(config, tast, src)
 			return fmt("(%s / %s)", node(n.lhs), node(n.rhs))
 		elseif n.variant == "return" then -- of course this is gonna have to turn into something else.
 			return fmt("return %s;", node(n.value))
+		elseif n.variant == "const" or n.variant == "constBlock" then
+			-- Already evaluated during analysis
 		else
 			error("Unsupported node variant in GLSL codegen: " .. n.variant)
 		end

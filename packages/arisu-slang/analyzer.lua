@@ -2,6 +2,8 @@ local typing = require("arisu-slang.typing")
 local span = require("arisu-slang.span")
 local intrinsics = require("arisu-slang.stdlib.intrinsics")
 
+local Interpreter = require("arisu-slang.interpreter")
+
 local analyzer = {}
 
 ---@class slang.TypedNumberNode: slang.NumberNode
@@ -128,18 +130,22 @@ local analyzer = {}
 ---@param src string
 ---@return slang.TypedNode
 function analyzer.analyze(ast, src)
+	local interp = Interpreter.new()
+
 	---@type slang.analyzer.Scope[]
 	local scopes = {
 		{ vars = intrinsics.asAnalyzerVars(), types = intrinsics.asAnalyzerTypes() },
 	}
 
 	local function pushScope()
+		interp:pushScope()
 		local scope = { vars = {} }
 		scopes[#scopes + 1] = scope
 		return scope
 	end
 
 	local function popScope()
+		interp:popScope()
 		scopes[#scopes] = nil
 	end
 
@@ -189,6 +195,15 @@ function analyzer.analyze(ast, src)
 		elseif s.variant == "bool" then
 			s.type = typing.bool
 		elseif s.variant == "ident" then
+			local comptimeVar = interp:lookupVar(s.value)
+			if comptimeVar then
+				s.variant = "number"
+				s.value = comptimeVar.value
+				s.type = Interpreter.typeOfValue(comptimeVar)
+
+				return s
+			end
+
 			local var = lookupVar(s.value)
 			if not var then
 				local resolved = span.resolve(src, s.span)
@@ -311,6 +326,8 @@ function analyzer.analyze(ast, src)
 		elseif s.variant == "typedef" then
 			scopes[#scopes].types[s.name.value] = type(s.type)
 			s.type = typing.void
+		elseif s.variant == "const" then
+			interp:eval(s)
 		else
 			error("Unimplemented analyzer for variant: " .. s.variant)
 		end

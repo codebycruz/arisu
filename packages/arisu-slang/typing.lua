@@ -26,6 +26,10 @@
 ---@class slang.VoidType
 ---@field type "void"
 
+---@class slang.ConstType
+---@field type "const"
+---@field inner slang.Type
+
 ---@alias slang.Type
 --- | slang.F32Type
 --- | slang.I32Type
@@ -35,6 +39,7 @@
 --- | slang.FnType
 --- | slang.VecType<any>
 --- | slang.VoidType
+--- | slang.ConstType
 
 local typing = {}
 
@@ -58,6 +63,11 @@ typing.void = { type = "void" }
 ---@param ret slang.Type
 function typing.fn(params, ret)
 	return { type = "fn", params = params, ret = ret }
+end
+
+---@param inner slang.Type
+function typing.const(inner)
+	return { type = "const", inner = inner }
 end
 
 return typing
