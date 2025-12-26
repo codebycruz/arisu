@@ -8,6 +8,8 @@ local analyzer = require("arisu-slang.analyzer")
 local codegen = require("arisu-slang.codegen")
 
 local src = [[
+	const std = require("stdlib");
+
 	type vec4 = vec4f;
 	type vec3 = vec3f;
 	type vec2 = vec2f;
@@ -20,7 +22,6 @@ local src = [[
 		texCoord: vec2,
 		texIndex: i32
 	) {
-
 	}
 
 	pub fn compute() {

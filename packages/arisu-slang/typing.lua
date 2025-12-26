@@ -70,4 +70,9 @@ function typing.const(inner)
 	return { type = "const", inner = inner }
 end
 
+---@param fields table<string, slang.Type>
+function typing.record(fields)
+	return { type = "record", fields = fields }
+end
+
 return typing

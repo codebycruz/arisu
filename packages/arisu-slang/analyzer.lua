@@ -130,7 +130,7 @@ local analyzer = {}
 ---@param src string
 ---@return slang.TypedNode, slang.analyzer.Scope
 function analyzer.analyze(ast, src)
-	local interp = Interpreter.new()
+	local interp = Interpreter.new(intrinsics.comptime)
 
 	local globalScope = { vars = {}, types = {} }
 

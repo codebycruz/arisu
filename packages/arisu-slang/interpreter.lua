@@ -16,13 +16,18 @@ local typing = require("arisu-slang.typing")
 
 ---@class slang.vm.RecordValue
 ---@field variant "record"
----@field fields table<string, slang.vm.Value>
+---@field value table<string, slang.vm.Value>
+
+---@class slang.vm.FnValue
+---@field variant "fn"
+---@field value fun(args: slang.vm.Value[]): slang.vm.Value
 
 ---@alias slang.vm.Value
 --- | slang.vm.NumberValue
 --- | slang.vm.StringValue
 --- | slang.vm.BoolValue
 --- | slang.vm.RecordValue
+--- | slang.vm.FnValue
 
 ---@class slang.vm.Interpreter
 ---@field scopes slang.vm.Scope[]
@@ -66,11 +71,11 @@ function Interpreter.typeOfValue(v)
 		return typing.bool
 	elseif v.variant == "record" then
 		local fields = {} ---@type table<string, slang.Type>
-		for name, value in pairs(v.fields) do
+		for name, value in pairs(v.value) do
 			fields[name] = Interpreter.typeOfValue(value)
 		end
 
-		return { type = "record", fields = fields }
+		return typing.record(fields)
 	else
 		error("Unsupported value variant in typeOfValue: " .. tostring(v.variant))
 	end
@@ -175,6 +180,18 @@ function Interpreter:eval(n)
 		end
 
 		return obj.fields[index.value]
+	elseif n.variant == "call" then
+		local fn = self:eval(n.callee)
+		if fn.variant ~= "fn" then
+			error("Callee is not a function")
+		end
+
+		local args = {} ---@type slang.vm.Value[]
+		for i, argNode in ipairs(n.arguments) do
+			args[i] = self:eval(argNode)
+		end
+
+		return fn.value(args)
 	else
 		error("Unsupported node variant in interpreter: " .. tostring(n.variant))
 	end

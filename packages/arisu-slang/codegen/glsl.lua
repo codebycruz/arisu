@@ -29,6 +29,8 @@ function glslcg.generate(config, tast, src)
 			return fmt("%svec%d", elemType == "float" and "" or "i", t.len)
 		elseif t.type == "void" then
 			return "void"
+		elseif t.type == "bool" then
+			return "bool"
 		else
 			error("Unsupported type in GLSL codegen: " .. t.type)
 		end

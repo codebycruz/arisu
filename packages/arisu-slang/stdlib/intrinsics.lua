@@ -2,6 +2,16 @@ local typing = require("arisu-slang.typing")
 
 local intrinsics = {}
 
+intrinsics.comptime = {
+	require = {
+		variant = "fn",
+		value = function(args)
+			print("require called", args[1])
+			return { variant = "string", value = "hi there" }
+		end,
+	},
+}
+
 intrinsics.vars = {
 	vec4f = typing.fn({ typing.f32, typing.f32, typing.f32, typing.f32 }, typing.vec4f),
 	vec3f = typing.fn({ typing.f32, typing.f32, typing.f32 }, typing.vec3f),
