@@ -2,6 +2,8 @@ local glslcg = require("arisu-slang.codegen.glsl")
 local cppcg = require("arisu-slang.codegen.cpp")
 local spirvcg = require("arisu-slang.codegen.spirv")
 
+---@alias slang.codegen.Entrypoint "vertex" | "fragment" | "compute"
+
 local codegen = {}
 
 ---@alias slang.codegen.Config

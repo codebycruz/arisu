@@ -55,7 +55,7 @@ local analyzer = {}
 ---@field type slang.Type
 
 ---@class slang.TypedFunctionNode: slang.FunctionNode
----@field variant "function"
+---@field variant "fn"
 ---@field type slang.Type
 
 ---@class slang.TypedNotNode: slang.NotNode
@@ -128,14 +128,22 @@ local analyzer = {}
 
 ---@param ast slang.Node
 ---@param src string
----@return slang.TypedNode
+---@return slang.TypedNode, slang.analyzer.Scope
 function analyzer.analyze(ast, src)
 	local interp = Interpreter.new()
+
+	local globalScope = { vars = {}, types = {} }
 
 	---@type slang.analyzer.Scope[]
 	local scopes = {
 		{ vars = intrinsics.asAnalyzerVars(), types = intrinsics.asAnalyzerTypes() },
+		globalScope,
+		{ vars = {}, types = {} },
 	}
+
+	local function isTopLevel()
+		return #scopes == 3
+	end
 
 	local function pushScope()
 		interp:pushScope()
@@ -156,7 +164,6 @@ function analyzer.analyze(ast, src)
 				return scope.vars[name]
 			end
 		end
-		return nil
 	end
 
 	local function lookupType(name)
@@ -209,10 +216,18 @@ function analyzer.analyze(ast, src)
 
 			s.type = var.type
 		elseif s.variant == "let" then
+			if isTopLevel() then
+				error("Top-level let declarations are not allowed: " .. s.name.value)
+			end
+
 			s.type = node(s.value).type
 
 			if s.type.type == "void" then
 				error("Cannot assign void type to variable " .. s.name.value)
+			end
+
+			if lookupVar(s.name.value) then
+				error("Variable already declared: " .. s.name.value)
 			end
 
 			scopes[#scopes].vars[s.name.value] = { mut = false, type = s.type }
@@ -269,13 +284,23 @@ function analyzer.analyze(ast, src)
 			s.type = typing.bool
 		elseif s.variant == "index" then
 			error("index unimplemented")
-		elseif s.variant == "function" then
+		elseif s.variant == "fn" then
+			local params = {} ---@type slang.Type[]
+
+			if lookupVar(s.name.value) then
+				error("Function already declared: " .. s.name.value)
+			end
+
 			local scope = pushScope()
 			for _, param in ipairs(s.params) do
 				local ty = type(param.type)
 				param.type = ty
+				params[#params + 1] = ty
 				scope.vars[param.name] = { type = ty }
 			end
+
+			local fnScope = s.visibility == "pub" and globalScope or scopes[#scopes]
+			fnScope.vars[s.name.value] = { type = typing.fn(params, typing.void) }
 
 			node(s.body)
 			popScope()
@@ -343,7 +368,7 @@ function analyzer.analyze(ast, src)
 		return s
 	end
 
-	return node(ast) ---@as slang.TypedNode
+	return node(ast), globalScope
 end
 
 return analyzer

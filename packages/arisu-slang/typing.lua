@@ -19,7 +19,7 @@
 ---@field elementType slang.Type
 
 ---@class slang.FnType
----@field type "function"
+---@field type "fn"
 ---@field params slang.Type[]
 ---@field ret slang.Type
 

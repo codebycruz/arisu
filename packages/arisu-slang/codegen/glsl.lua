@@ -5,6 +5,7 @@ local glslcg = {}
 
 ---@class slang.codegen.glsl.Config
 ---@field target "glsl"
+---@field entry slang.codegen.Entrypoint
 
 local fmt = string.format
 
@@ -52,7 +53,7 @@ function glslcg.generate(config, tast, src)
 		elseif n.variant == "typedef" then
 		elseif n.variant == "type" then
 			return type(n.type)
-		elseif n.variant == "function" then
+		elseif n.variant == "fn" then
 			local params = {} ---@type string[]
 			for _, param in ipairs(n.params) do
 				-- todo: type this properly.

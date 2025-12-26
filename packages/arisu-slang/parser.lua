@@ -68,7 +68,8 @@ local parser = {}
 ---@field index slang.Node
 
 ---@class slang.FunctionNode: slang.Spanned
----@field variant "function"
+---@field variant "fn"
+---@field visibility "pub" | "private"
 ---@field name slang.IdentNode
 ---@field params { name: slang.IdentNode, type: slang.TypeNode, modifier: string }[]
 ---@field returnType slang.TypeNode?
@@ -439,6 +440,11 @@ function parser.parse(tokens, src)
 			return { variant = token.variant, name = name, value = value, annotation = annotation, span = spanned(token) }
 		end
 
+		local isPub = token.variant == "pub"
+		if isPub then
+			token = pop()
+		end
+
 		if token.variant == "fn" then
 			local name = assert(ident(), "Expected identifier after 'fn'")
 			assert(consume("("), "Expected '(' after function name")
@@ -455,13 +461,16 @@ function parser.parse(tokens, src)
 			local body = assert(block(), "Expected function body")
 
 			return {
-				variant = "function",
+				variant = "fn",
+				visibility = isPub and "pub" or "private",
 				name = name,
 				params = params,
 				returnType = nil,
 				body = body,
 				span = spanned(token),
 			}
+		elseif isPub then -- 'pub' not followed by 'fn'
+			idx = idx - 1
 		end
 
 		if token.variant == "if" then
@@ -520,7 +529,7 @@ function parser.parse(tokens, src)
 				name = name,
 				binding = binding,
 				group = group,
-				type = slangType,
+				annotation = slangType,
 				span = spanned(token, slangType),
 			}
 		end
@@ -531,7 +540,7 @@ function parser.parse(tokens, src)
 
 	local stmts = {}
 	while idx <= len do
-		local stmt = statement()
+		local stmt = statement(0)
 		if not stmt then
 			local token = peek()
 			local variant = token and token.variant or "EOF"
