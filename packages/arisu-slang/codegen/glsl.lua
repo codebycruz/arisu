@@ -34,7 +34,7 @@ function glslcg.generate(config, tast, src)
 	end
 
 	---@param n slang.TypedNode
-	---@return string
+	---@return string?
 	local function node(n)
 		if n.variant == "uniform" then
 			if n.group ~= 0 then
@@ -50,10 +50,15 @@ function glslcg.generate(config, tast, src)
 
 			return table.concat(stmts, "\n")
 		elseif n.variant == "typedef" then
+		elseif n.variant == "type" then
+			return type(n.type)
 		elseif n.variant == "function" then
 			local params = {} ---@type string[]
 			for _, param in ipairs(n.params) do
-				params[#params + 1] = fmt("%s %s", node(param.type), param.name.value)
+				-- todo: type this properly.
+				-- currently the type info doesn't reflect the change in the param.type during analysis.
+				-- it changes from storing a slang.typenode to a slang.type
+				params[#params + 1] = fmt("%s %s", type(param.type), param.name.value)
 			end
 
 			local body = node(n.body)
@@ -81,6 +86,10 @@ function glslcg.generate(config, tast, src)
 			return fmt("%s(%s)", node(n.callee), table.concat(args, ", "))
 		elseif n.variant == "number" then
 			return tostring(n.value)
+		elseif n.variant == "bool" then
+			return n.value and "1" or "0"
+		elseif n.variant == "string" then
+			error("Cannot synthesize string literals in GLSL")
 		elseif n.variant == "ident" then
 			return n.value
 		elseif n.variant == "+" then
@@ -91,6 +100,8 @@ function glslcg.generate(config, tast, src)
 			return fmt("(%s * %s)", node(n.lhs), node(n.rhs))
 		elseif n.variant == "/" then
 			return fmt("(%s / %s)", node(n.lhs), node(n.rhs))
+		elseif n.variant == "==" then
+			return fmt("(%s == %s)", node(n.lhs), node(n.rhs))
 		elseif n.variant == "return" then -- of course this is gonna have to turn into something else.
 			return fmt("return %s;", node(n.value))
 		elseif n.variant == "const" or n.variant == "constBlock" then

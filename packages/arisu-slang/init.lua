@@ -10,9 +10,18 @@ local codegen = require("arisu-slang.codegen")
 local src = [[
 	type Test = vec4f;
 
+	fn ttt(t: vec4f) {
+
+	}
+
 	fn compute() {
 		const z = 22 + 44 + 213 * 231;
-		let x = vec4f(1, 0, 1, z);
+		const foo = { bar: 321 };
+		const arr = foo.bar;
+		const qux = "whatever";
+		const eq = qux == "whatever";
+
+		let x = vec4f(1, 0, 1, eq);
 		let y = vec4f(0, 1, 0, 1);
 
 		return z;

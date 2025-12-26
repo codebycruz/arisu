@@ -42,6 +42,19 @@ function Interpreter:popScope()
 	self.scopes[#self.scopes] = nil
 end
 
+--- TODO: Should probably be moved
+---@param node slang.Node
+---@param value slang.vm.Value
+function Interpreter.augmentNodeWithValue(node, value)
+	if value.variant ~= "number" and value.variant ~= "string" and value.variant ~= "bool" then
+		error("unimplemented: augmentNodeWithValue for record values")
+	end
+
+	node.type = Interpreter.typeOfValue(value)
+	node.variant = value.variant
+	node.value = value.value
+end
+
 ---@param v slang.vm.Value
 ---@return slang.Type
 function Interpreter.typeOfValue(v)
@@ -141,6 +154,27 @@ function Interpreter:eval(n)
 		else
 			error("Unsupported operand types for /: " .. lhs.variant .. " and " .. rhs.variant)
 		end
+	elseif n.variant == "==" then
+		local lhs = self:eval(n.lhs)
+		local rhs = self:eval(n.rhs)
+
+		if lhs.variant ~= rhs.variant then
+			return { variant = "bool", value = false }
+		end
+
+		return { variant = "bool", value = lhs.value == rhs.value }
+	elseif n.variant == "index" then
+		local obj = self:eval(n.object)
+		if obj.variant ~= "record" then
+			error("Attempted to index a non-record value of variant: " .. tostring(obj.variant))
+		end
+
+		local index = self:eval(n.index)
+		if index.variant ~= "string" then
+			error("Record index must be a string, got: " .. tostring(index.variant))
+		end
+
+		return obj.fields[index.value]
 	else
 		error("Unsupported node variant in interpreter: " .. tostring(n.variant))
 	end

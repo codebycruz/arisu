@@ -197,10 +197,7 @@ function analyzer.analyze(ast, src)
 		elseif s.variant == "ident" then
 			local comptimeVar = interp:lookupVar(s.value)
 			if comptimeVar then
-				s.variant = "number"
-				s.value = comptimeVar.value
-				s.type = Interpreter.typeOfValue(comptimeVar)
-
+				Interpreter.augmentNodeWithValue(s, comptimeVar)
 				return s
 			end
 
@@ -261,12 +258,23 @@ function analyzer.analyze(ast, src)
 			end
 
 			s.type = lhsType
+		elseif s.variant == "==" then
+			local lhsType = node(s.lhs).type
+			local rhsType = node(s.rhs).type
+
+			if lhsType ~= rhsType then
+				error("Type mismatch in equality check: " .. lhsType.type .. " == " .. rhsType.type)
+			end
+
+			s.type = typing.bool
 		elseif s.variant == "index" then
 			error("index unimplemented")
 		elseif s.variant == "function" then
 			local scope = pushScope()
 			for _, param in ipairs(s.params) do
-				scope.vars[param.name] = { type = type(param.type) }
+				local ty = type(param.type)
+				param.type = ty
+				scope.vars[param.name] = { type = ty }
 			end
 
 			node(s.body)
