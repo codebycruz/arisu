@@ -115,9 +115,15 @@ local parser = {}
 ---@field variant "constBlock"
 ---@field body slang.Node
 
+---@class slang.ConstDefinitionNode: slang.Spanned
+---@field variant "const"
+---@field name slang.IdentNode
+---@field value slang.Node
+
 ---@alias slang.Node
 --- | slang.NumberNode
 --- | slang.StringNode
+--- | slang.BoolNode
 --- | slang.IdentNode
 --- | slang.DeclarationNode
 --- | slang.UniformDefinitionNode
@@ -138,7 +144,7 @@ local parser = {}
 --- | slang.RecordInitNode
 --- | slang.TypeDefinitionNode
 --- | slang.ConstBlockNode
---- | slang.BoolNode
+--- | slang.ConstDefinitionNode
 
 ---@class slang.ParsedExternType # name
 ---@field variant "extern"
@@ -420,8 +426,8 @@ function parser.parse(tokens, src)
 			}
 		end
 
-		if token.variant == "let" then
-			local name = assert(ident(), "Expected identifier after 'let'")
+		if token.variant == "let" or token.variant == "const" then
+			local name = assert(ident(), "Expected identifier")
 
 			local annotation
 			if consume(":") then
@@ -430,7 +436,7 @@ function parser.parse(tokens, src)
 
 			assert(consume("="), "Expected '=' after identifier in declaration")
 			local value = assert(expression(), "Expected expression after '=' in declaration")
-			return { variant = "let", name = name, value = value, annotation = annotation, span = spanned(token) }
+			return { variant = token.variant, name = name, value = value, annotation = annotation, span = spanned(token) }
 		end
 
 		if token.variant == "fn" then

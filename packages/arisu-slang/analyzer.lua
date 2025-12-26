@@ -12,6 +12,10 @@ local analyzer = {}
 ---@field variant "string"
 ---@field type slang.Type
 
+---@class slang.TypedBoolNode: slang.BoolNode
+---@field variant "bool"
+---@field type slang.Type
+
 ---@class slang.TypedIdentNode: slang.IdentNode
 ---@field variant "ident"
 ---@field type slang.Type
@@ -80,9 +84,18 @@ local analyzer = {}
 ---@field variant "recordInit"
 ---@field type slang.Type
 
+---@class slang.TypedConstBlockNode: slang.ConstBlockNode
+---@field variant "constBlock"
+---@field type slang.Type
+
+---@class slang.TypedConstDefinitionNode: slang.ConstDefinitionNode
+---@field variant "const"
+---@field type slang.Type
+
 ---@alias slang.TypedNode
 --- | slang.TypedNumberNode
 --- | slang.TypedStringNode
+--- | slang.TypedBoolNode
 --- | slang.TypedIdentNode
 --- | slang.TypedDeclarationNode
 --- | slang.TypedUniformDefinitionNode
@@ -100,6 +113,8 @@ local analyzer = {}
 --- | slang.TypedCallNode
 --- | slang.TypedTestNode
 --- | slang.TypedRecordInitNode
+--- | slang.TypedConstBlockNode
+--- | slang.TypedConstDefinitionNode
 
 ---@class slang.analyzer.VarInfo
 ---@field mut boolean

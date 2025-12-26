@@ -9,6 +9,10 @@ intrinsics.vars = {
 }
 
 intrinsics.types = {
+	i32 = typing.i32,
+	f32 = typing.f32,
+	sampler = typing.sampler,
+
 	vec4f = typing.vec4f,
 	vec3f = typing.vec3f,
 	vec2f = typing.vec2f,
