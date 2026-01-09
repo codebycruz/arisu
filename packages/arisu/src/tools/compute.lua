@@ -1,6 +1,6 @@
 local ffi = require("ffi")
 
-local computeSource = io.open("packages/arisu/shaders/brush.compute.glsl", "rb"):read("*a") --[[@as string]]
+local computeSource = io.open("shaders/brush.compute.glsl", "rb"):read("*a") --[[@as string]]
 
 ---@class Compute
 ---@field pipeline hood.ComputePipeline

@@ -1,5 +1,3 @@
-package.path = package.path .. ";./packages/?/init.lua;./packages/?.lua"
-
 local Image = require("arisu-image")
 
 local Compute = require("arisu.tools.compute")
@@ -90,7 +88,9 @@ function App.new()
 	self.plugins.window = WindowPlugin.new({ type = "onWindowCreate" })
 	self.plugins.render = RenderPlugin.new(self.plugins.window)
 	self.plugins.text = TextPlugin.new(self.plugins.render)
-	self.plugins.layout = LayoutPlugin.new(function(w) return self:view(w) end, self.plugins.text)
+	self.plugins.layout = LayoutPlugin.new(function(w)
+		return self:view(w)
+	end, self.plugins.text)
 	self.plugins.ui = UIPlugin.new(self.plugins.layout, self.plugins.render)
 	self.plugins.overlay = OverlayPlugin.new(self.plugins.render)
 
@@ -114,19 +114,18 @@ function App:makeResources() ---@return App.Resources
 		---@type App.Resources.Icons
 		icons = {
 			brush = textureManager:upload(assert(Image.fromPath("assets/icons/brush.qoi"), "Brush icon not found")),
-			eraser = textureManager:upload(assert(Image.fromPath("assets/icons/david/eraser.qoi"),
-				"Eraser icon not found")),
+			eraser = textureManager:upload(assert(Image.fromPath("assets/icons/david/eraser.qoi"), "Eraser icon not found")),
 			pencil = textureManager:upload(assert(Image.fromPath("assets/icons/pencil.qoi"), "Pencil icon not found")),
 			bucket = textureManager:upload(assert(Image.fromPath("assets/icons/bucket.qoi"), "Bucket icon not found")),
 			text = textureManager:upload(assert(Image.fromPath("assets/icons/text.qoi"), "Text icon not found")),
 			palette = textureManager:upload(assert(Image.fromPath("assets/icons/palette.qoi"), "Palette icon not found")),
 			select = textureManager:upload(assert(Image.fromPath("assets/icons/select.qoi"), "Select icon not found")),
 			paste = textureManager:upload(assert(Image.fromPath("assets/icons/paste.qoi"), "Paste icon not found")),
-			magnifier = textureManager:upload(assert(Image.fromPath("assets/icons/magnifier.qoi"),
-				"Magnifier icon not found")),
+			magnifier = textureManager:upload(assert(Image.fromPath("assets/icons/magnifier.qoi"), "Magnifier icon not found")),
 			sound = textureManager:upload(assert(Image.fromPath("assets/icons/sound.qoi"), "Sound icon not found")),
-			soundMute = textureManager:upload(assert(Image.fromPath("assets/icons/sound_mute.qoi"),
-				"Sound mute icon not found")),
+			soundMute = textureManager:upload(
+				assert(Image.fromPath("assets/icons/sound_mute.qoi"), "Sound mute icon not found")
+			),
 			vector = textureManager:upload(assert(Image.fromPath("assets/icons/vector.qoi"), "Vector icon not found")),
 			copy = textureManager:upload(assert(Image.fromPath("assets/icons/copy.qoi"), "Copy icon not found")),
 			cut = textureManager:upload(assert(Image.fromPath("assets/icons/cut.qoi"), "Cut icon not found")),
@@ -134,20 +133,18 @@ function App:makeResources() ---@return App.Resources
 			resize = textureManager:upload(assert(Image.fromPath("assets/icons/resize.qoi"), "Resize icon not found")),
 			rotate = textureManager:upload(assert(Image.fromPath("assets/icons/rotate.qoi"), "Rotate icon not found")),
 			brushes = textureManager:upload(assert(Image.fromPath("assets/icons/brushes.qoi"), "Brushes icon not found")),
-			square = textureManager:upload(assert(Image.fromPath("assets/icons/david/square.qoi"),
-				"Square icon not found")),
-			circle = textureManager:upload(assert(Image.fromPath("assets/icons/david/circle.qoi"),
-				"Circle icon not found")),
+			square = textureManager:upload(assert(Image.fromPath("assets/icons/david/square.qoi"), "Square icon not found")),
+			circle = textureManager:upload(assert(Image.fromPath("assets/icons/david/circle.qoi"), "Circle icon not found")),
 			line = textureManager:upload(assert(Image.fromPath("assets/icons/david/line.qoi"), "Line icon not found")),
 			curve = textureManager:upload(assert(Image.fromPath("assets/icons/david/curve.qoi"), "Curve icon not found")),
 		},
 
 		---@type App.Resources.Textures
 		textures = {
-			canvas = canvas
+			canvas = canvas,
 		},
 
-		compute = Compute.new(textureManager, canvas, self.plugins.render.device)
+		compute = Compute.new(textureManager, canvas, self.plugins.render.device),
 	}
 end
 
@@ -188,14 +185,22 @@ function App:view(window)
 	end
 
 	local colorPalette1 = {
-		{ r = 0.0, g = 0.0, b = 0.0 }, { r = 1.0, g = 0.0, b = 0.0 }, { r = 0.0, g = 1.0, b = 0.0 },
-		{ r = 0.0, g = 0.0, b = 1.0 }, { r = 1.0, g = 1.0, b = 0.0 }, { r = 1.0, g = 0.0, b = 1.0 },
+		{ r = 0.0, g = 0.0, b = 0.0 },
+		{ r = 1.0, g = 0.0, b = 0.0 },
+		{ r = 0.0, g = 1.0, b = 0.0 },
+		{ r = 0.0, g = 0.0, b = 1.0 },
+		{ r = 1.0, g = 1.0, b = 0.0 },
+		{ r = 1.0, g = 0.0, b = 1.0 },
 		{ r = 0.0, g = 1.0, b = 1.0 },
 	}
 
 	local colorPalette2 = {
-		{ r = 0.5, g = 0.5, b = 0.5 }, { r = 0.5, g = 0.0, b = 0.0 }, { r = 0.0, g = 0.5, b = 0.0 },
-		{ r = 0.0, g = 0.0, b = 0.5 }, { r = 0.5, g = 0.5, b = 0.0 }, { r = 0.5, g = 0.0, b = 0.5 },
+		{ r = 0.5, g = 0.5, b = 0.5 },
+		{ r = 0.5, g = 0.0, b = 0.0 },
+		{ r = 0.0, g = 0.5, b = 0.0 },
+		{ r = 0.0, g = 0.0, b = 0.5 },
+		{ r = 0.5, g = 0.5, b = 0.0 },
+		{ r = 0.5, g = 0.0, b = 0.5 },
 		{ r = 0.0, g = 0.5, b = 0.5 },
 	}
 
@@ -603,14 +608,13 @@ function App:view(window)
 				})
 				:withChildren({
 					-- White background for canvas
-					Element.new("div")
-						:withStyle({
-							bg = { r = 1, g = 1, b = 1, a = 1 },
-							width = { rel = 1 },
-							height = { rel = 1 },
-							position = "relative",
-							margin = { right = 20, left = 20, top = 20, bottom = 20 }
-						}),
+					Element.new("div"):withStyle({
+						bg = { r = 1, g = 1, b = 1, a = 1 },
+						width = { rel = 1 },
+						height = { rel = 1 },
+						position = "relative",
+						margin = { right = 20, left = 20, top = 20, bottom = 20 },
+					}),
 					Element.new("div")
 						:withStyle({
 							bgImage = self.resources.textures.canvas,
@@ -645,14 +649,13 @@ function App:view(window)
 								elementHeight = elementHeight,
 							}
 						end),
-					Element.new("div")
-						:withStyle({
-							bgImage = assert(self.plugins.overlay:getTexture(window), "Overlay texture not found"),
-							width = { rel = 1 },
-							height = { rel = 1 },
-							margin = { right = 20, left = 20, top = 20, bottom = 20 },
-							position = "relative",
-						}),
+					Element.new("div"):withStyle({
+						bgImage = assert(self.plugins.overlay:getTexture(window), "Overlay texture not found"),
+						width = { rel = 1 },
+						height = { rel = 1 },
+						margin = { right = 20, left = 20, top = 20, bottom = 20 },
+						position = "relative",
+					}),
 				}),
 
 			Element.new("div")
@@ -705,25 +708,14 @@ function App:event(event, handler)
 			local boxW = math.abs(x2 - x1)
 			local boxH = math.abs(y2 - y1)
 
-			self.plugins.overlay:addBox(
-				event.window,
-				boxX, boxY, boxW, boxH,
-				{ r = 0, g = 0, b = 0, a = 1 },
-				2
-			)
+			self.plugins.overlay:addBox(event.window, boxX, boxY, boxW, boxH, { r = 0, g = 0, b = 0, a = 1 }, 2)
 		end
 
 		if self.overlayLine then
 			local start = self.overlayLine.start
 			local finish = self.overlayLine.finish or start
 
-			self.plugins.overlay:addLine(
-				event.window,
-				start.x, start.y,
-				finish.x, finish.y,
-				self.currentColor,
-				2
-			)
+			self.plugins.overlay:addLine(event.window, start.x, start.y, finish.x, finish.y, self.currentColor, 2)
 		end
 
 		if self.overlayRectangle then
@@ -740,25 +732,14 @@ function App:event(event, handler)
 			local boxW = math.abs(x2 - x1)
 			local boxH = math.abs(y2 - y1)
 
-			self.plugins.overlay:addBox(
-				event.window,
-				boxX, boxY, boxW, boxH,
-				self.currentColor,
-				2
-			)
+			self.plugins.overlay:addBox(event.window, boxX, boxY, boxW, boxH, self.currentColor, 2)
 		end
 
 		if self.overlayCircle then
 			local start = self.overlayCircle.start
 			local finish = self.overlayCircle.finish or start
 
-			self.plugins.overlay:addEllipse(
-				event.window,
-				start.x, start.y,
-				finish.x, finish.y,
-				self.currentColor,
-				2
-			)
+			self.plugins.overlay:addEllipse(event.window, start.x, start.y, finish.x, finish.y, self.currentColor, 2)
 		end
 
 		local time = os.clock() - self.startTime
@@ -876,12 +857,7 @@ function App:update(message, window)
 
 			local start = self.overlayLine.start
 			if start.x ~= x or start.y ~= y then
-				self.resources.compute:drawLine(
-					start.x, start.y,
-					x, y,
-					2,
-					self.currentColor
-				)
+				self.resources.compute:drawLine(start.x, start.y, x, y, 2, self.currentColor)
 				self.plugins.ui:refreshView(window)
 			end
 			self.overlayLine = nil
@@ -891,12 +867,7 @@ function App:update(message, window)
 
 			local start = self.overlayRectangle.start
 			if start.x ~= x or start.y ~= y then
-				self.resources.compute:drawRectangle(
-					start.x, start.y,
-					x, y,
-					2,
-					self.currentColor
-				)
+				self.resources.compute:drawRectangle(start.x, start.y, x, y, 2, self.currentColor)
 				self.plugins.ui:refreshView(window)
 			end
 			self.overlayRectangle = nil
@@ -906,12 +877,7 @@ function App:update(message, window)
 
 			local start = self.overlayCircle.start
 			if start.x ~= x or start.y ~= y then
-				self.resources.compute:drawEllipse(
-					start.x, start.y,
-					x, y,
-					2,
-					self.currentColor
-				)
+				self.resources.compute:drawEllipse(start.x, start.y, x, y, 2, self.currentColor)
 				self.plugins.ui:refreshView(window)
 			end
 			self.overlayCircle = nil

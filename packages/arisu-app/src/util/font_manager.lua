@@ -9,17 +9,19 @@ local Bitmap = require("arisu-text.font.bitmap")
 local FontManager = {}
 FontManager.__index = FontManager
 
+local dirName = debug.getinfo(1, "S").source:sub(2):match("(.*/)")
+
 ---@param textureManager TextureManager
 function FontManager.new(textureManager)
 	local self = setmetatable({ textureManager = textureManager, bitmaps = {} }, FontManager)
 
-	local characters =
-	" !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~"
+	local characters = " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~"
 
+	print("..!", dirName)
 	local defaultBitmap = assert(
 		Bitmap.fromPath(
 			{ ymargin = 2, xmargin = 4, gridWidth = 18, gridHeight = 18, characters = characters, perRow = 19 },
-			"assets/fonts/JetBrainsMono.qoi"
+			dirName .. "../assets/fonts/JetBrainsMono.qoi"
 		),
 		"Failed to load bitmap font"
 	)

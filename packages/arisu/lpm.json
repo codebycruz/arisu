@@ -1,6 +1,7 @@
 {
 	"name": "arisu",
 	"version": "0.1.0",
+	"engine": "luajit",
 	"dependencies": {
 		"arisu-app": { "path": "../arisu-app" }
 	}

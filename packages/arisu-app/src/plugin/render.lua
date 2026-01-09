@@ -60,6 +60,8 @@ function RenderPlugin:setRenderData(window, vertexData, indexData)
 	ctx.nIndices = #indexData
 end
 
+local dirName = debug.getinfo(1, "S").source:sub(2):match("(.*/)")
+
 ---@param window winit.Window
 function RenderPlugin:register(window)
 	local ctx = self.windowPlugin:getContext(window)
@@ -79,11 +81,11 @@ function RenderPlugin:register(window)
 
 	local quadPipeline = self.device:createPipeline({
 		vertex = {
-			module = { type = "glsl", source = io.open("packages/arisu-app/shaders/main.vert.glsl", "r"):read("*a") },
+			module = { type = "glsl", source = io.open(dirName .. "../shaders/main.vert.glsl", "r"):read("*a") },
 			buffers = { vertexDescriptor },
 		},
 		fragment = {
-			module = { type = "glsl", source = io.open("packages/arisu-app/shaders/main.frag.glsl", "r"):read("*a") },
+			module = { type = "glsl", source = io.open(dirName .. "../shaders/main.frag.glsl", "r"):read("*a") },
 			targets = {
 				{
 					blend = hood.BlendState.ALPHA_BLENDING,
@@ -110,11 +112,11 @@ function RenderPlugin:register(window)
 
 	local overlayPipeline = self.device:createPipeline({
 		vertex = {
-			module = { type = "glsl", source = io.open("packages/arisu/shaders/overlay.vert.glsl", "r"):read("*a") },
+			module = { type = "glsl", source = io.open("../arisu/shaders/overlay.vert.glsl", "r"):read("*a") },
 			buffers = { overlayVertexDescriptor },
 		},
 		fragment = {
-			module = { type = "glsl", source = io.open("packages/arisu/shaders/overlay.frag.glsl", "r"):read("*a") },
+			module = { type = "glsl", source = io.open("../arisu/shaders/overlay.frag.glsl", "r"):read("*a") },
 			targets = {
 				{
 					blend = hood.BlendState.ALPHA_BLENDING,

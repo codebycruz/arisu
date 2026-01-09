@@ -1,5 +1,3 @@
-package.path = package.path .. ";./packages/?/init.lua;./packages/?.lua"
-
 local util = require("arisu-util")
 
 local lexer = require("hatter.lexer")
@@ -37,6 +35,8 @@ local src = [[
 		return z;
 	}
 ]]
+
+print("??")
 
 local tokens = lexer.lex(src)
 local ast = parser.parse(tokens, src)

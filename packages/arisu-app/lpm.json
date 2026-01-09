@@ -6,6 +6,7 @@
 		"arisu-vulkan": { "path": "../arisu-vulkan" },
 		"arisu-util": { "path": "../arisu-util" },
 		"arisu-text": { "path": "../arisu-text" },
-		"arisu-winit": { "path": "../arisu-winit" }
+		"arisu-winit": { "path": "../arisu-winit" },
+		"hood": { "path": "../hood" }
 	}
 }
