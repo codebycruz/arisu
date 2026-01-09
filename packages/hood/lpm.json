@@ -1,0 +1,9 @@
+{
+	"name": "hood",
+	"version": "0.1.0",
+	"dependencies": {
+		"arisu-opengl": { "path": "../arisu-opengl" },
+		"arisu-vulkan": { "path": "../arisu-vulkan" },
+		"arisu-util": { "path": "../arisu-util" }
+	}
+}

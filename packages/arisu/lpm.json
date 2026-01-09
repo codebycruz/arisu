@@ -1,0 +1,7 @@
+{
+	"name": "arisu",
+	"version": "0.1.0",
+	"dependencies": {
+		"arisu-app": { "path": "../arisu-app" }
+	}
+}
