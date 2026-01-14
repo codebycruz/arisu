@@ -1,4 +1,5 @@
 local GLAdapter = require("hood.adapter.gl")
+local GLSurface = require("hood.surface.gl")
 
 ---@class hood.gl.Instance
 local GLInstance = {}
@@ -11,6 +12,11 @@ end
 ---@param config hood.AdapterConfig
 function GLInstance:requestAdapter(config)
 	return GLAdapter.new(config)
+end
+
+---@param window winit.win32.Window
+function GLInstance:createSurface(window)
+	return GLSurface.new(window)
 end
 
 return GLInstance

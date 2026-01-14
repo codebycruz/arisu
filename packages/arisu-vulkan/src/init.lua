@@ -505,6 +505,13 @@ ffi.cdef([[
 	VkResult vkQueueWaitIdle(
 		VkQueue queue
 	);
+
+	VkResult vkCreateSwapchainKHR(
+		VkDevice device,
+		const VkSwapchainCreateInfoKHR* pCreateInfo,
+		const VkAllocationCallbacks* pAllocator,
+		VkSwapchainKHR* pSwapchain
+	);
 ]])
 
 ---@class vk.BaseStruct
@@ -696,6 +703,9 @@ vkGlobal.StructureType = {
 	MEMORY_BARRIER = 46,
 	LOADER_INSTANCE_CREATE_INFO = 47,
 	LOADER_DEVICE_CREATE_INFO = 48,
+
+	-- VK_KHR_swapchain
+	SWAPCHAIN_CREATE_INFO_KHR = 1000001000,
 }
 
 do
@@ -807,6 +817,7 @@ do
 		vkCmdDraw = "void(*)(VkCommandBuffer, uint32_t, uint32_t, uint32_t, uint32_t)",
 		vkQueueSubmit = "VkResult(*)(VkQueue, uint32_t, const VkSubmitInfo*, uint64_t)",
 		vkQueueWaitIdle = "VkResult(*)(VkQueue)",
+		vkCreateSwapchainKHR = "VkResult(*)(VkDevice, const VkSwapchainCreateInfoKHR*, const VkAllocationCallbacks*, VkSwapchainKHR*)",
 	}
 
 	for name, funcType in pairs(types) do
@@ -1080,6 +1091,23 @@ do
 		if result ~= 0 then
 			error("Failed to wait for Vulkan queue idle, error code: " .. tostring(result))
 		end
+	end
+
+	---@param device vk.Device
+	---@param info vk.SwapchainCreateInfoKHRStruct
+	---@param allocator ffi.cdata*?
+	---@return vk.SwapchainKHR
+	function vk.createSwapchainKHR(device, info, allocator)
+		local info = ffi.new("VkSwapchainCreateInfoKHR", info)
+		info.sType = vk.StructureType.SWAPCHAIN_CREATE_INFO_KHR
+
+		local swapchain = ffi.new("VkSwapchainKHR[1]")
+		local result = vkDevice.vkCreateSwapchainKHR(device, info, allocator, swapchain)
+		if result ~= 0 then
+			error("Failed to create Vulkan swapchain, error code: " .. tostring(result))
+		end
+
+		return swapchain[0]
 	end
 end
 

@@ -1,4 +1,4 @@
-local Surface = require("hood.surface")
+local Instance = require("hood.instance")
 
 ---@class arisu.plugin.Window.Context
 ---@field window winit.Window
@@ -8,17 +8,19 @@ local Surface = require("hood.surface")
 ---@field mainCtx arisu.plugin.Window.Context?
 ---@field contexts table<winit.Window, arisu.plugin.Window.Context>
 ---@field onWindowCreate unknown
+---@field instance hood.Instance
 local WindowPlugin = {}
 WindowPlugin.__index = WindowPlugin
 
 ---@param onWindowCreate unknown
 function WindowPlugin.new(onWindowCreate)
-	return setmetatable({ contexts = {}, onWindowCreate = onWindowCreate }, WindowPlugin)
+	local instance = Instance.new()
+	return setmetatable({ contexts = {}, instance = instance, onWindowCreate = onWindowCreate }, WindowPlugin)
 end
 
 ---@param window winit.Window
 function WindowPlugin:register(window)
-	local surface = Surface.new(window)
+	local surface = self.instance:createSurface(window)
 
 	local windowCtx = {
 		window = window,

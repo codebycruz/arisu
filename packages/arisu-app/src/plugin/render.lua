@@ -38,8 +38,7 @@ RenderPlugin.__index = RenderPlugin
 
 ---@param windowPlugin arisu.plugin.Window
 function RenderPlugin.new(windowPlugin)
-	local instance = Instance.new()
-	local adapter = instance:requestAdapter({ powerPreference = "high-performance" })
+	local adapter = windowPlugin.instance:requestAdapter({ powerPreference = "high-performance" })
 	local device = adapter:requestDevice()
 
 	return setmetatable({ device = device, contexts = {}, windowPlugin = windowPlugin }, RenderPlugin)

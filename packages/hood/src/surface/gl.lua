@@ -1,5 +1,3 @@
-local util = require("arisu-util")
-
 local GLContext = require("hood.gl_context")
 local GLSwapchain = require("hood.swapchain.gl")
 

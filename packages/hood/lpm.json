@@ -4,6 +4,7 @@
 	"dependencies": {
 		"arisu-opengl": { "path": "../arisu-opengl" },
 		"arisu-vulkan": { "path": "../arisu-vulkan" },
-		"arisu-util": { "path": "../arisu-util" }
+		"arisu-util": { "path": "../arisu-util" },
+		"arisu-winit": { "path": "../arisu-winit" }
 	}
 }
