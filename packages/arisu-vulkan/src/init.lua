@@ -34,6 +34,9 @@ ffi.cdef([[
 	typedef int32_t VkSubpassContents;
 	typedef int32_t VkCommandBufferLevel;
 
+	typedef uint64_t VkSwapchainKHR;
+	typedef uint64_t VkSurfaceKHR;
+
 	typedef struct {
 		VkStructureType     sType;
 		const void*         pNext;
@@ -60,7 +63,7 @@ ffi.cdef([[
 
 	VkResult vkCreateInstance(
 		const VkInstanceCreateInfo* pCreateInfo,
-		const void* pAllocator,
+		const VkAllocationCallbacks* pAllocator,
 		VkInstance* pInstance
 	);
 
@@ -361,6 +364,27 @@ ffi.cdef([[
 	} VkCommandBufferBeginInfo;
 
 	typedef struct {
+		VkStructureType                  sType;
+		const void*                      pNext;
+		VkSwapchainCreateFlagsKHR        flags;
+		VkSurfaceKHR                     surface;
+		uint32_t                         minImageCount;
+		VkFormat                         imageFormat;
+		VkColorSpaceKHR                  imageColorSpace;
+		VkExtent2D                       imageExtent;
+		uint32_t                         imageArrayLayers;
+		VkImageUsageFlags                imageUsage;
+		VkSharingMode                    imageSharingMode;
+		uint32_t                         queueFamilyIndexCount;
+		const uint32_t*                  pQueueFamilyIndices;
+		VkSurfaceTransformFlagBitsKHR    preTransform;
+		VkCompositeAlphaFlagBitsKHR      compositeAlpha;
+		VkPresentModeKHR                 presentMode;
+		VkBool32                         clipped;
+		VkSwapchainKHR                   oldSwapchain;
+	} VkSwapchainCreateInfoKHR;
+
+	typedef struct {
 		int32_t    x;
 		int32_t    y;
 	} VkOffset2D;
@@ -499,6 +523,8 @@ ffi.cdef([[
 ---@class vk.Framebuffer: number
 ---@class vk.CommandBuffer: number
 ---@class vk.Queue: number
+---@class vk.SwapchainKHR: number
+---@class vk.SurfaceKHR: number
 
 ---@class vk.InstanceCreateInfoStruct: vk.BaseStruct
 ---@field pApplicationInfo userdata?
@@ -562,6 +588,23 @@ ffi.cdef([[
 ---@field width number
 ---@field height number
 ---@field layers number
+
+---@class vk.SwapchainCreateInfoKHRStruct: vk.BaseStruct
+---@field surface vk.SurfaceKHR
+---@field minImageCount number
+---@field imageFormat number
+---@field imageColorSpace number
+---@field imageExtent userdata
+---@field imageArrayLayers number
+---@field imageUsage number
+---@field imageSharingMode number
+---@field queueFamilyIndexCount number?
+---@field pQueueFamilyIndices userdata?
+---@field preTransform number
+---@field compositeAlpha number
+---@field presentMode number
+---@field clipped number
+---@field oldSwapchain vk.SwapchainKHR
 
 ---@class vk.CommandBufferAllocateInfoStruct: vk.BaseStruct
 ---@field commandPool number

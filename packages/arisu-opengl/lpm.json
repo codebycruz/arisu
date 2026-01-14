@@ -1,5 +1,8 @@
 {
 	"name": "arisu-opengl",
 	"version": "0.1.0",
-	"dependencies": {}
+	"dependencies": {
+		"arisu-x11": { "path": "../arisu-x11" },
+		"arisu-win32": { "path": "../arisu-win32" }
+	}
 }

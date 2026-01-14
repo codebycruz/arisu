@@ -1,6 +1,6 @@
 local vk = require("arisu-vulkan")
 
----@class glx.vk.Buffer
+---@class hood.vk.Buffer
 ---@field buffer vk.Buffer*
 ---@field descriptor hood.BufferDescriptor
 local VKBuffer = {}

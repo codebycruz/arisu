@@ -3,6 +3,9 @@
 	"version": "0.1.0",
 	"engine": "luajit",
 	"dependencies": {
-		"arisu-app": { "path": "../arisu-app" }
+		"arisu-app": { "path": "../arisu-app" },
+		"arisu-image": { "path": "../arisu-image" },
+		"arisu-winit": { "path": "../arisu-winit" },
+		"arisu-util": { "path": "../arisu-util" }
 	}
 }
