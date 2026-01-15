@@ -30,7 +30,7 @@ ffi.cdef([[
 ---@class GLXContext: ffi.cdata*
 ---@class GLXFBConfig: ffi.cdata*
 
-local C = ffi.load("GL")
+local C = ffi.load("libGL.so.1")
 
 return {
 	RGBA = 4,
