@@ -150,7 +150,7 @@ for name in pairs(nonCoreFnDefs) do
 end
 
 local coreFns =
-	util.isLinux() and ffi.load("GL")
+	util.isLinux() and ffi.load("libGL.so.1")
 	or util.isWindows() and ffi.load("opengl32")
 	or error("Unsupported platform for OpenGL")
 

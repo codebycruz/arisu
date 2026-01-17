@@ -149,7 +149,7 @@ ffi.cdef([[
 	void XChangeProperty(Display* display, Window w, Atom property, Atom type, int format, int mode, const unsigned char* data, int nelements);
 ]])
 
-local C = ffi.load("X11")
+local C = ffi.load("libX11.so.6")
 
 ---@class XEvent: userdata
 ---@field type number
