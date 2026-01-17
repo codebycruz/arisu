@@ -1,2 +1,2 @@
 run:
-    luajit ./packages/arisu/init.lua
+    @cd ./packages/arisu && lpm run ./src/init.lua
