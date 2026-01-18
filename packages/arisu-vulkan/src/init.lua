@@ -17,6 +17,7 @@ ffi.cdef([[
 	typedef uint32_t VkSharingMode;
 	typedef void VkAllocationCallbacks;
 	typedef VkFlags VkShaderModuleCreateFlags;
+	typedef uint64_t VkShaderModule;
 	typedef uint64_t VkPipelineLayout;
 	typedef uint64_t VkPipeline;
 	typedef uint64_t VkRenderPass;
@@ -27,6 +28,15 @@ ffi.cdef([[
 	typedef uint64_t VkSemaphore;
 	typedef uint64_t VkFence;
 	typedef uint64_t VkImage;
+	typedef uint64_t VkSampler;
+	typedef uint64_t VkImageView;
+	typedef uint64_t VkDescriptorSetLayout;
+	typedef uint64_t VkDescriptorPool;
+	typedef uint64_t VkDescriptorSet;
+	typedef VkFlags VkDescriptorSetLayoutCreateFlags;
+	typedef VkFlags VkDescriptorPoolCreateFlags;
+	typedef int32_t VkDescriptorType;
+	typedef VkFlags VkShaderStageFlags;
 	typedef VkFlags VkPipelineLayoutCreateFlags;
 	typedef VkFlags VkPipelineCreateFlags;
 	typedef VkFlags VkRenderPassCreateFlags;
@@ -386,6 +396,69 @@ ffi.cdef([[
 	} VkFenceCreateInfo;
 
 	typedef struct {
+		uint32_t              binding;
+		VkDescriptorType      descriptorType;
+		uint32_t              descriptorCount;
+		VkShaderStageFlags    stageFlags;
+		const void*           pImmutableSamplers;
+	} VkDescriptorSetLayoutBinding;
+
+	typedef struct {
+		VkStructureType                      sType;
+		const void*                          pNext;
+		VkDescriptorSetLayoutCreateFlags    flags;
+		uint32_t                             bindingCount;
+		const VkDescriptorSetLayoutBinding*  pBindings;
+	} VkDescriptorSetLayoutCreateInfo;
+
+	typedef struct {
+		VkDescriptorType    type;
+		uint32_t            descriptorCount;
+	} VkDescriptorPoolSize;
+
+	typedef struct {
+		VkStructureType              sType;
+		const void*                  pNext;
+		VkDescriptorPoolCreateFlags  flags;
+		uint32_t                     maxSets;
+		uint32_t                     poolSizeCount;
+		const VkDescriptorPoolSize*  pPoolSizes;
+	} VkDescriptorPoolCreateInfo;
+
+	typedef struct {
+		VkStructureType                  sType;
+		const void*                      pNext;
+		VkDescriptorPool                 descriptorPool;
+		uint32_t                         descriptorSetCount;
+		const VkDescriptorSetLayout*     pSetLayouts;
+	} VkDescriptorSetAllocateInfo;
+
+	typedef struct {
+		VkBuffer        buffer;
+		VkDeviceSize    offset;
+		VkDeviceSize    range;
+	} VkDescriptorBufferInfo;
+
+	typedef struct {
+		VkSampler      sampler;
+		VkImageView    imageView;
+		int32_t        imageLayout;
+	} VkDescriptorImageInfo;
+
+	typedef struct {
+		VkStructureType                  sType;
+		const void*                      pNext;
+		VkDescriptorSet                  dstSet;
+		uint32_t                         dstBinding;
+		uint32_t                         dstArrayElement;
+		uint32_t                         descriptorCount;
+		VkDescriptorType                 descriptorType;
+		const VkDescriptorImageInfo*     pImageInfo;
+		const VkDescriptorBufferInfo*    pBufferInfo;
+		const void*                      pTexelBufferView;
+	} VkWriteDescriptorSet;
+
+	typedef struct {
 		VkStructureType                  sType;
 		const void*                      pNext;
 		VkSwapchainCreateFlagsKHR        flags;
@@ -494,6 +567,34 @@ ffi.cdef([[
 		const VkCommandPoolCreateInfo* pCreateInfo,
 		const VkAllocationCallbacks* pAllocator,
 		VkCommandPool* pCommandPool
+	);
+
+	VkResult vkCreateDescriptorSetLayout(
+		VkDevice device,
+		const VkDescriptorSetLayoutCreateInfo* pCreateInfo,
+		const VkAllocationCallbacks* pAllocator,
+		VkDescriptorSetLayout* pSetLayout
+	);
+
+	VkResult vkCreateDescriptorPool(
+		VkDevice device,
+		const VkDescriptorPoolCreateInfo* pCreateInfo,
+		const VkAllocationCallbacks* pAllocator,
+		VkDescriptorPool* pDescriptorPool
+	);
+
+	VkResult vkAllocateDescriptorSets(
+		VkDevice device,
+		const VkDescriptorSetAllocateInfo* pAllocateInfo,
+		VkDescriptorSet* pDescriptorSets
+	);
+
+	void vkUpdateDescriptorSets(
+		VkDevice device,
+		uint32_t descriptorWriteCount,
+		const VkWriteDescriptorSet* pDescriptorWrites,
+		uint32_t descriptorCopyCount,
+		const void* pDescriptorCopies
 	);
 
 	VkResult vkAllocateCommandBuffers(
@@ -605,17 +706,23 @@ ffi.cdef([[
 ---@class vk.Result: number
 ---@class vk.PhysicalDevice: ffi.cdata*
 ---@class vk.Device: number
----@class vk.Buffer*: ffi.cdata*
+---@class vk.Buffer: number
 ---@class vk.PipelineLayout: number
 ---@class vk.Pipeline: number
 ---@class vk.RenderPass: number
 ---@class vk.Framebuffer: number
+---@class vk.ShaderModule: number
 ---@class vk.CommandPool: number
 ---@class vk.CommandBuffer: number
+---@class vk.DescriptorSetLayout: number
+---@class vk.DescriptorPool: number
+---@class vk.DescriptorSet: number
 ---@class vk.Queue: number
 ---@class vk.Semaphore: number
 ---@class vk.Fence: number
 ---@class vk.Image: number
+---@class vk.Sampler: number
+---@class vk.ImageView: number
 ---@class vk.SwapchainKHR: number
 ---@class vk.SurfaceKHR: number
 
@@ -690,6 +797,51 @@ ffi.cdef([[
 ---@field commandPool vk.CommandPool
 ---@field level number
 ---@field commandBufferCount number
+
+---@class vk.DescriptorSetLayoutBinding: ffi.cdata*
+---@field binding number
+---@field descriptorType number
+---@field descriptorCount number
+---@field stageFlags number
+---@field pImmutableSamplers ffi.cdata*?
+
+---@class vk.DescriptorSetLayoutCreateInfoStruct: vk.BaseStruct
+---@field bindingCount number?
+---@field pBindings ffi.cdata*?
+
+---@class vk.DescriptorPoolSize: ffi.cdata*
+---@field type number
+---@field descriptorCount number
+
+---@class vk.DescriptorPoolCreateInfoStruct: vk.BaseStruct
+---@field maxSets number
+---@field poolSizeCount number?
+---@field pPoolSizes ffi.cdata*?
+
+---@class vk.DescriptorSetAllocateInfoStruct: vk.BaseStruct
+---@field descriptorPool vk.DescriptorPool
+---@field descriptorSetCount number
+---@field pSetLayouts ffi.cdata*
+
+---@class vk.DescriptorBufferInfo: ffi.cdata*
+---@field buffer vk.Buffer
+---@field offset number
+---@field range number
+
+---@class vk.DescriptorImageInfo: ffi.cdata*
+---@field sampler number
+---@field imageView number
+---@field imageLayout number
+
+---@class vk.WriteDescriptorSetStruct: vk.BaseStruct
+---@field dstSet vk.DescriptorSet
+---@field dstBinding number
+---@field dstArrayElement number
+---@field descriptorCount number
+---@field descriptorType number
+---@field pImageInfo ffi.cdata*?
+---@field pBufferInfo ffi.cdata*?
+---@field pTexelBufferView ffi.cdata*?
 
 ---@class vk.SwapchainCreateInfoKHRStruct: vk.BaseStruct
 ---@field surface vk.SurfaceKHR
@@ -902,7 +1054,8 @@ local vkDevice = {}
 do
 	local types = {
 		vkCreateBuffer = "VkResult(*)(VkDevice, const VkBufferCreateInfo*, const VkAllocationCallbacks*, VkBuffer*)",
-		vkCreateShaderModule = "VkResult(*)(VkDevice, const void*, const VkAllocationCallbacks*, VkBuffer*)",
+		vkCreateShaderModule =
+		"VkResult(*)(VkDevice, const VkShaderModuleCreateInfo*, const VkAllocationCallbacks*, VkShaderModule*)",
 		vkCreatePipelineLayout =
 		"VkResult(*)(VkDevice, const VkPipelineLayoutCreateInfo*, const VkAllocationCallbacks*, VkPipelineLayout*)",
 		vkCreateGraphicsPipelines =
@@ -913,6 +1066,12 @@ do
 		"VkResult(*)(VkDevice, const VkFramebufferCreateInfo*, const VkAllocationCallbacks*, VkFramebuffer*)",
 		vkCreateCommandPool =
 		"VkResult(*)(VkDevice, const VkCommandPoolCreateInfo*, const VkAllocationCallbacks*, VkCommandPool*)",
+		vkCreateDescriptorSetLayout =
+		"VkResult(*)(VkDevice, const VkDescriptorSetLayoutCreateInfo*, const VkAllocationCallbacks*, VkDescriptorSetLayout*)",
+		vkCreateDescriptorPool =
+		"VkResult(*)(VkDevice, const VkDescriptorPoolCreateInfo*, const VkAllocationCallbacks*, VkDescriptorPool*)",
+		vkAllocateDescriptorSets = "VkResult(*)(VkDevice, const VkDescriptorSetAllocateInfo*, VkDescriptorSet*)",
+		vkUpdateDescriptorSets = "void(*)(VkDevice, uint32_t, const VkWriteDescriptorSet*, uint32_t, const void*)",
 		vkAllocateCommandBuffers = "VkResult(*)(VkDevice, const VkCommandBufferAllocateInfo*, VkCommandBuffer*)",
 		vkBeginCommandBuffer = "VkResult(*)(VkCommandBuffer, const VkCommandBufferBeginInfo*)",
 		vkEndCommandBuffer = "VkResult(*)(VkCommandBuffer)",
@@ -1014,7 +1173,7 @@ do
 	---@param device vk.Device
 	---@param info vk.BufferCreateInfoStruct
 	---@param allocator ffi.cdata*?
-	---@return vk.Buffer*
+	---@return vk.Buffer
 	function vk.createBuffer(device, info, allocator)
 		local info = ffi.new("VkBufferCreateInfo", info)
 		info.sType = vk.StructureType.BUFFER_CREATE_INFO
@@ -1031,12 +1190,12 @@ do
 	---@param device vk.Device
 	---@param info vk.ShaderModuleCreateInfoStruct
 	---@param allocator ffi.cdata*?
-	---@return vk.Buffer*
+	---@return vk.ShaderModule
 	function vk.createShaderModule(device, info, allocator)
 		local info = ffi.new("VkShaderModuleCreateInfo", info)
 		info.sType = vk.StructureType.SHADER_MODULE_CREATE_INFO
 
-		local shaderModule = ffi.new("VkBuffer[1]")
+		local shaderModule = ffi.new("VkShaderModule[1]")
 		local result = vkDevice.vkCreateShaderModule(device, info, allocator, shaderModule)
 		if result ~= 0 then
 			error("Failed to create Vulkan shader module, error code: " .. tostring(result))
@@ -1139,6 +1298,67 @@ do
 		end
 
 		return commandPool[0]
+	end
+
+	---@param device vk.Device
+	---@param info vk.DescriptorSetLayoutCreateInfoStruct
+	---@param allocator ffi.cdata*?
+	---@return vk.DescriptorSetLayout
+	function vk.createDescriptorSetLayout(device, info, allocator)
+		local createInfo = ffi.new("VkDescriptorSetLayoutCreateInfo", info)
+		createInfo.sType = vk.StructureType.DESCRIPTOR_SET_LAYOUT_CREATE_INFO
+		local layout = ffi.new("VkDescriptorSetLayout[1]")
+		local result = vkDevice.vkCreateDescriptorSetLayout(device, createInfo, allocator, layout)
+		if result ~= 0 then
+			error("Failed to create Vulkan descriptor set layout, error code: " .. tostring(result))
+		end
+		return layout[0]
+	end
+
+	---@param device vk.Device
+	---@param info vk.DescriptorPoolCreateInfoStruct
+	---@param allocator ffi.cdata*?
+	---@return vk.DescriptorPool
+	function vk.createDescriptorPool(device, info, allocator)
+		local createInfo = ffi.new("VkDescriptorPoolCreateInfo", info)
+		createInfo.sType = vk.StructureType.DESCRIPTOR_POOL_CREATE_INFO
+		local pool = ffi.new("VkDescriptorPool[1]")
+		local result = vkDevice.vkCreateDescriptorPool(device, createInfo, allocator, pool)
+		if result ~= 0 then
+			error("Failed to create Vulkan descriptor pool, error code: " .. tostring(result))
+		end
+		return pool[0]
+	end
+
+	---@param device vk.Device
+	---@param info vk.DescriptorSetAllocateInfoStruct
+	---@return vk.DescriptorSet[]
+	function vk.allocateDescriptorSets(device, info)
+		local allocInfo = ffi.new("VkDescriptorSetAllocateInfo", info)
+		allocInfo.sType = vk.StructureType.DESCRIPTOR_SET_ALLOCATE_INFO
+		local descriptorSets = ffi.new("VkDescriptorSet[?]", info.descriptorSetCount)
+		local result = vkDevice.vkAllocateDescriptorSets(device, allocInfo, descriptorSets)
+		if result ~= 0 then
+			error("Failed to allocate Vulkan descriptor sets, error code: " .. tostring(result))
+		end
+		local sets = {}
+		for i = 0, info.descriptorSetCount - 1 do
+			sets[i + 1] = descriptorSets[i]
+		end
+		return sets
+	end
+
+	---@param device vk.Device
+	---@param writes vk.WriteDescriptorSetStruct[]
+	function vk.updateDescriptorSets(device, writes)
+		local count = #writes
+		local writeArray = ffi.new("VkWriteDescriptorSet[?]", count)
+		for i, write in ipairs(writes) do
+			local w = ffi.new("VkWriteDescriptorSet", write)
+			w.sType = vk.StructureType.WRITE_DESCRIPTOR_SET
+			writeArray[i - 1] = w
+		end
+		vkDevice.vkUpdateDescriptorSets(device, count, writeArray, 0, nil)
 	end
 
 	---@param device vk.Device
