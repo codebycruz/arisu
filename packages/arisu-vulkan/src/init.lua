@@ -26,6 +26,7 @@ ffi.cdef([[
 	typedef uint64_t VkQueue;
 	typedef uint64_t VkSemaphore;
 	typedef uint64_t VkFence;
+	typedef uint64_t VkImage;
 	typedef VkFlags VkPipelineLayoutCreateFlags;
 	typedef VkFlags VkPipelineCreateFlags;
 	typedef VkFlags VkRenderPassCreateFlags;
@@ -351,6 +352,13 @@ ffi.cdef([[
 	} VkFramebufferCreateInfo;
 
 	typedef struct {
+		VkStructureType             sType;
+		const void*                 pNext;
+		VkCommandPoolCreateFlags    flags;
+		uint32_t                    queueFamilyIndex;
+	} VkCommandPoolCreateInfo;
+
+	typedef struct {
 		VkStructureType         sType;
 		const void*             pNext;
 		VkCommandPool           commandPool;
@@ -424,16 +432,27 @@ ffi.cdef([[
 	} VkRenderPassBeginInfo;
 
 	typedef struct {
-		VkStructureType             sType;
-		const void*                 pNext;
-		uint32_t                    waitSemaphoreCount;
-		const void*                 pWaitSemaphores;
-		const void*                 pWaitDstStageMask;
-		uint32_t                    commandBufferCount;
-		const VkCommandBuffer*      pCommandBuffers;
-		uint32_t                    signalSemaphoreCount;
-		const void*                 pSignalSemaphores;
+		VkStructureType         sType;
+		const void*             pNext;
+		uint32_t                waitSemaphoreCount;
+		const VkSemaphore*      pWaitSemaphores;
+		const void*             pWaitDstStageMask;
+		uint32_t                commandBufferCount;
+		const VkCommandBuffer*  pCommandBuffers;
+		uint32_t                signalSemaphoreCount;
+		const VkSemaphore*      pSignalSemaphores;
 	} VkSubmitInfo;
+
+	typedef struct {
+		VkStructureType          sType;
+		const void*              pNext;
+		uint32_t                 waitSemaphoreCount;
+		const VkSemaphore*       pWaitSemaphores;
+		uint32_t                 swapchainCount;
+		const VkSwapchainKHR*    pSwapchains;
+		const uint32_t*          pImageIndices;
+		VkResult*                pResults;
+	} VkPresentInfoKHR;
 
 	VkResult vkGetPhysicalDeviceProperties(
 		VkPhysicalDevice physicalDevice,
@@ -468,6 +487,13 @@ ffi.cdef([[
 		const VkFramebufferCreateInfo* pCreateInfo,
 		const VkAllocationCallbacks* pAllocator,
 		VkFramebuffer* pFramebuffer
+	);
+
+	VkResult vkCreateCommandPool(
+		VkDevice device,
+		const VkCommandPoolCreateInfo* pCreateInfo,
+		const VkAllocationCallbacks* pAllocator,
+		VkCommandPool* pCommandPool
 	);
 
 	VkResult vkAllocateCommandBuffers(
@@ -547,6 +573,27 @@ ffi.cdef([[
 		const VkAllocationCallbacks* pAllocator,
 		VkSwapchainKHR* pSwapchain
 	);
+
+	VkResult vkGetSwapchainImagesKHR(
+		VkDevice device,
+		VkSwapchainKHR swapchain,
+		uint32_t* pSwapchainImageCount,
+		VkImage* pSwapchainImages
+	);
+
+	VkResult vkAcquireNextImageKHR(
+		VkDevice device,
+		VkSwapchainKHR swapchain,
+		uint64_t timeout,
+		VkSemaphore semaphore,
+		VkFence fence,
+		uint32_t* pImageIndex
+	);
+
+	VkResult vkQueuePresentKHR(
+		VkQueue queue,
+		const VkPresentInfoKHR* pPresentInfo
+	);
 ]])
 
 ---@class vk.BaseStruct
@@ -563,10 +610,12 @@ ffi.cdef([[
 ---@class vk.Pipeline: number
 ---@class vk.RenderPass: number
 ---@class vk.Framebuffer: number
+---@class vk.CommandPool: number
 ---@class vk.CommandBuffer: number
 ---@class vk.Queue: number
 ---@class vk.Semaphore: number
 ---@class vk.Fence: number
+---@class vk.Image: number
 ---@class vk.SwapchainKHR: number
 ---@class vk.SurfaceKHR: number
 
@@ -633,6 +682,15 @@ ffi.cdef([[
 ---@field height number
 ---@field layers number
 
+---@class vk.CommandPoolCreateInfoStruct: vk.BaseStruct
+---@field flags number?
+---@field queueFamilyIndex number
+
+---@class vk.CommandBufferAllocateInfoStruct: vk.BaseStruct
+---@field commandPool vk.CommandPool
+---@field level number
+---@field commandBufferCount number
+
 ---@class vk.SwapchainCreateInfoKHRStruct: vk.BaseStruct
 ---@field surface vk.SurfaceKHR
 ---@field minImageCount number
@@ -650,11 +708,6 @@ ffi.cdef([[
 ---@field clipped number
 ---@field oldSwapchain vk.SwapchainKHR
 
----@class vk.CommandBufferAllocateInfoStruct: vk.BaseStruct
----@field commandPool number
----@field level number
----@field commandBufferCount number
-
 ---@class vk.CommandBufferBeginInfoStruct: vk.BaseStruct
 ---@field pInheritanceInfo userdata?
 
@@ -671,14 +724,22 @@ ffi.cdef([[
 
 ---@class vk.FenceCreateInfoStruct: vk.BaseStruct
 
+---@class vk.PresentInfoKHRStruct: vk.BaseStruct
+---@field waitSemaphoreCount number?
+---@field pWaitSemaphores ffi.cdata*?
+---@field swapchainCount number
+---@field pSwapchains ffi.cdata*
+---@field pImageIndices ffi.cdata*
+---@field pResults ffi.cdata*?
+
 ---@class vk.SubmitInfoStruct: vk.BaseStruct
 ---@field waitSemaphoreCount number?
----@field pWaitSemaphores userdata?
----@field pWaitDstStageMask userdata?
+---@field pWaitSemaphores ffi.cdata*?
+---@field pWaitDstStageMask ffi.cdata*?
 ---@field commandBufferCount number
----@field pCommandBuffers userdata
+---@field pCommandBuffers ffi.cdata*?
 ---@field signalSemaphoreCount number?
----@field pSignalSemaphores userdata?
+---@field pSignalSemaphores ffi.cdata*?
 
 ---@class vk.PhysicalDeviceProperties: ffi.cdata*
 ---@field apiVersion number
@@ -747,6 +808,7 @@ vkGlobal.StructureType = {
 
 	-- VK_KHR_swapchain
 	SWAPCHAIN_CREATE_INFO_KHR = 1000001000,
+	PRESENT_INFO_KHR = 1000001001,
 }
 
 do
@@ -849,6 +911,8 @@ do
 		"VkResult(*)(VkDevice, const VkRenderPassCreateInfo*, const VkAllocationCallbacks*, VkRenderPass*)",
 		vkCreateFramebuffer =
 		"VkResult(*)(VkDevice, const VkFramebufferCreateInfo*, const VkAllocationCallbacks*, VkFramebuffer*)",
+		vkCreateCommandPool =
+		"VkResult(*)(VkDevice, const VkCommandPoolCreateInfo*, const VkAllocationCallbacks*, VkCommandPool*)",
 		vkAllocateCommandBuffers = "VkResult(*)(VkDevice, const VkCommandBufferAllocateInfo*, VkCommandBuffer*)",
 		vkBeginCommandBuffer = "VkResult(*)(VkCommandBuffer, const VkCommandBufferBeginInfo*)",
 		vkEndCommandBuffer = "VkResult(*)(VkCommandBuffer)",
@@ -864,6 +928,9 @@ do
 		vkCreateFence = "VkResult(*)(VkDevice, const VkFenceCreateInfo*, const VkAllocationCallbacks*, VkFence*)",
 		vkCreateSwapchainKHR =
 		"VkResult(*)(VkDevice, const VkSwapchainCreateInfoKHR*, const VkAllocationCallbacks*, VkSwapchainKHR*)",
+		vkGetSwapchainImagesKHR = "VkResult(*)(VkDevice, VkSwapchainKHR, uint32_t*, VkImage*)",
+		vkAcquireNextImageKHR = "VkResult(*)(VkDevice, VkSwapchainKHR, uint64_t, VkSemaphore, VkFence, uint32_t*)",
+		vkQueuePresentKHR = "VkResult(*)(VkQueue, const VkPresentInfoKHR*)",
 	}
 
 	for name, funcType in pairs(types) do
@@ -1049,14 +1116,29 @@ do
 	function vk.createFramebuffer(device, info, allocator)
 		local info = ffi.new("VkFramebufferCreateInfo", info)
 		info.sType = vk.StructureType.FRAMEBUFFER_CREATE_INFO
-
 		local framebuffer = ffi.new("VkFramebuffer[1]")
 		local result = vkDevice.vkCreateFramebuffer(device, info, allocator, framebuffer)
 		if result ~= 0 then
 			error("Failed to create Vulkan framebuffer, error code: " .. tostring(result))
 		end
-
 		return framebuffer[0]
+	end
+
+	---@param device vk.Device
+	---@param info vk.CommandPoolCreateInfoStruct
+	---@param allocator ffi.cdata*?
+	---@return vk.CommandPool
+	function vk.createCommandPool(device, info, allocator)
+		local createInfo = ffi.new("VkCommandPoolCreateInfo", info)
+		createInfo.sType = vk.StructureType.COMMAND_POOL_CREATE_INFO
+
+		local commandPool = ffi.new("VkCommandPool[1]")
+		local result = vkDevice.vkCreateCommandPool(device, createInfo, allocator, commandPool)
+		if result ~= 0 then
+			error("Failed to create Vulkan command pool, error code: " .. tostring(result))
+		end
+
+		return commandPool[0]
 	end
 
 	---@param device vk.Device
@@ -1186,14 +1268,68 @@ do
 	function vk.createSwapchainKHR(device, info, allocator)
 		local info = ffi.new("VkSwapchainCreateInfoKHR", info)
 		info.sType = vk.StructureType.SWAPCHAIN_CREATE_INFO_KHR
-
 		local swapchain = ffi.new("VkSwapchainKHR[1]")
 		local result = vkDevice.vkCreateSwapchainKHR(device, info, allocator, swapchain)
 		if result ~= 0 then
 			error("Failed to create Vulkan swapchain, error code: " .. tostring(result))
 		end
-
 		return swapchain[0]
+	end
+
+	---@param device vk.Device
+	---@param swapchain vk.SwapchainKHR
+	---@return vk.Image[]
+	function vk.getSwapchainImagesKHR(device, swapchain)
+		local count = ffi.new("uint32_t[1]")
+		local result = vkDevice.vkGetSwapchainImagesKHR(device, swapchain, count, nil)
+		if result ~= 0 then
+			error("Failed to get swapchain image count, error code: " .. tostring(result))
+		end
+
+		local images = ffi.new("VkImage[?]", count[0])
+		result = vkDevice.vkGetSwapchainImagesKHR(device, swapchain, count, images)
+		if result ~= 0 then
+			error("Failed to get swapchain images, error code: " .. tostring(result))
+		end
+
+		local imageTable = {}
+		for i = 0, count[0] - 1 do
+			imageTable[i + 1] = images[i]
+		end
+		return imageTable
+	end
+
+	---@param device vk.Device
+	---@param swapchain vk.SwapchainKHR
+	---@param timeout number
+	---@param semaphore vk.Semaphore?
+	---@param fence vk.Fence?
+	---@return number imageIndex
+	function vk.acquireNextImageKHR(device, swapchain, timeout, semaphore, fence)
+		local imageIndex = ffi.new("uint32_t[1]")
+		local result = vkDevice.vkAcquireNextImageKHR(
+			device,
+			swapchain,
+			timeout,
+			semaphore or 0,
+			fence or 0,
+			imageIndex
+		)
+		if result ~= 0 then
+			error("Failed to acquire next swapchain image, error code: " .. tostring(result))
+		end
+		return imageIndex[0]
+	end
+
+	---@param queue vk.Queue
+	---@param info vk.PresentInfoKHRStruct
+	function vk.queuePresentKHR(queue, info)
+		local presentInfo = ffi.new("VkPresentInfoKHR", info)
+		presentInfo.sType = vk.StructureType.PRESENT_INFO_KHR
+		local result = vkDevice.vkQueuePresentKHR(queue, presentInfo)
+		if result ~= 0 then
+			error("Failed to present queue, error code: " .. tostring(result))
+		end
 	end
 end
 
