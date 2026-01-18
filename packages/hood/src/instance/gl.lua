@@ -14,7 +14,7 @@ function GLInstance:requestAdapter(config)
 	return GLAdapter.new(config)
 end
 
----@param window winit.win32.Window
+---@param window winit.Window
 function GLInstance:createSurface(window)
 	return GLSurface.new(window)
 end
