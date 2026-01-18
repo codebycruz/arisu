@@ -1,7 +1,8 @@
 local vk = require("arisu-vulkan")
 
 ---@class hood.vk.Buffer
----@field buffer vk.Buffer*
+---@field buffer vk.Buffer
+---@field device vk.Device
 ---@field descriptor hood.BufferDescriptor
 local VKBuffer = {}
 VKBuffer.__index = VKBuffer
@@ -28,7 +29,15 @@ function VKBuffer.new(device, descriptor)
 	---@diagnostic disable-next-line: assign-type-mismatch: vkUsage is checked above
 	local buffer = vk.createBuffer(device, { size = descriptor.size, usage = vkUsage })
 
-	return setmetatable({ buffer = buffer, descriptor = descriptor }, VKBuffer)
+	return setmetatable({ device = device, buffer = buffer, descriptor = descriptor }, VKBuffer)
+end
+
+function VKBuffer:destroy()
+	vk.destroyBuffer(self.device, self.buffer)
+end
+
+function VKBuffer:__tostring()
+	return "VKBuffer(" .. tostring(self.buffer) .. ")"
 end
 
 return VKBuffer

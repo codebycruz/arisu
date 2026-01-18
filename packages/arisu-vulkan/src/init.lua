@@ -1279,6 +1279,7 @@ local vkDevice = {}
 do
 	local types = {
 		vkCreateBuffer = "VkResult(*)(VkDevice, const VkBufferCreateInfo*, const VkAllocationCallbacks*, VkBuffer*)",
+		vkDestroyBuffer = "void(*)(VkDevice, VkBuffer, const VkAllocationCallbacks*)",
 		vkCreateShaderModule =
 		"VkResult(*)(VkDevice, const VkShaderModuleCreateInfo*, const VkAllocationCallbacks*, VkShaderModule*)",
 		vkCreatePipelineLayout =
@@ -1420,6 +1421,13 @@ do
 		end
 
 		return buffer[0]
+	end
+
+	---@param device vk.Device
+	---@param buffer vk.Buffer
+	---@param allocator ffi.cdata*?
+	function vk.destroyBuffer(device, buffer, allocator)
+		vkDevice.vkDestroyBuffer(device, buffer, allocator)
 	end
 
 	---@param device vk.Device
