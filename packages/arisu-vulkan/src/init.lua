@@ -24,6 +24,8 @@ ffi.cdef([[
 	typedef uint64_t VkCommandPool;
 	typedef uint64_t VkCommandBuffer;
 	typedef uint64_t VkQueue;
+	typedef uint64_t VkSemaphore;
+	typedef uint64_t VkFence;
 	typedef VkFlags VkPipelineLayoutCreateFlags;
 	typedef VkFlags VkPipelineCreateFlags;
 	typedef VkFlags VkRenderPassCreateFlags;
@@ -364,6 +366,18 @@ ffi.cdef([[
 	} VkCommandBufferBeginInfo;
 
 	typedef struct {
+		VkStructureType    sType;
+		const void*        pNext;
+		VkFlags            flags;
+	} VkSemaphoreCreateInfo;
+
+	typedef struct {
+		VkStructureType    sType;
+		const void*        pNext;
+		VkFlags            flags;
+	} VkFenceCreateInfo;
+
+	typedef struct {
 		VkStructureType                  sType;
 		const void*                      pNext;
 		VkSwapchainCreateFlagsKHR        flags;
@@ -506,6 +520,27 @@ ffi.cdef([[
 		VkQueue queue
 	);
 
+	void vkGetDeviceQueue(
+		VkDevice device,
+		uint32_t queueFamilyIndex,
+		uint32_t queueIndex,
+		VkQueue* pQueue
+	);
+
+	VkResult vkCreateSemaphore(
+		VkDevice device,
+		const VkSemaphoreCreateInfo* pCreateInfo,
+		const VkAllocationCallbacks* pAllocator,
+		VkSemaphore* pSemaphore
+	);
+
+	VkResult vkCreateFence(
+		VkDevice device,
+		const VkFenceCreateInfo* pCreateInfo,
+		const VkAllocationCallbacks* pAllocator,
+		VkFence* pFence
+	);
+
 	VkResult vkCreateSwapchainKHR(
 		VkDevice device,
 		const VkSwapchainCreateInfoKHR* pCreateInfo,
@@ -530,6 +565,8 @@ ffi.cdef([[
 ---@class vk.Framebuffer: number
 ---@class vk.CommandBuffer: number
 ---@class vk.Queue: number
+---@class vk.Semaphore: number
+---@class vk.Fence: number
 ---@class vk.SwapchainKHR: number
 ---@class vk.SurfaceKHR: number
 
@@ -626,9 +663,13 @@ ffi.cdef([[
 ---@class vk.RenderPassBeginInfoStruct: vk.BaseStruct
 ---@field renderPass vk.RenderPass
 ---@field framebuffer vk.Framebuffer
----@field renderArea userdata
+---@field renderArea table
 ---@field clearValueCount number?
 ---@field pClearValues userdata?
+
+---@class vk.SemaphoreCreateInfoStruct: vk.BaseStruct
+
+---@class vk.FenceCreateInfoStruct: vk.BaseStruct
 
 ---@class vk.SubmitInfoStruct: vk.BaseStruct
 ---@field waitSemaphoreCount number?
@@ -817,7 +858,12 @@ do
 		vkCmdDraw = "void(*)(VkCommandBuffer, uint32_t, uint32_t, uint32_t, uint32_t)",
 		vkQueueSubmit = "VkResult(*)(VkQueue, uint32_t, const VkSubmitInfo*, uint64_t)",
 		vkQueueWaitIdle = "VkResult(*)(VkQueue)",
-		vkCreateSwapchainKHR = "VkResult(*)(VkDevice, const VkSwapchainCreateInfoKHR*, const VkAllocationCallbacks*, VkSwapchainKHR*)",
+		vkGetDeviceQueue = "void(*)(VkDevice, uint32_t, uint32_t, VkQueue*)",
+		vkCreateSemaphore =
+		"VkResult(*)(VkDevice, const VkSemaphoreCreateInfo*, const VkAllocationCallbacks*, VkSemaphore*)",
+		vkCreateFence = "VkResult(*)(VkDevice, const VkFenceCreateInfo*, const VkAllocationCallbacks*, VkFence*)",
+		vkCreateSwapchainKHR =
+		"VkResult(*)(VkDevice, const VkSwapchainCreateInfoKHR*, const VkAllocationCallbacks*, VkSwapchainKHR*)",
 	}
 
 	for name, funcType in pairs(types) do
@@ -1091,6 +1137,46 @@ do
 		if result ~= 0 then
 			error("Failed to wait for Vulkan queue idle, error code: " .. tostring(result))
 		end
+	end
+
+	---@param device vk.Device
+	---@param queueFamilyIndex number
+	---@param queueIndex number
+	---@return vk.Queue
+	function vk.getDeviceQueue(device, queueFamilyIndex, queueIndex)
+		local queue = ffi.new("VkQueue[1]")
+		vkDevice.vkGetDeviceQueue(device, queueFamilyIndex, queueIndex, queue)
+		return queue[0]
+	end
+
+	---@param device vk.Device
+	---@param info vk.SemaphoreCreateInfoStruct
+	---@param allocator ffi.cdata*?
+	---@return vk.Semaphore
+	function vk.createSemaphore(device, info, allocator)
+		local createInfo = ffi.new("VkSemaphoreCreateInfo", info)
+		createInfo.sType = vk.StructureType.SEMAPHORE_CREATE_INFO
+		local semaphore = ffi.new("VkSemaphore[1]")
+		local result = vkDevice.vkCreateSemaphore(device, createInfo, allocator, semaphore)
+		if result ~= 0 then
+			error("Failed to create Vulkan semaphore, error code: " .. tostring(result))
+		end
+		return semaphore[0]
+	end
+
+	---@param device vk.Device
+	---@param info vk.FenceCreateInfoStruct
+	---@param allocator ffi.cdata*?
+	---@return vk.Fence
+	function vk.createFence(device, info, allocator)
+		local createInfo = ffi.new("VkFenceCreateInfo", info)
+		createInfo.sType = vk.StructureType.FENCE_CREATE_INFO
+		local fence = ffi.new("VkFence[1]")
+		local result = vkDevice.vkCreateFence(device, createInfo, allocator, fence)
+		if result ~= 0 then
+			error("Failed to create Vulkan fence, error code: " .. tostring(result))
+		end
+		return fence[0]
 	end
 
 	---@param device vk.Device
