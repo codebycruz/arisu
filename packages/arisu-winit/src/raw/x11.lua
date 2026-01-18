@@ -243,9 +243,11 @@ function X11EventLoop:run(callback)
 		local window = self.windows[windowIdHash]
 
 		local evtTypeHandler = Handlers[event.type]
-		assert(evtTypeHandler, "Unhandled X11 event type: " .. tostring(event.type))
-
-		evtTypeHandler(window)
+		if not evtTypeHandler then
+			print("Warning: Unhandled X11 event type: " .. tostring(event.type))
+		else
+			evtTypeHandler(window)
+		end
 	end
 
 	local function coalesceMouse()
