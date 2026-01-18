@@ -28,11 +28,14 @@ ffi.cdef([[
 	typedef uint64_t VkSemaphore;
 	typedef uint64_t VkFence;
 	typedef uint64_t VkImage;
+	typedef uint64_t VkDeviceMemory;
 	typedef uint64_t VkSampler;
 	typedef uint64_t VkImageView;
 	typedef uint64_t VkDescriptorSetLayout;
 	typedef uint64_t VkDescriptorPool;
 	typedef uint64_t VkDescriptorSet;
+	typedef VkFlags VkMemoryPropertyFlags;
+	typedef VkFlags VkMemoryHeapFlags;
 	typedef VkFlags VkDescriptorSetLayoutCreateFlags;
 	typedef VkFlags VkDescriptorPoolCreateFlags;
 	typedef int32_t VkDescriptorType;
@@ -279,8 +282,38 @@ ffi.cdef([[
 		char                                deviceName[256];
 		uint8_t                             pipelineCacheUUID[16];
 		VkPhysicalDeviceLimits              limits;
-		VkPhysicalDeviceSparseProperties    sparseProperties;
+		VkPhysicalDeviceSparseProperties sparseProperties;
 	} VkPhysicalDeviceProperties;
+
+	typedef struct {
+		VkDeviceSize    size;
+		uint32_t        alignment;
+		uint32_t        memoryTypeBits;
+	} VkMemoryRequirements;
+
+	typedef struct {
+		VkMemoryPropertyFlags    propertyFlags;
+		uint32_t                 heapIndex;
+	} VkMemoryType;
+
+	typedef struct {
+		VkDeviceSize         size;
+		VkMemoryHeapFlags    flags;
+	} VkMemoryHeap;
+
+	typedef struct {
+		uint32_t        memoryTypeCount;
+		VkMemoryType    memoryTypes[32];
+		uint32_t        memoryHeapCount;
+		VkMemoryHeap    memoryHeaps[16];
+	} VkPhysicalDeviceMemoryProperties;
+
+	typedef struct {
+		VkStructureType    sType;
+		const void*        pNext;
+		uint32_t           allocationSize;
+		uint32_t           memoryTypeIndex;
+	} VkMemoryAllocateInfo;
 
 	typedef struct {
         VkStructureType    sType;
@@ -559,6 +592,11 @@ ffi.cdef([[
 		VkPhysicalDeviceProperties* pProperties
 	);
 
+	void vkGetPhysicalDeviceMemoryProperties(
+		VkPhysicalDevice physicalDevice,
+		VkPhysicalDeviceMemoryProperties* pMemoryProperties
+	);
+
 	VkResult vkGetPhysicalDeviceSurfaceCapabilitiesKHR(
 		VkPhysicalDevice physicalDevice,
 		VkSurfaceKHR surface,
@@ -607,6 +645,40 @@ ffi.cdef([[
 		const VkFramebufferCreateInfo* pCreateInfo,
 		const VkAllocationCallbacks* pAllocator,
 		VkFramebuffer* pFramebuffer
+	);
+
+	void vkGetBufferMemoryRequirements(
+		VkDevice device,
+		VkBuffer buffer,
+		VkMemoryRequirements* pMemoryRequirements
+	);
+
+	VkResult vkAllocateMemory(
+		VkDevice device,
+		const VkMemoryAllocateInfo* pAllocateInfo,
+		const VkAllocationCallbacks* pAllocator,
+		VkDeviceMemory* pMemory
+	);
+
+	VkResult vkBindBufferMemory(
+		VkDevice device,
+		VkBuffer buffer,
+		VkDeviceMemory memory,
+		VkDeviceSize memoryOffset
+	);
+
+	VkResult vkMapMemory(
+		VkDevice device,
+		VkDeviceMemory memory,
+		VkDeviceSize offset,
+		VkDeviceSize size,
+		VkFlags flags,
+		void** ppData
+	);
+
+	void vkUnmapMemory(
+		VkDevice device,
+		VkDeviceMemory memory
 	);
 
 	VkResult vkCreateCommandPool(
@@ -768,10 +840,34 @@ ffi.cdef([[
 ---@class vk.Semaphore: number
 ---@class vk.Fence: number
 ---@class vk.Image: number
+---@class vk.DeviceMemory: number
 ---@class vk.Sampler: number
 ---@class vk.ImageView: number
 ---@class vk.SwapchainKHR: number
 ---@class vk.SurfaceKHR: number
+
+---@class vk.MemoryRequirements: ffi.cdata*
+---@field size number
+---@field alignment number
+---@field memoryTypeBits number
+
+---@class vk.MemoryType: ffi.cdata*
+---@field propertyFlags number
+---@field heapIndex number
+
+---@class vk.MemoryHeap: ffi.cdata*
+---@field size number
+---@field flags number
+
+---@class vk.PhysicalDeviceMemoryProperties: ffi.cdata*
+---@field memoryTypeCount number
+---@field memoryTypes ffi.cdata*
+---@field memoryHeapCount number
+---@field memoryHeaps ffi.cdata*
+
+---@class vk.MemoryAllocateInfoStruct: vk.BaseStruct
+---@field allocationSize number
+---@field memoryTypeIndex number
 
 ---@class vk.SurfaceCapabilitiesKHR: ffi.cdata*
 ---@field minImageCount number
@@ -1076,6 +1172,14 @@ do
 	end
 
 	---@param physicalDevice vk.PhysicalDevice
+	---@return vk.PhysicalDeviceMemoryProperties
+	function vkGlobal.getPhysicalDeviceMemoryProperties(physicalDevice)
+		local memProperties = ffi.new("VkPhysicalDeviceMemoryProperties")
+		C.vkGetPhysicalDeviceMemoryProperties(physicalDevice, memProperties)
+		return memProperties --[[@as vk.PhysicalDeviceMemoryProperties]]
+	end
+
+	---@param physicalDevice vk.PhysicalDevice
 	---@param surface vk.SurfaceKHR
 	---@return vk.SurfaceCapabilitiesKHR
 	function vkGlobal.getPhysicalDeviceSurfaceCapabilitiesKHR(physicalDevice, surface)
@@ -1185,6 +1289,12 @@ do
 		"VkResult(*)(VkDevice, const VkRenderPassCreateInfo*, const VkAllocationCallbacks*, VkRenderPass*)",
 		vkCreateFramebuffer =
 		"VkResult(*)(VkDevice, const VkFramebufferCreateInfo*, const VkAllocationCallbacks*, VkFramebuffer*)",
+		vkGetBufferMemoryRequirements = "void(*)(VkDevice, VkBuffer, VkMemoryRequirements*)",
+		vkAllocateMemory =
+		"VkResult(*)(VkDevice, const VkMemoryAllocateInfo*, const VkAllocationCallbacks*, VkDeviceMemory*)",
+		vkBindBufferMemory = "VkResult(*)(VkDevice, VkBuffer, VkDeviceMemory, VkDeviceSize)",
+		vkMapMemory = "VkResult(*)(VkDevice, VkDeviceMemory, VkDeviceSize, VkDeviceSize, VkFlags, void**)",
+		vkUnmapMemory = "void(*)(VkDevice, VkDeviceMemory)",
 		vkCreateCommandPool =
 		"VkResult(*)(VkDevice, const VkCommandPoolCreateInfo*, const VkAllocationCallbacks*, VkCommandPool*)",
 		vkCreateDescriptorSetLayout =
@@ -1223,6 +1333,7 @@ local vk = {}
 -- Globals
 do
 	vk.StructureType = vkGlobal.StructureType
+	vk.getPhysicalDeviceMemoryProperties = vkGlobal.getPhysicalDeviceMemoryProperties
 	vk.getPhysicalDeviceSurfaceCapabilitiesKHR = vkGlobal.getPhysicalDeviceSurfaceCapabilitiesKHR
 	vk.getPhysicalDeviceSurfaceFormatsKHR = vkGlobal.getPhysicalDeviceSurfaceFormatsKHR
 	vk.getPhysicalDeviceSurfacePresentModesKHR = vkGlobal.getPhysicalDeviceSurfacePresentModesKHR
@@ -1422,6 +1533,62 @@ do
 		end
 
 		return commandPool[0]
+	end
+
+	---@param device vk.Device
+	---@param buffer vk.Buffer
+	---@return vk.MemoryRequirements
+	function vk.getBufferMemoryRequirements(device, buffer)
+		local memRequirements = ffi.new("VkMemoryRequirements")
+		vkDevice.vkGetBufferMemoryRequirements(device, buffer, memRequirements)
+		return memRequirements --[[@as vk.MemoryRequirements]]
+	end
+
+	---@param device vk.Device
+	---@param info vk.MemoryAllocateInfoStruct
+	---@param allocator ffi.cdata*?
+	---@return vk.DeviceMemory
+	function vk.allocateMemory(device, info, allocator)
+		local allocInfo = ffi.new("VkMemoryAllocateInfo", info)
+		allocInfo.sType = vk.StructureType.MEMORY_ALLOCATE_INFO
+		local memory = ffi.new("VkDeviceMemory[1]")
+		local result = vkDevice.vkAllocateMemory(device, allocInfo, allocator, memory)
+		if result ~= 0 then
+			error("Failed to allocate Vulkan memory, error code: " .. tostring(result))
+		end
+		return memory[0]
+	end
+
+	---@param device vk.Device
+	---@param buffer vk.Buffer
+	---@param memory vk.DeviceMemory
+	---@param memoryOffset number
+	function vk.bindBufferMemory(device, buffer, memory, memoryOffset)
+		local result = vkDevice.vkBindBufferMemory(device, buffer, memory, memoryOffset)
+		if result ~= 0 then
+			error("Failed to bind buffer memory, error code: " .. tostring(result))
+		end
+	end
+
+	---@param device vk.Device
+	---@param memory vk.DeviceMemory
+	---@param offset number
+	---@param size number
+	---@param flags number?
+	---@return ffi.cdata*
+	function vk.mapMemory(device, memory, offset, size, flags)
+		local data = ffi.new("void*[1]")
+		local result = vkDevice.vkMapMemory(device, memory, offset, size, flags or 0, data)
+		if result ~= 0 then
+			error("Failed to map memory, error code: " .. tostring(result))
+		end
+		return data[0]
+	end
+
+	---@param device vk.Device
+	---@param memory vk.DeviceMemory
+	function vk.unmapMemory(device, memory)
+		vkDevice.vkUnmapMemory(device, memory)
 	end
 
 	---@param device vk.Device
