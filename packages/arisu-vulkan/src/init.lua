@@ -37,6 +37,15 @@ ffi.cdef([[
 	typedef VkFlags VkDescriptorPoolCreateFlags;
 	typedef int32_t VkDescriptorType;
 	typedef VkFlags VkShaderStageFlags;
+	typedef int32_t VkFormat;
+	typedef int32_t VkColorSpaceKHR;
+	typedef int32_t VkPresentModeKHR;
+	typedef int32_t VkSurfaceTransformFlagBitsKHR;
+	typedef int32_t VkCompositeAlphaFlagBitsKHR;
+	typedef VkFlags VkImageUsageFlags;
+	typedef VkFlags VkSwapchainCreateFlagsKHR;
+	typedef VkFlags VkSurfaceTransformFlagsKHR;
+	typedef VkFlags VkCompositeAlphaFlagsKHR;
 	typedef VkFlags VkPipelineLayoutCreateFlags;
 	typedef VkFlags VkPipelineCreateFlags;
 	typedef VkFlags VkRenderPassCreateFlags;
@@ -459,6 +468,24 @@ ffi.cdef([[
 	} VkWriteDescriptorSet;
 
 	typedef struct {
+		uint32_t                         minImageCount;
+		uint32_t                         maxImageCount;
+		VkExtent2D                       currentExtent;
+		VkExtent2D                       minImageExtent;
+		VkExtent2D                       maxImageExtent;
+		uint32_t                         maxImageArrayLayers;
+		VkSurfaceTransformFlagsKHR       supportedTransforms;
+		VkSurfaceTransformFlagBitsKHR    currentTransform;
+		VkCompositeAlphaFlagsKHR         supportedCompositeAlpha;
+		VkImageUsageFlags                supportedUsageFlags;
+	} VkSurfaceCapabilitiesKHR;
+
+	typedef struct {
+		VkFormat           format;
+		VkColorSpaceKHR    colorSpace;
+	} VkSurfaceFormatKHR;
+
+	typedef struct {
 		VkStructureType                  sType;
 		const void*                      pNext;
 		VkSwapchainCreateFlagsKHR        flags;
@@ -530,6 +557,26 @@ ffi.cdef([[
 	VkResult vkGetPhysicalDeviceProperties(
 		VkPhysicalDevice physicalDevice,
 		VkPhysicalDeviceProperties* pProperties
+	);
+
+	VkResult vkGetPhysicalDeviceSurfaceCapabilitiesKHR(
+		VkPhysicalDevice physicalDevice,
+		VkSurfaceKHR surface,
+		VkSurfaceCapabilitiesKHR* pSurfaceCapabilities
+	);
+
+	VkResult vkGetPhysicalDeviceSurfaceFormatsKHR(
+		VkPhysicalDevice physicalDevice,
+		VkSurfaceKHR surface,
+		uint32_t* pSurfaceFormatCount,
+		VkSurfaceFormatKHR* pSurfaceFormats
+	);
+
+	VkResult vkGetPhysicalDeviceSurfacePresentModesKHR(
+		VkPhysicalDevice physicalDevice,
+		VkSurfaceKHR surface,
+		uint32_t* pPresentModeCount,
+		VkPresentModeKHR* pPresentModes
 	);
 
 	VkResult vkCreatePipelineLayout(
@@ -725,6 +772,22 @@ ffi.cdef([[
 ---@class vk.ImageView: number
 ---@class vk.SwapchainKHR: number
 ---@class vk.SurfaceKHR: number
+
+---@class vk.SurfaceCapabilitiesKHR: ffi.cdata*
+---@field minImageCount number
+---@field maxImageCount number
+---@field currentExtent table
+---@field minImageExtent table
+---@field maxImageExtent table
+---@field maxImageArrayLayers number
+---@field supportedTransforms number
+---@field currentTransform number
+---@field supportedCompositeAlpha number
+---@field supportedUsageFlags number
+
+---@class vk.SurfaceFormatKHR: ffi.cdata*
+---@field format number
+---@field colorSpace number
 
 ---@class vk.InstanceCreateInfoStruct: vk.BaseStruct
 ---@field pApplicationInfo userdata?
@@ -1012,6 +1075,64 @@ do
 		return properties --[[@as vk.PhysicalDeviceProperties]]
 	end
 
+	---@param physicalDevice vk.PhysicalDevice
+	---@param surface vk.SurfaceKHR
+	---@return vk.SurfaceCapabilitiesKHR
+	function vkGlobal.getPhysicalDeviceSurfaceCapabilitiesKHR(physicalDevice, surface)
+		local capabilities = ffi.new("VkSurfaceCapabilitiesKHR")
+		local result = C.vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physicalDevice, surface, capabilities)
+		if result ~= 0 then
+			error("Failed to get physical device surface capabilities, error code: " .. tostring(result))
+		end
+		return capabilities --[[@as vk.SurfaceCapabilitiesKHR]]
+	end
+
+	---@param physicalDevice vk.PhysicalDevice
+	---@param surface vk.SurfaceKHR
+	---@return vk.SurfaceFormatKHR[]
+	function vkGlobal.getPhysicalDeviceSurfaceFormatsKHR(physicalDevice, surface)
+		local count = ffi.new("uint32_t[1]")
+		local result = C.vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, surface, count, nil)
+		if result ~= 0 then
+			error("Failed to get surface format count, error code: " .. tostring(result))
+		end
+
+		local formats = ffi.new("VkSurfaceFormatKHR[?]", count[0])
+		result = C.vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, surface, count, formats)
+		if result ~= 0 then
+			error("Failed to get surface formats, error code: " .. tostring(result))
+		end
+
+		local formatTable = {}
+		for i = 0, count[0] - 1 do
+			formatTable[i + 1] = formats[i]
+		end
+		return formatTable
+	end
+
+	---@param physicalDevice vk.PhysicalDevice
+	---@param surface vk.SurfaceKHR
+	---@return number[]
+	function vkGlobal.getPhysicalDeviceSurfacePresentModesKHR(physicalDevice, surface)
+		local count = ffi.new("uint32_t[1]")
+		local result = C.vkGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice, surface, count, nil)
+		if result ~= 0 then
+			error("Failed to get present mode count, error code: " .. tostring(result))
+		end
+
+		local modes = ffi.new("VkPresentModeKHR[?]", count[0])
+		result = C.vkGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice, surface, count, modes)
+		if result ~= 0 then
+			error("Failed to get present modes, error code: " .. tostring(result))
+		end
+
+		local modeTable = {}
+		for i = 0, count[0] - 1 do
+			modeTable[i + 1] = modes[i]
+		end
+		return modeTable
+	end
+
 	vkGlobal.getInstanceProcAddr = C.vkGetInstanceProcAddr
 	vkGlobal.getDeviceProcAddr = C.vkGetDeviceProcAddr
 end
@@ -1102,6 +1223,9 @@ local vk = {}
 -- Globals
 do
 	vk.StructureType = vkGlobal.StructureType
+	vk.getPhysicalDeviceSurfaceCapabilitiesKHR = vkGlobal.getPhysicalDeviceSurfaceCapabilitiesKHR
+	vk.getPhysicalDeviceSurfaceFormatsKHR = vkGlobal.getPhysicalDeviceSurfaceFormatsKHR
+	vk.getPhysicalDeviceSurfacePresentModesKHR = vkGlobal.getPhysicalDeviceSurfacePresentModesKHR
 
 	---@enum vk.PhysicalDeviceType
 	vk.PhysicalDeviceType = {
