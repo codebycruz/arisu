@@ -58,6 +58,10 @@ ffi.cdef([[
 	typedef int32_t VkPipelineBindPoint;
 	typedef int32_t VkSubpassContents;
 	typedef int32_t VkCommandBufferLevel;
+	typedef VkFlags VkImageCreateFlags;
+	typedef int32_t VkImageType;
+	typedef int32_t VkImageTiling;
+	typedef int32_t VkImageLayout;
 
 	typedef uint64_t VkSwapchainKHR;
 	typedef uint64_t VkSurfaceKHR;
@@ -99,179 +103,179 @@ ffi.cdef([[
 	);
 
 	typedef struct {
-    	VkBool32    robustBufferAccess;
-        VkBool32    fullDrawIndexUint32;
-        VkBool32    imageCubeArray;
-        VkBool32    independentBlend;
-        VkBool32    geometryShader;
-        VkBool32    tessellationShader;
-        VkBool32    sampleRateShading;
-        VkBool32    dualSrcBlend;
-        VkBool32    logicOp;
-        VkBool32    multiDrawIndirect;
-        VkBool32    drawIndirectFirstInstance;
-        VkBool32    depthClamp;
-        VkBool32    depthBiasClamp;
-        VkBool32    fillModeNonSolid;
-        VkBool32    depthBounds;
-        VkBool32    wideLines;
-        VkBool32    largePoints;
-        VkBool32    alphaToOne;
-        VkBool32    multiViewport;
-        VkBool32    samplerAnisotropy;
-        VkBool32    textureCompressionETC2;
-        VkBool32    textureCompressionASTC_LDR;
-        VkBool32    textureCompressionBC;
-        VkBool32    occlusionQueryPrecise;
-        VkBool32    pipelineStatisticsQuery;
-        VkBool32    vertexPipelineStoresAndAtomics;
-        VkBool32    fragmentStoresAndAtomics;
-        VkBool32    shaderTessellationAndGeometryPointSize;
-        VkBool32    shaderImageGatherExtended;
-        VkBool32    shaderStorageImageExtendedFormats;
-        VkBool32    shaderStorageImageMultisample;
-        VkBool32    shaderStorageImageReadWithoutFormat;
-        VkBool32    shaderStorageImageWriteWithoutFormat;
-        VkBool32    shaderUniformBufferArrayDynamicIndexing;
-        VkBool32    shaderSampledImageArrayDynamicIndexing;
-        VkBool32    shaderStorageBufferArrayDynamicIndexing;
-        VkBool32    shaderStorageImageArrayDynamicIndexing;
-        VkBool32    shaderClipDistance;
-        VkBool32    shaderCullDistance;
-        VkBool32    shaderFloat64;
-        VkBool32    shaderInt64;
-        VkBool32    shaderInt16;
-        VkBool32    shaderResourceResidency;
-        VkBool32    shaderResourceMinLod;
-        VkBool32    sparseBinding;
-        VkBool32    sparseResidencyBuffer;
-        VkBool32    sparseResidencyImage2D;
-        VkBool32    sparseResidencyImage3D;
-        VkBool32    sparseResidency2Samples;
-        VkBool32    sparseResidency4Samples;
-        VkBool32    sparseResidency8Samples;
-        VkBool32    sparseResidency16Samples;
-        VkBool32    sparseResidencyAliased;
-        VkBool32    variableMultisampleRate;
-        VkBool32    inheritedQueries;
+		VkBool32	robustBufferAccess;
+		VkBool32	fullDrawIndexUint32;
+		VkBool32	imageCubeArray;
+		VkBool32	independentBlend;
+		VkBool32	geometryShader;
+		VkBool32	tessellationShader;
+		VkBool32	sampleRateShading;
+		VkBool32	dualSrcBlend;
+		VkBool32	logicOp;
+		VkBool32	multiDrawIndirect;
+		VkBool32	drawIndirectFirstInstance;
+		VkBool32	depthClamp;
+		VkBool32	depthBiasClamp;
+		VkBool32	fillModeNonSolid;
+		VkBool32	depthBounds;
+		VkBool32	wideLines;
+		VkBool32	largePoints;
+		VkBool32	alphaToOne;
+		VkBool32	multiViewport;
+		VkBool32	samplerAnisotropy;
+		VkBool32	textureCompressionETC2;
+		VkBool32	textureCompressionASTC_LDR;
+		VkBool32	textureCompressionBC;
+		VkBool32	occlusionQueryPrecise;
+		VkBool32	pipelineStatisticsQuery;
+		VkBool32	vertexPipelineStoresAndAtomics;
+		VkBool32	fragmentStoresAndAtomics;
+		VkBool32	shaderTessellationAndGeometryPointSize;
+		VkBool32	shaderImageGatherExtended;
+		VkBool32	shaderStorageImageExtendedFormats;
+		VkBool32	shaderStorageImageMultisample;
+		VkBool32	shaderStorageImageReadWithoutFormat;
+		VkBool32	shaderStorageImageWriteWithoutFormat;
+		VkBool32	shaderUniformBufferArrayDynamicIndexing;
+		VkBool32	shaderSampledImageArrayDynamicIndexing;
+		VkBool32	shaderStorageBufferArrayDynamicIndexing;
+		VkBool32	shaderStorageImageArrayDynamicIndexing;
+		VkBool32	shaderClipDistance;
+		VkBool32	shaderCullDistance;
+		VkBool32	shaderFloat64;
+		VkBool32	shaderInt64;
+		VkBool32	shaderInt16;
+		VkBool32	shaderResourceResidency;
+		VkBool32	shaderResourceMinLod;
+		VkBool32	sparseBinding;
+		VkBool32	sparseResidencyBuffer;
+		VkBool32	sparseResidencyImage2D;
+		VkBool32	sparseResidencyImage3D;
+		VkBool32	sparseResidency2Samples;
+		VkBool32	sparseResidency4Samples;
+		VkBool32	sparseResidency8Samples;
+		VkBool32	sparseResidency16Samples;
+		VkBool32	sparseResidencyAliased;
+		VkBool32	variableMultisampleRate;
+		VkBool32	inheritedQueries;
 	} VkPhysicalDeviceFeatures;
 
 	typedef struct {
-    	uint32_t              maxImageDimension1D;
-        uint32_t              maxImageDimension2D;
-        uint32_t              maxImageDimension3D;
-        uint32_t              maxImageDimensionCube;
-        uint32_t              maxImageArrayLayers;
-        uint32_t              maxTexelBufferElements;
-        uint32_t              maxUniformBufferRange;
-        uint32_t              maxStorageBufferRange;
-        uint32_t              maxPushConstantsSize;
-        uint32_t              maxMemoryAllocationCount;
-        uint32_t              maxSamplerAllocationCount;
-        VkDeviceSize          bufferImageGranularity;
-        VkDeviceSize          sparseAddressSpaceSize;
-        uint32_t              maxBoundDescriptorSets;
-        uint32_t              maxPerStageDescriptorSamplers;
-        uint32_t              maxPerStageDescriptorUniformBuffers;
-        uint32_t              maxPerStageDescriptorStorageBuffers;
-        uint32_t              maxPerStageDescriptorSampledImages;
-        uint32_t              maxPerStageDescriptorStorageImages;
-        uint32_t              maxPerStageDescriptorInputAttachments;
-        uint32_t              maxPerStageResources;
-        uint32_t              maxDescriptorSetSamplers;
-        uint32_t              maxDescriptorSetUniformBuffers;
-        uint32_t              maxDescriptorSetUniformBuffersDynamic;
-        uint32_t              maxDescriptorSetStorageBuffers;
-        uint32_t              maxDescriptorSetStorageBuffersDynamic;
-        uint32_t              maxDescriptorSetSampledImages;
-        uint32_t              maxDescriptorSetStorageImages;
-        uint32_t              maxDescriptorSetInputAttachments;
-        uint32_t              maxVertexInputAttributes;
-        uint32_t              maxVertexInputBindings;
-        uint32_t              maxVertexInputAttributeOffset;
-        uint32_t              maxVertexInputBindingStride;
-        uint32_t              maxVertexOutputComponents;
-        uint32_t              maxTessellationGenerationLevel;
-        uint32_t              maxTessellationPatchSize;
-        uint32_t              maxTessellationControlPerVertexInputComponents;
-        uint32_t              maxTessellationControlPerVertexOutputComponents;
-        uint32_t              maxTessellationControlPerPatchOutputComponents;
-        uint32_t              maxTessellationControlTotalOutputComponents;
-        uint32_t              maxTessellationEvaluationInputComponents;
-        uint32_t              maxTessellationEvaluationOutputComponents;
-        uint32_t              maxGeometryShaderInvocations;
-        uint32_t              maxGeometryInputComponents;
-        uint32_t              maxGeometryOutputComponents;
-        uint32_t              maxGeometryOutputVertices;
-        uint32_t              maxGeometryTotalOutputComponents;
-        uint32_t              maxFragmentInputComponents;
-        uint32_t              maxFragmentOutputAttachments;
-        uint32_t              maxFragmentDualSrcAttachments;
-        uint32_t              maxFragmentCombinedOutputResources;
-        uint32_t              maxComputeSharedMemorySize;
-        uint32_t              maxComputeWorkGroupCount[3];
-        uint32_t              maxComputeWorkGroupInvocations;
-        uint32_t              maxComputeWorkGroupSize[3];
-        uint32_t              subPixelPrecisionBits;
-        uint32_t              subTexelPrecisionBits;
-        uint32_t              mipmapPrecisionBits;
-        uint32_t              maxDrawIndexedIndexValue;
-        uint32_t              maxDrawIndirectCount;
-        float                 maxSamplerLodBias;
-        float                 maxSamplerAnisotropy;
-        uint32_t              maxViewports;
-        uint32_t              maxViewportDimensions[2];
-        float                 viewportBoundsRange[2];
-        uint32_t              viewportSubPixelBits;
-        size_t                minMemoryMapAlignment;
-        VkDeviceSize          minTexelBufferOffsetAlignment;
-        VkDeviceSize          minUniformBufferOffsetAlignment;
-        VkDeviceSize          minStorageBufferOffsetAlignment;
-        int32_t               minTexelOffset;
-        uint32_t              maxTexelOffset;
-        int32_t               minTexelGatherOffset;
-        uint32_t              maxTexelGatherOffset;
-        float                 minInterpolationOffset;
-        float                 maxInterpolationOffset;
-        uint32_t              subPixelInterpolationOffsetBits;
-        uint32_t              maxFramebufferWidth;
-        uint32_t              maxFramebufferHeight;
-        uint32_t              maxFramebufferLayers;
-        VkSampleCountFlags    framebufferColorSampleCounts;
-        VkSampleCountFlags    framebufferDepthSampleCounts;
-        VkSampleCountFlags    framebufferStencilSampleCounts;
-        VkSampleCountFlags    framebufferNoAttachmentsSampleCounts;
-        uint32_t              maxColorAttachments;
-        VkSampleCountFlags    sampledImageColorSampleCounts;
-        VkSampleCountFlags    sampledImageIntegerSampleCounts;
-        VkSampleCountFlags    sampledImageDepthSampleCounts;
-        VkSampleCountFlags    sampledImageStencilSampleCounts;
-        VkSampleCountFlags    storageImageSampleCounts;
-        uint32_t              maxSampleMaskWords;
-        VkBool32              timestampComputeAndGraphics;
-        float                 timestampPeriod;
-        uint32_t              maxClipDistances;
-        uint32_t              maxCullDistances;
-        uint32_t              maxCombinedClipAndCullDistances;
-        uint32_t              discreteQueuePriorities;
-        float                 pointSizeRange[2];
-        float                 lineWidthRange[2];
-        float                 pointSizeGranularity;
-        float                 lineWidthGranularity;
-        VkBool32              strictLines;
-        VkBool32              standardSampleLocations;
-        VkDeviceSize          optimalBufferCopyOffsetAlignment;
-        VkDeviceSize          optimalBufferCopyRowPitchAlignment;
-        VkDeviceSize          nonCoherentAtomSize;
+		uint32_t			maxImageDimension1D;
+		uint32_t			maxImageDimension2D;
+		uint32_t			maxImageDimension3D;
+		uint32_t			maxImageDimensionCube;
+		uint32_t			maxImageArrayLayers;
+		uint32_t			maxTexelBufferElements;
+		uint32_t			maxUniformBufferRange;
+		uint32_t			maxStorageBufferRange;
+		uint32_t			maxPushConstantsSize;
+		uint32_t			maxMemoryAllocationCount;
+		uint32_t			maxSamplerAllocationCount;
+		VkDeviceSize		bufferImageGranularity;
+		VkDeviceSize		sparseAddressSpaceSize;
+		uint32_t			maxBoundDescriptorSets;
+		uint32_t			maxPerStageDescriptorSamplers;
+		uint32_t			maxPerStageDescriptorUniformBuffers;
+		uint32_t			maxPerStageDescriptorStorageBuffers;
+		uint32_t			maxPerStageDescriptorSampledImages;
+		uint32_t			maxPerStageDescriptorStorageImages;
+		uint32_t			maxPerStageDescriptorInputAttachments;
+		uint32_t			maxPerStageResources;
+		uint32_t			maxDescriptorSetSamplers;
+		uint32_t			maxDescriptorSetUniformBuffers;
+		uint32_t			maxDescriptorSetUniformBuffersDynamic;
+		uint32_t			maxDescriptorSetStorageBuffers;
+		uint32_t			maxDescriptorSetStorageBuffersDynamic;
+		uint32_t			maxDescriptorSetSampledImages;
+		uint32_t			maxDescriptorSetStorageImages;
+		uint32_t			maxDescriptorSetInputAttachments;
+		uint32_t			maxVertexInputAttributes;
+		uint32_t			maxVertexInputBindings;
+		uint32_t			maxVertexInputAttributeOffset;
+		uint32_t			maxVertexInputBindingStride;
+		uint32_t			maxVertexOutputComponents;
+		uint32_t			maxTessellationGenerationLevel;
+		uint32_t			maxTessellationPatchSize;
+		uint32_t			maxTessellationControlPerVertexInputComponents;
+		uint32_t			maxTessellationControlPerVertexOutputComponents;
+		uint32_t			maxTessellationControlPerPatchOutputComponents;
+		uint32_t			maxTessellationControlTotalOutputComponents;
+		uint32_t			maxTessellationEvaluationInputComponents;
+		uint32_t			maxTessellationEvaluationOutputComponents;
+		uint32_t			maxGeometryShaderInvocations;
+		uint32_t			maxGeometryInputComponents;
+		uint32_t			maxGeometryOutputComponents;
+		uint32_t			maxGeometryOutputVertices;
+		uint32_t			maxGeometryTotalOutputComponents;
+		uint32_t			maxFragmentInputComponents;
+		uint32_t			maxFragmentOutputAttachments;
+		uint32_t			maxFragmentDualSrcAttachments;
+		uint32_t			maxFragmentCombinedOutputResources;
+		uint32_t			maxComputeSharedMemorySize;
+		uint32_t			maxComputeWorkGroupCount[3];
+		uint32_t			maxComputeWorkGroupInvocations;
+		uint32_t			maxComputeWorkGroupSize[3];
+		uint32_t			subPixelPrecisionBits;
+		uint32_t			subTexelPrecisionBits;
+		uint32_t			mipmapPrecisionBits;
+		uint32_t			maxDrawIndexedIndexValue;
+		uint32_t			maxDrawIndirectCount;
+		float				maxSamplerLodBias;
+		float				maxSamplerAnisotropy;
+		uint32_t			maxViewports;
+		uint32_t			maxViewportDimensions[2];
+		float				viewportBoundsRange[2];
+		uint32_t			viewportSubPixelBits;
+		size_t				minMemoryMapAlignment;
+		VkDeviceSize		minTexelBufferOffsetAlignment;
+		VkDeviceSize		minUniformBufferOffsetAlignment;
+		VkDeviceSize		minStorageBufferOffsetAlignment;
+		int32_t				minTexelOffset;
+		uint32_t			maxTexelOffset;
+		int32_t				minTexelGatherOffset;
+		uint32_t			maxTexelGatherOffset;
+		float				minInterpolationOffset;
+		float				maxInterpolationOffset;
+		uint32_t			subPixelInterpolationOffsetBits;
+		uint32_t			maxFramebufferWidth;
+		uint32_t			maxFramebufferHeight;
+		uint32_t			maxFramebufferLayers;
+		VkSampleCountFlags	framebufferColorSampleCounts;
+		VkSampleCountFlags	framebufferDepthSampleCounts;
+		VkSampleCountFlags	framebufferStencilSampleCounts;
+		VkSampleCountFlags	framebufferNoAttachmentsSampleCounts;
+		uint32_t			maxColorAttachments;
+		VkSampleCountFlags	sampledImageColorSampleCounts;
+		VkSampleCountFlags	sampledImageIntegerSampleCounts;
+		VkSampleCountFlags	sampledImageDepthSampleCounts;
+		VkSampleCountFlags	sampledImageStencilSampleCounts;
+		VkSampleCountFlags	storageImageSampleCounts;
+		uint32_t			maxSampleMaskWords;
+		VkBool32			timestampComputeAndGraphics;
+		float				timestampPeriod;
+		uint32_t			maxClipDistances;
+		uint32_t			maxCullDistances;
+		uint32_t			maxCombinedClipAndCullDistances;
+		uint32_t			discreteQueuePriorities;
+		float				pointSizeRange[2];
+		float				lineWidthRange[2];
+		float				pointSizeGranularity;
+		float				lineWidthGranularity;
+		VkBool32			strictLines;
+		VkBool32			standardSampleLocations;
+		VkDeviceSize		optimalBufferCopyOffsetAlignment;
+		VkDeviceSize		optimalBufferCopyRowPitchAlignment;
+		VkDeviceSize		nonCoherentAtomSize;
 	} VkPhysicalDeviceLimits;
 
 	typedef struct {
-    	VkBool32    residencyStandard2DBlockShape;
-        VkBool32    residencyStandard2DMultisampleBlockShape;
-        VkBool32    residencyStandard3DBlockShape;
-        VkBool32    residencyAlignedMipSize;
-        VkBool32    residencyNonResidentStrict;
-    } VkPhysicalDeviceSparseProperties;
+		VkBool32	residencyStandard2DBlockShape;
+		VkBool32	residencyStandard2DMultisampleBlockShape;
+		VkBool32	residencyStandard3DBlockShape;
+		VkBool32	residencyAlignedMipSize;
+		VkBool32	residencyNonResidentStrict;
+	} VkPhysicalDeviceSparseProperties;
 
 	typedef struct {
 		uint32_t                            apiVersion;
@@ -316,36 +320,84 @@ ffi.cdef([[
 	} VkMemoryAllocateInfo;
 
 	typedef struct {
-        VkStructureType    sType;
-        const void*        pNext;
-        VkFlags            flags;
-        uint32_t           queueCreateInfoCount;
-        const void*        pQueueCreateInfos;
-        uint32_t           _enabledLayerCount;
-        const char* const* _ppEnabledLayerNames;
-        uint32_t           enabledExtensionCount;
-        const char* const* ppEnabledExtensionNames;
-        const VkPhysicalDeviceFeatures* pEnabledFeatures;
-    } VkDeviceCreateInfo;
+		VkStructureType    sType;
+		const void*        pNext;
+		VkFlags            flags;
+		uint32_t           queueCreateInfoCount;
+		const void*        pQueueCreateInfos;
+		uint32_t           _enabledLayerCount;
+		const char* const* _ppEnabledLayerNames;
+		uint32_t           enabledExtensionCount;
+		const char* const* ppEnabledExtensionNames;
+		const VkPhysicalDeviceFeatures* pEnabledFeatures;
+	} VkDeviceCreateInfo;
 
-    typedef struct {
-        VkStructureType        sType;
-        const void*            pNext;
-        VkBufferCreateFlags    flags;
-        VkDeviceSize           size;
-        VkBufferUsageFlags     usage;
-        VkSharingMode          sharingMode;
-        uint32_t               queueFamilyIndexCount;
-        const uint32_t*        pQueueFamilyIndices;
-    } VkBufferCreateInfo;
+	typedef struct {
+		VkStructureType             sType;
+		const void*                 pNext;
+		VkBufferCreateFlags         flags;
+		VkDeviceSize                size;
+		VkBufferUsageFlags          usage;
+		VkSharingMode               sharingMode;
+		uint32_t                    queueFamilyIndexCount;
+		const uint32_t*             pQueueFamilyIndices;
+	} VkBufferCreateInfo;
 
-    typedef struct {
-        VkStructureType              sType;
-        const void*                  pNext;
-        VkShaderModuleCreateFlags    flags;
-        size_t                       codeSize;
-        const uint32_t*              pCode;
-    } VkShaderModuleCreateInfo;
+	typedef struct {
+		VkStructureType          sType;
+		const void*              pNext;
+		VkImageCreateFlags       flags;
+		VkImageType              imageType;
+		VkFormat                 format;
+		VkExtent3D               extent;
+		uint32_t                 mipLevels;
+		uint32_t                 arrayLayers;
+		VkSampleCountFlags       samples;
+		VkImageTiling            tiling;
+		VkImageUsageFlags        usage;
+		VkSharingMode            sharingMode;
+		uint32_t                 queueFamilyIndexCount;
+		const uint32_t*          pQueueFamilyIndices;
+		VkImageLayout            initialLayout;
+	} VkImageCreateInfo;
+
+	typedef struct {
+		uint32_t    width;
+		uint32_t    height;
+		uint32_t    depth;
+	} VkExtent3D;
+
+	typedef struct {
+		VkImageAspectFlags    aspectMask;
+		uint32_t              mipLevel;
+		uint32_t              baseArrayLayer;
+		uint32_t              layerCount;
+	} VkImageSubresourceLayers;
+
+	typedef struct {
+		VkDeviceSize                bufferOffset;
+		uint32_t                    bufferRowLength;
+		uint32_t                    bufferImageHeight;
+		VkImageSubresourceLayers    imageSubresource;
+		VkOffset3D                  imageOffset;
+		VkExtent3D                  imageExtent;
+	} VkBufferImageCopy;
+
+	typedef struct {
+		int32_t    x;
+		int32_t    y;
+		int32_t    z;
+	} VkOffset3D;
+
+	typedef VkFlags VkImageAspectFlags;
+
+	typedef struct {
+		VkStructureType              sType;
+		const void*                  pNext;
+		VkShaderModuleCreateFlags    flags;
+		size_t                       codeSize;
+		const uint32_t*              pCode;
+	} VkShaderModuleCreateInfo;
 
 	typedef struct {
 		VkStructureType                 sType;
@@ -484,7 +536,7 @@ ffi.cdef([[
 	typedef struct {
 		VkSampler      sampler;
 		VkImageView    imageView;
-		int32_t        imageLayout;
+		VkImageLayout  imageLayout;
 	} VkDescriptorImageInfo;
 
 	typedef struct {
@@ -651,6 +703,35 @@ ffi.cdef([[
 		VkDevice device,
 		VkBuffer buffer,
 		VkMemoryRequirements* pMemoryRequirements
+	);
+
+	void vkGetImageMemoryRequirements(
+		VkDevice device,
+		VkImage image,
+		VkMemoryRequirements* pMemoryRequirements
+	);
+
+	VkResult vkCreateImage(
+		VkDevice device,
+		const VkImageCreateInfo* pCreateInfo,
+		const VkAllocationCallbacks* pAllocator,
+		VkImage* pImage
+	);
+
+	VkResult vkBindImageMemory(
+		VkDevice device,
+		VkImage image,
+		VkDeviceMemory memory,
+		VkDeviceSize memoryOffset
+	);
+
+	void vkCmdCopyBufferToImage(
+		VkCommandBuffer commandBuffer,
+		VkBuffer srcBuffer,
+		VkImage dstImage,
+		VkImageLayout dstImageLayout,
+		uint32_t regionCount,
+		const VkBufferImageCopy* pRegions
 	);
 
 	VkResult vkAllocateMemory(
@@ -825,6 +906,7 @@ ffi.cdef([[
 ---@class vk.Result: number
 ---@class vk.PhysicalDevice: ffi.cdata*
 ---@class vk.Device: number
+---@class vk.DeviceSize: number
 ---@class vk.Buffer: number
 ---@class vk.PipelineLayout: number
 ---@class vk.Pipeline: number
@@ -847,9 +929,23 @@ ffi.cdef([[
 ---@class vk.SurfaceKHR: number
 
 ---@class vk.MemoryRequirements: ffi.cdata*
----@field size number
----@field alignment number
+---@field size vk.DeviceSize
+---@field alignment vk.DeviceSize
 ---@field memoryTypeBits number
+
+---@class vk.CreateImageInfoStruct: vk.BaseStruct
+---@field imageType vk.ImageType
+---@field format vk.Format
+---@field extent vk.Extent3D
+---@field mipLevels number
+---@field arrayLayers number
+---@field samples vk.SamplecountFlags
+---@field tiling vk.ImageTiling
+---@field usage vk.ImageUsageFlags
+---@field sharingMode vk.SharingMode
+---@field queueFamilyIndexCount number?
+---@field pQueueFamilyIndices ffi.cdata*?
+---@field initialLayout vk.ImageLayout
 
 ---@class vk.MemoryType: ffi.cdata*
 ---@field propertyFlags number
@@ -858,6 +954,15 @@ ffi.cdef([[
 ---@class vk.MemoryHeap: ffi.cdata*
 ---@field size number
 ---@field flags number
+
+---@class vk.Extent2D: ffi.cdata*
+---@field width number
+---@field height number
+
+---@class vk.Extent3D: ffi.cdata*
+---@field width number
+---@field height number
+---@field depth number
 
 ---@class vk.PhysicalDeviceMemoryProperties: ffi.cdata*
 ---@field memoryTypeCount number
@@ -1280,28 +1385,22 @@ do
 	local types = {
 		vkCreateBuffer = "VkResult(*)(VkDevice, const VkBufferCreateInfo*, const VkAllocationCallbacks*, VkBuffer*)",
 		vkDestroyBuffer = "void(*)(VkDevice, VkBuffer, const VkAllocationCallbacks*)",
-		vkCreateShaderModule =
-		"VkResult(*)(VkDevice, const VkShaderModuleCreateInfo*, const VkAllocationCallbacks*, VkShaderModule*)",
-		vkCreatePipelineLayout =
-		"VkResult(*)(VkDevice, const VkPipelineLayoutCreateInfo*, const VkAllocationCallbacks*, VkPipelineLayout*)",
-		vkCreateGraphicsPipelines =
-		"VkResult(*)(VkDevice, uint64_t, uint32_t, const VkGraphicsPipelineCreateInfo*, const VkAllocationCallbacks*, VkPipeline*)",
-		vkCreateRenderPass =
-		"VkResult(*)(VkDevice, const VkRenderPassCreateInfo*, const VkAllocationCallbacks*, VkRenderPass*)",
-		vkCreateFramebuffer =
-		"VkResult(*)(VkDevice, const VkFramebufferCreateInfo*, const VkAllocationCallbacks*, VkFramebuffer*)",
+		vkCreateShaderModule = "VkResult(*)(VkDevice, const VkShaderModuleCreateInfo*, const VkAllocationCallbacks*, VkShaderModule*)",
+		vkCreatePipelineLayout = "VkResult(*)(VkDevice, const VkPipelineLayoutCreateInfo*, const VkAllocationCallbacks*, VkPipelineLayout*)",
+		vkCreateGraphicsPipelines = "VkResult(*)(VkDevice, uint64_t, uint32_t, const VkGraphicsPipelineCreateInfo*, const VkAllocationCallbacks*, VkPipeline*)",
+		vkCreateRenderPass = "VkResult(*)(VkDevice, const VkRenderPassCreateInfo*, const VkAllocationCallbacks*, VkRenderPass*)",
+		vkCreateFramebuffer = "VkResult(*)(VkDevice, const VkFramebufferCreateInfo*, const VkAllocationCallbacks*, VkFramebuffer*)",
 		vkGetBufferMemoryRequirements = "void(*)(VkDevice, VkBuffer, VkMemoryRequirements*)",
-		vkAllocateMemory =
-		"VkResult(*)(VkDevice, const VkMemoryAllocateInfo*, const VkAllocationCallbacks*, VkDeviceMemory*)",
+		vkGetImageMemoryRequirements = "void(*)(VkDevice, VkImage, VkMemoryRequirements*)",
+		vkCreateImage = "VkResult(*)(VkDevice, const VkImageCreateInfo*, const VkAllocationCallbacks*, VkImage*)",
+		vkBindImageMemory = "VkResult(*)(VkDevice, VkImage, VkDeviceMemory, VkDeviceSize)",
+		vkAllocateMemory = "VkResult(*)(VkDevice, const VkMemoryAllocateInfo*, const VkAllocationCallbacks*, VkDeviceMemory*)",
 		vkBindBufferMemory = "VkResult(*)(VkDevice, VkBuffer, VkDeviceMemory, VkDeviceSize)",
 		vkMapMemory = "VkResult(*)(VkDevice, VkDeviceMemory, VkDeviceSize, VkDeviceSize, VkFlags, void**)",
 		vkUnmapMemory = "void(*)(VkDevice, VkDeviceMemory)",
-		vkCreateCommandPool =
-		"VkResult(*)(VkDevice, const VkCommandPoolCreateInfo*, const VkAllocationCallbacks*, VkCommandPool*)",
-		vkCreateDescriptorSetLayout =
-		"VkResult(*)(VkDevice, const VkDescriptorSetLayoutCreateInfo*, const VkAllocationCallbacks*, VkDescriptorSetLayout*)",
-		vkCreateDescriptorPool =
-		"VkResult(*)(VkDevice, const VkDescriptorPoolCreateInfo*, const VkAllocationCallbacks*, VkDescriptorPool*)",
+		vkCreateCommandPool = "VkResult(*)(VkDevice, const VkCommandPoolCreateInfo*, const VkAllocationCallbacks*, VkCommandPool*)",
+		vkCreateDescriptorSetLayout = "VkResult(*)(VkDevice, const VkDescriptorSetLayoutCreateInfo*, const VkAllocationCallbacks*, VkDescriptorSetLayout*)",
+		vkCreateDescriptorPool = "VkResult(*)(VkDevice, const VkDescriptorPoolCreateInfo*, const VkAllocationCallbacks*, VkDescriptorPool*)",
 		vkAllocateDescriptorSets = "VkResult(*)(VkDevice, const VkDescriptorSetAllocateInfo*, VkDescriptorSet*)",
 		vkUpdateDescriptorSets = "void(*)(VkDevice, uint32_t, const VkWriteDescriptorSet*, uint32_t, const void*)",
 		vkAllocateCommandBuffers = "VkResult(*)(VkDevice, const VkCommandBufferAllocateInfo*, VkCommandBuffer*)",
@@ -1311,14 +1410,14 @@ do
 		vkCmdEndRenderPass = "void(*)(VkCommandBuffer)",
 		vkCmdBindPipeline = "void(*)(VkCommandBuffer, VkPipelineBindPoint, VkPipeline)",
 		vkCmdDraw = "void(*)(VkCommandBuffer, uint32_t, uint32_t, uint32_t, uint32_t)",
+		vkCmdBindDescriptorSets = "void(*)(VkCommandBuffer, VkPipelineBindPoint, VkPipelineLayout, uint32_t, uint32_t, const VkDescriptorSet*, uint32_t, const uint32_t*)",
+		vkCmdCopyBufferToImage = "void(*)(VkCommandBuffer, VkBuffer, VkImage, VkImageLayout, uint32_t, const VkBufferImageCopy*)",
 		vkQueueSubmit = "VkResult(*)(VkQueue, uint32_t, const VkSubmitInfo*, uint64_t)",
 		vkQueueWaitIdle = "VkResult(*)(VkQueue)",
 		vkGetDeviceQueue = "void(*)(VkDevice, uint32_t, uint32_t, VkQueue*)",
-		vkCreateSemaphore =
-		"VkResult(*)(VkDevice, const VkSemaphoreCreateInfo*, const VkAllocationCallbacks*, VkSemaphore*)",
+		vkCreateSemaphore = "VkResult(*)(VkDevice, const VkSemaphoreCreateInfo*, const VkAllocationCallbacks*, VkSemaphore*)",
 		vkCreateFence = "VkResult(*)(VkDevice, const VkFenceCreateInfo*, const VkAllocationCallbacks*, VkFence*)",
-		vkCreateSwapchainKHR =
-		"VkResult(*)(VkDevice, const VkSwapchainCreateInfoKHR*, const VkAllocationCallbacks*, VkSwapchainKHR*)",
+		vkCreateSwapchainKHR = "VkResult(*)(VkDevice, const VkSwapchainCreateInfoKHR*, const VkAllocationCallbacks*, VkSwapchainKHR*)",
 		vkGetSwapchainImagesKHR = "VkResult(*)(VkDevice, VkSwapchainKHR, uint32_t*, VkImage*)",
 		vkAcquireNextImageKHR = "VkResult(*)(VkDevice, VkSwapchainKHR, uint64_t, VkSemaphore, VkFence, uint32_t*)",
 		vkQueuePresentKHR = "VkResult(*)(VkQueue, const VkPresentInfoKHR*)",
@@ -1346,6 +1445,26 @@ do
 		DISCRETE_GPU = 2,
 		VIRTUAL_GPU = 3,
 		CPU = 4,
+	}
+
+	---@enum vk.ImageLayout
+	vk.ImageLayout = {
+		UNDEFINED = 0,
+		GENERAL = 1,
+		COLOR_ATTACHMENT_OPTIMAL = 2,
+		DEPTH_STENCIL_ATTACHMENT_OPTIMAL = 3,
+		DEPTH_STENCIL_READ_ONLY_OPTIMAL = 4,
+		SHADER_READ_ONLY_OPTIMAL = 5,
+		TRANSFER_SRC_OPTIMAL = 6,
+		TRANSFER_DST_OPTIMAL = 7,
+		PREINITIALIZED = 8,
+	}
+
+	---@enum vk.ImageType
+	vk.ImageType = {
+		TYPE_1D = 0,
+		TYPE_2D = 1,
+		TYPE_3D = 2,
 	}
 
 	---@enum vk.BufferUsage
@@ -1480,8 +1599,7 @@ do
 		end
 
 		local pipelines = ffi.new("VkPipeline[?]", count)
-		local result = vkDevice.vkCreateGraphicsPipelines(device, pipelineCache or 0, count, infoArray, allocator,
-			pipelines)
+		local result = vkDevice.vkCreateGraphicsPipelines(device, pipelineCache or 0, count, infoArray, allocator, pipelines)
 		if result ~= 0 then
 			error("Failed to create Vulkan graphics pipelines, error code: " .. tostring(result))
 		end
@@ -1549,7 +1667,48 @@ do
 	function vk.getBufferMemoryRequirements(device, buffer)
 		local memRequirements = ffi.new("VkMemoryRequirements")
 		vkDevice.vkGetBufferMemoryRequirements(device, buffer, memRequirements)
-		return memRequirements --[[@as vk.MemoryRequirements]]
+		return memRequirements
+	end
+
+	---@param device vk.Device
+	---@param image vk.Image
+	---@return vk.MemoryRequirements
+	function vk.getImageMemoryRequirements(device, image)
+		local memRequirements = ffi.new("VkMemoryRequirements")
+		vkDevice.vkGetImageMemoryRequirements(device, image, memRequirements)
+		return memRequirements
+	end
+
+	---@param device vk.Device
+	---@param createInfo vk.CreateImageInfoStruct
+	---@param allocator ffi.cdata*?
+	---@return vk.Image
+	function vk.createImage(device, createInfo, allocator)
+		local image = ffi.new("VkImage[1]")
+		local result = vkDevice.vkCreateImage(device, createInfo, allocator, image)
+		if result ~= 0 then
+			error("Failed to create Vulkan image, error code: " .. tostring(result))
+		end
+		return image[0]
+	end
+
+	---@param device vk.Device
+	---@param image vk.Image
+	---@param memory vk.DeviceMemory
+	---@param memoryOffset vk.DeviceSize
+	function vk.bindImageMemory(device, image, memory, memoryOffset)
+		local result = vkDevice.vkBindImageMemory(device, image, memory, memoryOffset)
+		if result ~= 0 then
+			error("Failed to bind image memory, error code: " .. tostring(result))
+		end
+	end
+
+	---@param commandBuffer vk.CommandBuffer
+	function vk.endCommandBuffer(commandBuffer)
+		local result = vkDevice.vkEndCommandBuffer(commandBuffer)
+		if result ~= 0 then
+			error("Failed to end command buffer, error code: " .. tostring(result))
+		end
 	end
 
 	---@param device vk.Device
@@ -1570,7 +1729,7 @@ do
 	---@param device vk.Device
 	---@param buffer vk.Buffer
 	---@param memory vk.DeviceMemory
-	---@param memoryOffset number
+	---@param memoryOffset vk.DeviceSize
 	function vk.bindBufferMemory(device, buffer, memory, memoryOffset)
 		local result = vkDevice.vkBindBufferMemory(device, buffer, memory, memoryOffset)
 		if result ~= 0 then
@@ -1713,6 +1872,9 @@ do
 	---@type fun(commandBuffer: vk.CommandBuffer, vertexCount: number, instanceCount: number, firstVertex: number, firstInstance: number)
 	vk.cmdDraw = vkDevice.vkCmdDraw
 
+	---@type fun(commandBuffer: vk.CommandBuffer, srcBuffer: vk.Buffer, dstImage: vk.Image, dstImageLayout: vk.ImageLayout, regionCount: number, pRegions: ffi.cdata*)
+	vk.cmdCopyBufferToImage = vkDevice.vkCmdCopyBufferToImage
+
 	---@param queue vk.Queue
 	---@param submits vk.SubmitInfoStruct[]
 	---@param fence number?
@@ -1826,14 +1988,7 @@ do
 	---@return number imageIndex
 	function vk.acquireNextImageKHR(device, swapchain, timeout, semaphore, fence)
 		local imageIndex = ffi.new("uint32_t[1]")
-		local result = vkDevice.vkAcquireNextImageKHR(
-			device,
-			swapchain,
-			timeout,
-			semaphore or 0,
-			fence or 0,
-			imageIndex
-		)
+		local result = vkDevice.vkAcquireNextImageKHR(device, swapchain, timeout, semaphore or 0, fence or 0, imageIndex)
 		if result ~= 0 then
 			error("Failed to acquire next swapchain image, error code: " .. tostring(result))
 		end
