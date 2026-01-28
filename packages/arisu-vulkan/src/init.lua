@@ -897,7 +897,7 @@ ffi.cdef([[
 	);
 ]])
 
----@class vk.BaseStruct
+---@class vk.ffi.BaseStruct
 ---@field sType vk.StructureType?
 ---@field pNext userdata?
 ---@field flags number?
@@ -933,7 +933,7 @@ ffi.cdef([[
 ---@field alignment vk.DeviceSize
 ---@field memoryTypeBits number
 
----@class vk.CreateImageInfoStruct: vk.BaseStruct
+---@class vk.ffi.CreateImageInfo: vk.ffi.BaseStruct
 ---@field imageType vk.ImageType
 ---@field format vk.Format
 ---@field extent vk.Extent3D
@@ -970,7 +970,7 @@ ffi.cdef([[
 ---@field memoryHeapCount number
 ---@field memoryHeaps ffi.cdata*
 
----@class vk.MemoryAllocateInfoStruct: vk.BaseStruct
+---@class vk.ffi.MemoryAllocateInfo: vk.ffi.BaseStruct
 ---@field allocationSize number
 ---@field memoryTypeIndex number
 
@@ -990,38 +990,38 @@ ffi.cdef([[
 ---@field format number
 ---@field colorSpace number
 
----@class vk.InstanceCreateInfoStruct: vk.BaseStruct
----@field pApplicationInfo userdata?
+---@class vk.ffi.InstanceCreateInfo: vk.ffi.BaseStruct
+---@field pApplicationInfo ffi.cdata*?
 ---@field enabledLayerCount number?
----@field ppEnabledLayerNames userdata?
+---@field ppEnabledLayerNames ffi.cdata*?
 ---@field enabledExtensionCount number?
----@field ppEnabledExtensionNames userdata?
+---@field ppEnabledExtensionNames ffi.cdata*?
 
----@class vk.DeviceCreateInfoStruct: vk.BaseStruct
+---@class vk.ffi.DeviceCreateInfo: vk.ffi.BaseStruct
 ---@field queueCreateInfoCount number?
 ---@field pQueueCreateInfos userdata?
 ---@field enabledExtensionCount number?
 ---@field ppEnabledExtensionNames userdata?
 ---@field pEnabledFeatures userdata?
 
----@class vk.BufferCreateInfoStruct: vk.BaseStruct
+---@class vk.ffi.BufferCreateInfo: vk.ffi.BaseStruct
 ---@field size number
 ---@field usage vk.BufferUsage
 ---@field sharingMode vk.SharingMode?
 ---@field queueFamilyIndexCount number?
 ---@field pQueueFamilyIndices userdata?
 
----@class vk.ShaderModuleCreateInfoStruct: vk.BaseStruct
+---@class vk.ffi.ShaderModuleCreateInfo: vk.ffi.BaseStruct
 ---@field codeSize number
 ---@field pCode userdata
 
----@class vk.PipelineLayoutCreateInfoStruct: vk.BaseStruct
+---@class vk.ffi.PipelineLayoutCreateInfo: vk.ffi.BaseStruct
 ---@field setLayoutCount number?
 ---@field pSetLayouts userdata?
 ---@field pushConstantRangeCount number?
 ---@field pPushConstantRanges userdata?
 
----@class vk.GraphicsPipelineCreateInfoStruct: vk.BaseStruct
+---@class vk.ffi.GraphicsPipelineCreateInfo: vk.ffi.BaseStruct
 ---@field stageCount number
 ---@field pStages userdata
 ---@field pVertexInputState userdata?
@@ -1037,7 +1037,7 @@ ffi.cdef([[
 ---@field renderPass vk.RenderPass
 ---@field subpass number?
 
----@class vk.RenderPassCreateInfoStruct: vk.BaseStruct
+---@class vk.ffi.RenderPassCreateInfo: vk.ffi.BaseStruct
 ---@field attachmentCount number?
 ---@field pAttachments userdata?
 ---@field subpassCount number
@@ -1045,7 +1045,7 @@ ffi.cdef([[
 ---@field dependencyCount number?
 ---@field pDependencies userdata?
 
----@class vk.FramebufferCreateInfoStruct: vk.BaseStruct
+---@class vk.ffi.FramebufferCreateInfo: vk.ffi.BaseStruct
 ---@field renderPass vk.RenderPass
 ---@field attachmentCount number?
 ---@field pAttachments userdata?
@@ -1053,11 +1053,11 @@ ffi.cdef([[
 ---@field height number
 ---@field layers number
 
----@class vk.CommandPoolCreateInfoStruct: vk.BaseStruct
+---@class vk.ffi.CommandPoolCreateInfo: vk.ffi.BaseStruct
 ---@field flags number?
 ---@field queueFamilyIndex number
 
----@class vk.CommandBufferAllocateInfoStruct: vk.BaseStruct
+---@class vk.ffi.CommandBufferAllocateInfo: vk.ffi.BaseStruct
 ---@field commandPool vk.CommandPool
 ---@field level number
 ---@field commandBufferCount number
@@ -1069,7 +1069,7 @@ ffi.cdef([[
 ---@field stageFlags number
 ---@field pImmutableSamplers ffi.cdata*?
 
----@class vk.DescriptorSetLayoutCreateInfoStruct: vk.BaseStruct
+---@class vk.ffi.DescriptorSetLayoutCreateInfo: vk.ffi.BaseStruct
 ---@field bindingCount number?
 ---@field pBindings ffi.cdata*?
 
@@ -1077,12 +1077,12 @@ ffi.cdef([[
 ---@field type number
 ---@field descriptorCount number
 
----@class vk.DescriptorPoolCreateInfoStruct: vk.BaseStruct
+---@class vk.ffi.DescriptorPoolCreateInfo: vk.ffi.BaseStruct
 ---@field maxSets number
 ---@field poolSizeCount number?
 ---@field pPoolSizes ffi.cdata*?
 
----@class vk.DescriptorSetAllocateInfoStruct: vk.BaseStruct
+---@class vk.ffi.DescriptorSetAllocateInfo: vk.ffi.BaseStruct
 ---@field descriptorPool vk.DescriptorPool
 ---@field descriptorSetCount number
 ---@field pSetLayouts ffi.cdata*
@@ -1097,7 +1097,7 @@ ffi.cdef([[
 ---@field imageView number
 ---@field imageLayout number
 
----@class vk.WriteDescriptorSetStruct: vk.BaseStruct
+---@class vk.ffi.WriteDescriptorSet: vk.ffi.BaseStruct
 ---@field dstSet vk.DescriptorSet
 ---@field dstBinding number
 ---@field dstArrayElement number
@@ -1107,7 +1107,7 @@ ffi.cdef([[
 ---@field pBufferInfo ffi.cdata*?
 ---@field pTexelBufferView ffi.cdata*?
 
----@class vk.SwapchainCreateInfoKHRStruct: vk.BaseStruct
+---@class vk.ffi.SwapchainCreateInfoKHR: vk.ffi.BaseStruct
 ---@field surface vk.SurfaceKHR
 ---@field minImageCount number
 ---@field imageFormat number
@@ -1124,23 +1124,23 @@ ffi.cdef([[
 ---@field clipped number
 ---@field oldSwapchain vk.SwapchainKHR
 
----@class vk.CommandBufferBeginInfoStruct: vk.BaseStruct
+---@class vk.ffi.CommandBufferBeginInfo: vk.ffi.BaseStruct
 ---@field pInheritanceInfo userdata?
 
 ---@class vk.RenderPassBeginInfo: ffi.cdata*
 
----@class vk.RenderPassBeginInfoStruct: vk.BaseStruct
+---@class vk.ffi.RenderPassBeginInfo: vk.ffi.BaseStruct
 ---@field renderPass vk.RenderPass
 ---@field framebuffer vk.Framebuffer
 ---@field renderArea table
 ---@field clearValueCount number?
 ---@field pClearValues userdata?
 
----@class vk.SemaphoreCreateInfoStruct: vk.BaseStruct
+---@class vk.ffi.SemaphoreCreateInfo: vk.ffi.BaseStruct
 
----@class vk.FenceCreateInfoStruct: vk.BaseStruct
+---@class vk.ffi.FenceCreateInfo: vk.ffi.BaseStruct
 
----@class vk.PresentInfoKHRStruct: vk.BaseStruct
+---@class vk.ffi.PresentInfoKHR: vk.ffi.BaseStruct
 ---@field waitSemaphoreCount number?
 ---@field pWaitSemaphores ffi.cdata*?
 ---@field swapchainCount number
@@ -1148,7 +1148,7 @@ ffi.cdef([[
 ---@field pImageIndices ffi.cdata*
 ---@field pResults ffi.cdata*?
 
----@class vk.SubmitInfoStruct: vk.BaseStruct
+---@class vk.ffi.SubmitInfo: vk.ffi.BaseStruct
 ---@field waitSemaphoreCount number?
 ---@field pWaitSemaphores ffi.cdata*?
 ---@field pWaitDstStageMask ffi.cdata*?
@@ -1230,7 +1230,7 @@ vkGlobal.StructureType = {
 do
 	local C = ffi.load("vulkan")
 
-	---@param info vk.InstanceCreateInfoStruct
+	---@param info vk.InstanceCreateInfo
 	---@param allocator ffi.cdata*?
 	---@return vk.Instance
 	function vkGlobal.createInstance(info, allocator)
@@ -1361,7 +1361,7 @@ do
 	end
 
 	---@param physicalDevice vk.PhysicalDevice
-	---@param info vk.DeviceCreateInfoStruct?
+	---@param info vk.ffi.DeviceCreateInfo?
 	---@param allocator ffi.cdata*?
 	---@return vk.Device
 	function vkInstance.createDevice(physicalDevice, info, allocator)
@@ -1506,7 +1506,7 @@ do
 
 	vk.getPhysicalDeviceProperties = vkGlobal.getPhysicalDeviceProperties
 
-	---@param info vk.RenderPassBeginInfoStruct
+	---@param info vk.ffi.RenderPassBeginInfo
 	function vk.newRenderPassBeginInfo(info)
 		local info = ffi.new("VkRenderPassBeginInfo", info)
 		info.sType = vk.StructureType.RENDER_PASS_BEGIN_INFO
@@ -1526,7 +1526,7 @@ end
 -- Device
 do
 	---@param device vk.Device
-	---@param info vk.BufferCreateInfoStruct
+	---@param info vk.ffi.BufferCreateInfo
 	---@param allocator ffi.cdata*?
 	---@return vk.Buffer
 	function vk.createBuffer(device, info, allocator)
@@ -1550,7 +1550,7 @@ do
 	end
 
 	---@param device vk.Device
-	---@param info vk.ShaderModuleCreateInfoStruct
+	---@param info vk.ffi.ShaderModuleCreateInfo
 	---@param allocator ffi.cdata*?
 	---@return vk.ShaderModule
 	function vk.createShaderModule(device, info, allocator)
@@ -1567,7 +1567,7 @@ do
 	end
 
 	---@param device vk.Device
-	---@param info vk.PipelineLayoutCreateInfoStruct
+	---@param info vk.ffi.PipelineLayoutCreateInfo
 	---@param allocator ffi.cdata*?
 	---@return vk.PipelineLayout
 	function vk.createPipelineLayout(device, info, allocator)
@@ -1585,7 +1585,7 @@ do
 
 	---@param device vk.Device
 	---@param pipelineCache number?
-	---@param infos vk.GraphicsPipelineCreateInfoStruct[]
+	---@param infos vk.ffi.GraphicsPipelineCreateInfo[]
 	---@param allocator ffi.cdata*?
 	---@return vk.Pipeline[]
 	function vk.createGraphicsPipelines(device, pipelineCache, infos, allocator)
@@ -1613,7 +1613,7 @@ do
 	end
 
 	---@param device vk.Device
-	---@param info vk.RenderPassCreateInfoStruct
+	---@param info vk.ffi.RenderPassCreateInfo
 	---@param allocator ffi.cdata*?
 	---@return vk.RenderPass
 	function vk.createRenderPass(device, info, allocator)
@@ -1630,7 +1630,7 @@ do
 	end
 
 	---@param device vk.Device
-	---@param info vk.FramebufferCreateInfoStruct
+	---@param info vk.ffi.FramebufferCreateInfo
 	---@param allocator ffi.cdata*?
 	---@return vk.Framebuffer
 	function vk.createFramebuffer(device, info, allocator)
@@ -1645,7 +1645,7 @@ do
 	end
 
 	---@param device vk.Device
-	---@param info vk.CommandPoolCreateInfoStruct
+	---@param info vk.ffi.CommandPoolCreateInfo
 	---@param allocator ffi.cdata*?
 	---@return vk.CommandPool
 	function vk.createCommandPool(device, info, allocator)
@@ -1680,7 +1680,7 @@ do
 	end
 
 	---@param device vk.Device
-	---@param createInfo vk.CreateImageInfoStruct
+	---@param createInfo vk.ffi.CreateImageInfo
 	---@param allocator ffi.cdata*?
 	---@return vk.Image
 	function vk.createImage(device, createInfo, allocator)
@@ -1712,7 +1712,7 @@ do
 	end
 
 	---@param device vk.Device
-	---@param info vk.MemoryAllocateInfoStruct
+	---@param info vk.ffi.MemoryAllocateInfo
 	---@param allocator ffi.cdata*?
 	---@return vk.DeviceMemory
 	function vk.allocateMemory(device, info, allocator)
@@ -1759,7 +1759,7 @@ do
 	end
 
 	---@param device vk.Device
-	---@param info vk.DescriptorSetLayoutCreateInfoStruct
+	---@param info vk.ffi.DescriptorSetLayoutCreateInfo
 	---@param allocator ffi.cdata*?
 	---@return vk.DescriptorSetLayout
 	function vk.createDescriptorSetLayout(device, info, allocator)
@@ -1774,7 +1774,7 @@ do
 	end
 
 	---@param device vk.Device
-	---@param info vk.DescriptorPoolCreateInfoStruct
+	---@param info vk.ffi.DescriptorPoolCreateInfo
 	---@param allocator ffi.cdata*?
 	---@return vk.DescriptorPool
 	function vk.createDescriptorPool(device, info, allocator)
@@ -1789,7 +1789,7 @@ do
 	end
 
 	---@param device vk.Device
-	---@param info vk.DescriptorSetAllocateInfoStruct
+	---@param info vk.ffi.DescriptorSetAllocateInfo
 	---@return vk.DescriptorSet[]
 	function vk.allocateDescriptorSets(device, info)
 		local allocInfo = ffi.new("VkDescriptorSetAllocateInfo", info)
@@ -1807,7 +1807,7 @@ do
 	end
 
 	---@param device vk.Device
-	---@param writes vk.WriteDescriptorSetStruct[]
+	---@param writes vk.ffi.WriteDescriptorSet[]
 	function vk.updateDescriptorSets(device, writes)
 		local count = #writes
 		local writeArray = ffi.new("VkWriteDescriptorSet[?]", count)
@@ -1820,7 +1820,7 @@ do
 	end
 
 	---@param device vk.Device
-	---@param info vk.CommandBufferAllocateInfoStruct
+	---@param info vk.ffi.CommandBufferAllocateInfo
 	---@return vk.CommandBuffer[]
 	function vk.allocateCommandBuffers(device, info)
 		local info = ffi.new("VkCommandBufferAllocateInfo", info)
@@ -1841,7 +1841,7 @@ do
 	end
 
 	---@param commandBuffer vk.CommandBuffer
-	---@param info vk.CommandBufferBeginInfoStruct?
+	---@param info vk.ffi.CommandBufferBeginInfo?
 	function vk.beginCommandBuffer(commandBuffer, info)
 		local info = ffi.new("VkCommandBufferBeginInfo", info or {})
 		info.sType = vk.StructureType.COMMAND_BUFFER_BEGIN_INFO
@@ -1876,7 +1876,7 @@ do
 	vk.cmdCopyBufferToImage = vkDevice.vkCmdCopyBufferToImage
 
 	---@param queue vk.Queue
-	---@param submits vk.SubmitInfoStruct[]
+	---@param submits vk.ffi.SubmitInfo[]
 	---@param fence number?
 	function vk.queueSubmit(queue, submits, fence)
 		local count = #submits
@@ -1913,7 +1913,7 @@ do
 	end
 
 	---@param device vk.Device
-	---@param info vk.SemaphoreCreateInfoStruct
+	---@param info vk.ffi.SemaphoreCreateInfo
 	---@param allocator ffi.cdata*?
 	---@return vk.Semaphore
 	function vk.createSemaphore(device, info, allocator)
@@ -1928,7 +1928,7 @@ do
 	end
 
 	---@param device vk.Device
-	---@param info vk.FenceCreateInfoStruct
+	---@param info vk.ffi.FenceCreateInfo
 	---@param allocator ffi.cdata*?
 	---@return vk.Fence
 	function vk.createFence(device, info, allocator)
@@ -1943,7 +1943,7 @@ do
 	end
 
 	---@param device vk.Device
-	---@param info vk.SwapchainCreateInfoKHRStruct
+	---@param info vk.ffi.SwapchainCreateInfoKHR
 	---@param allocator ffi.cdata*?
 	---@return vk.SwapchainKHR
 	function vk.createSwapchainKHR(device, info, allocator)
@@ -1996,7 +1996,7 @@ do
 	end
 
 	---@param queue vk.Queue
-	---@param info vk.PresentInfoKHRStruct
+	---@param info vk.ffi.PresentInfoKHR
 	function vk.queuePresentKHR(queue, info)
 		local presentInfo = ffi.new("VkPresentInfoKHR", info)
 		presentInfo.sType = vk.StructureType.PRESENT_INFO_KHR
