@@ -26,15 +26,10 @@ There are no dependencies used by the library. Pure X11/Win32 and OpenGL.
 
 ## Running
 
-1. Set up LuaJIT on your system
-    - Windows: `winget install -e --id DEVCOM.LuaJIT`
-    - Linux: `dnf install luajit` or `apt install luajit`
-2. Clone the repository
-    - `git clone https://github.com/codebycruz/arisu`
-3. Run this inside the repo folder
-    - `luajit ./src/main.lua`
+1. Set up [lpm](https://github.com/codebycruz/lpm) on your system.
+2. Run `lpm run` inside of `./packages/arisu`.
 
-And yes, it needs to be LuaJIT, not Lua! FFI is extensively used. This repo basically uses C.
+That's it. `lpm` contains a build of LuaJIT for you, and handles the installation of dependencies (in this case, only dependencies to itself).
 
 ## Attributions
 
