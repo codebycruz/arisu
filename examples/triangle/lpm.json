@@ -3,8 +3,8 @@
 	"version": "0.1.0",
 	"engine": "lpm",
 	"dependencies": {
-		"hood": { "path": "../packages/hood" },
-		"arisu-winit": { "path": "../packages/arisu-winit" },
-		"arisu-util": { "path": "../packages/arisu-util" }
+		"hood": { "path": "../../packages/hood" },
+		"arisu-winit": { "path": "../../packages/arisu-winit" },
+		"arisu-util": { "path": "../../packages/arisu-util" }
 	}
 }
