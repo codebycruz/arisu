@@ -234,8 +234,6 @@
 ---@class vk.ffi.CommandBufferBeginInfo: vk.ffi.BaseStruct
 ---@field pInheritanceInfo userdata?
 
----@class vk.RenderPassBeginInfo: ffi.cdata*
-
 ---@class vk.ffi.RenderPassBeginInfo: vk.ffi.BaseStruct
 ---@field renderPass vk.RenderPass
 ---@field framebuffer vk.Framebuffer

@@ -364,11 +364,10 @@ do
 
 	vk.getPhysicalDeviceProperties = vkGlobal.getPhysicalDeviceProperties
 
-	---@param info vk.ffi.RenderPassBeginInfo
-	function vk.newRenderPassBeginInfo(info)
-		local info = ffi.new("VkRenderPassBeginInfo", info)
+	function vk.newRenderPassBeginInfo()
+		local info = ffi.new("VkRenderPassBeginInfo")
 		info.sType = vk.StructureType.RENDER_PASS_BEGIN_INFO
-		return info --[[@as vk.RenderPassBeginInfo]]
+		return info --[[@as vk.ffi.RenderPassBeginInfo]]
 	end
 end
 
@@ -719,7 +718,7 @@ do
 		end
 	end
 
-	---@type fun(commandBuffer: vk.CommandBuffer, info: vk.RenderPassBeginInfo, contents: vk.SubpassContents)
+	---@type fun(commandBuffer: vk.CommandBuffer, info: vk.ffi.RenderPassBeginInfo, contents: vk.SubpassContents)
 	vk.cmdBeginRenderPass = vkDevice.vkCmdBeginRenderPass
 
 	---@type fun(commandBuffer: vk.CommandBuffer)
