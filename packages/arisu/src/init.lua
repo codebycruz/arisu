@@ -745,7 +745,7 @@ function App:event(event, handler)
 		local time = os.clock() - self.startTime
 		self.plugins.overlay:draw(event.window, "marching_ants", time)
 
-		ctx.swapchain:present()
+		self.plugins.render.device.queue:present(ctx.swapchain)
 
 		if self.overlaySelection or self.overlayLine or self.overlayRectangle or self.overlayCircle then
 			handler:requestRedraw(event.window)

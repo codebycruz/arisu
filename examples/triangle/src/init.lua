@@ -116,7 +116,7 @@ eventLoop:run(function(event, handler)
 
 		local commandBuffer = encoder:finish()
 		device.queue:submit(commandBuffer)
-		swapchain:present()
+		device.queue:present(swapchain)
 	elseif event.name == "aboutToWait" then
 		handler:requestRedraw(window)
 	end

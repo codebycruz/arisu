@@ -16,6 +16,12 @@ function GLQueue:submit(buffer)
 	buffer:execute()
 end
 
+---@param swapchain hood.gl.Swapchain
+function GLQueue:present(swapchain)
+	self.ctx:makeCurrent()
+	swapchain:present()
+end
+
 --- Helper method to write data to a buffer
 ---@param buffer hood.gl.Buffer
 ---@param size number
