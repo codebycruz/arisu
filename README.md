@@ -1,5 +1,7 @@
 # arisu
 
+> NOTE: This is the frozen version of Arisu as the Vulkan backend alongside a custom shading language are being developed at the [arisu-slang](https://github.com/codebycruz/arisu/tree/arisu-slang) branch.
+
 A painting program implemented entirely from scratch in LuaJIT.
 
 ## Requirements
