@@ -355,6 +355,13 @@ do
 		SECONDARY = 1,
 	}
 
+	---@enum vk.QueueFlagBits
+	vk.QueueFlagBits = {
+		GRAPHICS = 0x00000001,
+		COMPUTE = 0x00000002,
+		TRANSFER = 0x00000004,
+	}
+
 	vk.getPhysicalDeviceProperties = vkGlobal.getPhysicalDeviceProperties
 
 	---@param info vk.ffi.RenderPassBeginInfo
