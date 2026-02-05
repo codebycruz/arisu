@@ -1,4 +1,4 @@
-local gl = require("arisu-opengl")
+local gl = require("hood-opengl")
 local ffi = require("ffi")
 
 ---@class hood.gl.VAO

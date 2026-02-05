@@ -1,5 +1,5 @@
 {
-	"name": "arisu-opengl",
+	"name": "hood-opengl",
 	"version": "0.1.0",
 	"dependencies": {
 		"arisu-x11": { "path": "../arisu-x11" },

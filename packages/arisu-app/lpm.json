@@ -2,7 +2,7 @@
 	"name": "arisu-app",
 	"version": "0.1.0",
 	"dependencies": {
-		"arisu-opengl": { "path": "../arisu-opengl" },
+		"hood-opengl": { "path": "../hood-opengl" },
 		"hood-vulkan": { "path": "../hood-vulkan" },
 		"arisu-util": { "path": "../arisu-util" },
 		"arisu-text": { "path": "../arisu-text" },

@@ -1,4 +1,4 @@
-local gl = require("arisu-opengl")
+local gl = require("hood-opengl")
 
 ---@class hood.gl.Program
 ---@field id number

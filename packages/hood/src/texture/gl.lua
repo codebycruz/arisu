@@ -1,4 +1,4 @@
-local gl = require("arisu-opengl")
+local gl = require("hood-opengl")
 local hood = require("hood")
 
 ---@class hood.gl.Texture
