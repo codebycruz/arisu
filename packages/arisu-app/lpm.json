@@ -6,7 +6,7 @@
 		"hood-vulkan": { "path": "../hood-vulkan" },
 		"arisu-util": { "path": "../arisu-util" },
 		"arisu-text": { "path": "../arisu-text" },
-		"arisu-winit": { "path": "../arisu-winit" },
+		"winit": { "path": "../winit" },
 		"hood": { "path": "../hood" }
 	}
 }

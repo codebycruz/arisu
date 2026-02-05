@@ -4,7 +4,7 @@
 	"engine": "lpm",
 	"dependencies": {
 		"hood": { "path": "../../packages/hood" },
-		"arisu-winit": { "path": "../../packages/arisu-winit" },
+		"winit": { "path": "../../packages/winit" },
 		"arisu-util": { "path": "../../packages/arisu-util" }
 	}
 }

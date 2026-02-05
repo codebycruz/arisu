@@ -5,6 +5,6 @@
 		"arisu-opengl": { "path": "../arisu-opengl" },
 		"hood-vulkan": { "path": "../hood-vulkan" },
 		"arisu-util": { "path": "../arisu-util" },
-		"arisu-winit": { "path": "../arisu-winit" }
+		"winit": { "path": "../winit" }
 	}
 }

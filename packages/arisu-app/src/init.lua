@@ -1,4 +1,4 @@
-local window = require("arisu-winit")
+local window = require("winit")
 
 --[[
 	The Arisu app architecture is simple.

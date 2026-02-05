@@ -1,5 +1,5 @@
 local ffi = require("ffi")
-local winit = require("arisu-winit")
+local winit = require("winit")
 local hood = require("hood")
 
 local Instance = require("hood.instance")
