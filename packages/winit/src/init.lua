@@ -1,6 +1,6 @@
 local util = require("arisu-util")
 
-local windowBackend = util.isWindows() and require("winit.raw.win32") or require("arisu-winit.raw.x11")
+local windowBackend = util.isWindows() and require("winit.raw.win32") or require("winit.raw.x11")
 
 ---@class winit.Window
 ---@field id any?
