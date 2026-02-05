@@ -71,6 +71,12 @@
 ---@field memoryHeapCount number
 ---@field memoryHeaps ffi.cdata*
 
+---@class vk.QueueFamilyProperties: ffi.cdata*
+---@field queueFlags number
+---@field queueCount number
+---@field timestampValidBits number
+---@field minImageTransferGranularity vk.Extent3D
+
 ---@class vk.ffi.MemoryAllocateInfo: vk.ffi.BaseStruct
 ---@field allocationSize number
 ---@field memoryTypeIndex number

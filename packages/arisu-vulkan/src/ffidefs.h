@@ -69,12 +69,20 @@ typedef int32_t VkImageType;
 typedef int32_t VkImageTiling;
 typedef int32_t VkImageLayout;
 typedef VkFlags VkImageAspectFlags;
+typedef VkFlags VkQueueFlags;
 
 typedef struct {
   uint32_t width;
   uint32_t height;
   uint32_t depth;
 } VkExtent3D;
+
+typedef struct {
+  VkQueueFlags queueFlags;
+  uint32_t queueCount;
+  uint32_t timestampValidBits;
+  VkExtent3D minImageTransferGranularity;
+} VkQueueFamilyProperties;
 
 typedef struct {
   int32_t x;
@@ -646,6 +654,10 @@ VkResult vkGetPhysicalDeviceProperties(VkPhysicalDevice physicalDevice,
 void vkGetPhysicalDeviceMemoryProperties(
     VkPhysicalDevice physicalDevice,
     VkPhysicalDeviceMemoryProperties *pMemoryProperties);
+
+void vkGetPhysicalDeviceQueueFamilyProperties(
+    VkPhysicalDevice physicalDevice, uint32_t *pQueueFamilyPropertyCount,
+    VkQueueFamilyProperties *pQueueFamilyProperties);
 
 VkResult vkGetPhysicalDeviceSurfaceCapabilitiesKHR(
     VkPhysicalDevice physicalDevice, VkSurfaceKHR surface,

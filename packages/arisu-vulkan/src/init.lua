@@ -119,6 +119,22 @@ do
 	end
 
 	---@param physicalDevice vk.PhysicalDevice
+	---@return vk.QueueFamilyProperties[]
+	function vkGlobal.getPhysicalDeviceQueueFamilyProperties(physicalDevice)
+		local count = ffi.new("uint32_t[1]")
+		C.vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, count, nil)
+
+		local properties = ffi.new("VkQueueFamilyProperties[?]", count[0])
+		C.vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, count, properties)
+
+		local propertyTable = {}
+		for i = 0, count[0] - 1 do
+			propertyTable[i + 1] = properties[i]
+		end
+		return propertyTable
+	end
+
+	---@param physicalDevice vk.PhysicalDevice
 	---@param surface vk.SurfaceKHR
 	---@return vk.SurfaceCapabilitiesKHR
 	function vkGlobal.getPhysicalDeviceSurfaceCapabilitiesKHR(physicalDevice, surface)
@@ -268,6 +284,7 @@ local vk = {}
 do
 	vk.StructureType = vkGlobal.StructureType
 	vk.getPhysicalDeviceMemoryProperties = vkGlobal.getPhysicalDeviceMemoryProperties
+	vk.getPhysicalDeviceQueueFamilyProperties = vkGlobal.getPhysicalDeviceQueueFamilyProperties
 	vk.getPhysicalDeviceSurfaceCapabilitiesKHR = vkGlobal.getPhysicalDeviceSurfaceCapabilitiesKHR
 	vk.getPhysicalDeviceSurfaceFormatsKHR = vkGlobal.getPhysicalDeviceSurfaceFormatsKHR
 	vk.getPhysicalDeviceSurfacePresentModesKHR = vkGlobal.getPhysicalDeviceSurfacePresentModesKHR
