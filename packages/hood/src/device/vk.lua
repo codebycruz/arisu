@@ -1,4 +1,4 @@
-local vk = require("arisu-vulkan")
+local vk = require("hood-vulkan")
 
 local VKBuffer = require("hood.buffer.vk")
 local VKQueue = require("hood.queue.vk")

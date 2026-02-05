@@ -3,7 +3,7 @@
 	"version": "0.1.0",
 	"dependencies": {
 		"arisu-opengl": { "path": "../arisu-opengl" },
-		"arisu-vulkan": { "path": "../arisu-vulkan" },
+		"hood-vulkan": { "path": "../hood-vulkan" },
 		"arisu-util": { "path": "../arisu-util" },
 		"arisu-text": { "path": "../arisu-text" },
 		"arisu-winit": { "path": "../arisu-winit" },

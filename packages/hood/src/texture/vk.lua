@@ -1,4 +1,4 @@
-local vk = require("arisu-vulkan")
+local vk = require("hood-vulkan")
 
 ---@class hood.vk.Texture
 local VKTexture = {}

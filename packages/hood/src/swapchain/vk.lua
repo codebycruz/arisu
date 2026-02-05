@@ -1,4 +1,4 @@
-local vk = require("arisu-vulkan")
+local vk = require("hood-vulkan")
 
 local VKTexture = require("hood.texture.vk")
 

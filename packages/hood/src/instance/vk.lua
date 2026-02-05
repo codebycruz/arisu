@@ -1,4 +1,4 @@
-local vk = require("arisu-vulkan")
+local vk = require("hood-vulkan")
 
 local VKAdapter = require("hood.adapter.vk")
 local VKSurface = require("hood.surface.vk")
