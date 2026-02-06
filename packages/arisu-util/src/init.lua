@@ -82,9 +82,4 @@ function util.isMac()
 	return ffi.os == "OSX"
 end
 
--- This should work in the majority of cases
-function util.toPointer(value)
-	return tonumber(ffi.cast("uintptr_t", value))
-end
-
 return util

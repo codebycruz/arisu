@@ -1,6 +1,14 @@
 local user32 = require("arisu-win32.user32")
 local kernel32 = require("arisu-win32.kernel32")
-local util = require("arisu-util")
+local ffi = require("ffi")
+
+--- Casts a ffi pointer to a lua double for use as a hash key.
+--- This isn't perfect obviously and theoretically will cause collisions.
+--- But in practice it should be fine..
+---@param value ffi.cdata*
+local function ffiptrToDouble(value)
+	return tonumber(ffi.cast("uintptr_t", value))
+end
 
 ---@class winit.win32.Window: winit.Window
 ---@field display user32.HDC
@@ -46,7 +54,7 @@ function Win32Window.new(eventLoop, width, height)
 		error("Failed to create window: " .. kernel32.getLastErrorMessage())
 	end
 
-	return setmetatable({ hwnd = window, id = util.toPointer(window), width = width, height = height }, Win32Window)
+	return setmetatable({ hwnd = window, id = ffiptrToDouble(window), width = width, height = height }, Win32Window)
 end
 
 ---@param _image Image?
@@ -105,7 +113,7 @@ function Win32EventLoop.new()
 			return user32.defWindowProc(hwnd, msg, wParam, lParam)
 		end
 
-		local window = self.windows[util.toPointer(hwnd)]
+		local window = self.windows[ffiptrToDouble(hwnd)]
 		if not window then
 			return user32.defWindowProc(hwnd, msg, wParam, lParam)
 		end
