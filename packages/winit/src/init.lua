@@ -1,6 +1,9 @@
-local util = require("arisu-util")
+local ffi = require("ffi")
 
-local windowBackend = util.isWindows() and require("winit.raw.win32") or require("winit.raw.x11")
+local windowBackend =
+	ffi.os == "Windows" and require("winit.raw.win32")
+	or ffi.os == "Linux" and require("winit.raw.x11")
+	or error("Unsupported platform: " .. ffi.os)
 
 ---@class winit.Window
 ---@field id any?

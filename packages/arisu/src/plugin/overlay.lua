@@ -1,5 +1,4 @@
 local ffi = require("ffi")
-local util = require("arisu-util")
 local hood = require("hood")
 
 ---@class plugin.Overlay.Context
@@ -72,7 +71,7 @@ function OverlayPlugin:register(window)
 	})
 
 	local indexBuffer = device:createBuffer({
-		size = util.sizeof("u32") * 6000,
+		size = ffi.sizeof("uint32_t") * 6000,
 		usages = { "INDEX", "COPY_DST" },
 	})
 
@@ -324,10 +323,10 @@ function OverlayPlugin:draw(window, pattern, time)
 	device.queue:writeBuffer(ctx.uniformBuffer, sizeofOverlayUniforms, uniforms)
 
 	if ctx.nIndices > 0 then
-		local vertexSize = util.sizeof("f32") * #ctx.vertices
+		local vertexSize = ffi.sizeof("float") * #ctx.vertices
 		device.queue:writeBuffer(ctx.vertexBuffer, vertexSize, ffi.new("float[?]", #ctx.vertices, ctx.vertices))
 
-		local indexSize = util.sizeof("u32") * #ctx.indices
+		local indexSize = ffi.sizeof("uint32_t") * #ctx.indices
 		device.queue:writeBuffer(ctx.indexBuffer, indexSize, ffi.new("uint32_t[?]", #ctx.indices, ctx.indices))
 
 		local encoder = device:createCommandEncoder()

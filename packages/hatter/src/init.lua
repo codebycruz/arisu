@@ -1,5 +1,3 @@
-local util = require("arisu-util")
-
 local lexer = require("hatter.lexer")
 local parser = require("hatter.parser")
 local analyzer = require("hatter.analyzer")
@@ -44,5 +42,3 @@ local tast, globalScope = analyzer.analyze(ast, src)
 local output = codegen.generate({ target = "glsl", entry = "fragment" }, tast, src)
 
 print(output)
-
--- util.dbg(tast)

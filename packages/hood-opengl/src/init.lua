@@ -1,4 +1,3 @@
-local util = require("arisu-util")
 local ffi = require("ffi")
 
 ffi.cdef([[
@@ -113,14 +112,14 @@ local nonCoreFnDefs = {
 ---@type fun(name: string): function
 local fetchNonCoreFn
 
-if util.isLinux() then
+if ffi.os == "Linux" then
 	local glx = require("arisu-x11.glx")
 
 	function fetchNonCoreFn(name)
 		---@type function: We ensure nonCoreFnDefs has only function types
 		return ffi.cast(nonCoreFnDefs[name], glx.getProcAddress(name))
 	end
-else
+elseif ffi.os == "Windows" then
 	local wgl = require("arisu-win32.wgl")
 
 	function fetchNonCoreFn(name)
@@ -150,9 +149,9 @@ for name in pairs(nonCoreFnDefs) do
 end
 
 local coreFns =
-	util.isLinux() and ffi.load("libGL.so.1")
-	or util.isWindows() and ffi.load("opengl32")
-	or error("Unsupported platform for OpenGL")
+	ffi.os == "Linux" and ffi.load("libGL.so.1")
+	or ffi.os == "Windows" and ffi.load("opengl32")
+	or error("Unsupported platform for OpenGL: " .. ffi.os)
 
 setmetatable(C, { __index = coreFns })
 

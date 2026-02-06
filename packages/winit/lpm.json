@@ -2,7 +2,6 @@
 	"name": "winit",
 	"version": "0.1.0",
 	"dependencies": {
-		"arisu-util": { "path": "../arisu-util" },
 		"arisu-x11": { "path": "../arisu-x11" },
 		"arisu-win32": { "path": "../arisu-win32" }
 	}

@@ -4,7 +4,6 @@
 	"dependencies": {
 		"hood-opengl": { "path": "../hood-opengl" },
 		"hood-vulkan": { "path": "../hood-vulkan" },
-		"arisu-util": { "path": "../arisu-util" },
 		"arisu-text": { "path": "../arisu-text" },
 		"winit": { "path": "../winit" },
 		"hood": { "path": "../hood" }

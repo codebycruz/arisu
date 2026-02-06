@@ -1,5 +1,3 @@
-local util = require("arisu-util")
-
 ---@class slang.IdentToken: slang.Spanned
 ---@field variant "ident"
 ---@field value string
@@ -165,7 +163,18 @@ local util = require("arisu-util")
 
 local lexer = {}
 
-local keywords = util.toLookupTable({
+---@generic T
+---@param tbl T[]
+---@return table<T, number>
+local function toLookupTable(tbl)
+	local lookup = {}
+	for i, v in ipairs(tbl) do
+		lookup[v] = i
+	end
+	return lookup
+end
+
+local keywords = toLookupTable({
 	"fn",
 	"uniform",
 	"storage",
@@ -183,7 +192,7 @@ local keywords = util.toLookupTable({
 	"pub",
 })
 
-local operators = util.toLookupTable({
+local operators = toLookupTable({
 	"+",
 	"-",
 	"*",

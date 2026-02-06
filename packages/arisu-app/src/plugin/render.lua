@@ -1,11 +1,9 @@
-local util = require("arisu-util")
 local ffi = require("ffi")
+local hood = require("hood")
+
 local VertexLayout = require("hood.vertex_layout")
 local TextureManager = require("arisu-app.util.texture_manager")
 local FontManager = require("arisu-app.util.font_manager")
-local hood = require("hood")
-
-local Instance = require("hood.instance")
 
 ---@class arisu.plugin.Render.Context
 ---@field window winit.Window
@@ -50,10 +48,10 @@ end
 function RenderPlugin:setRenderData(window, vertexData, indexData)
 	local ctx = self:getContext(window)
 
-	local vertexSize = util.sizeof("f32") * #vertexData
+	local vertexSize = ffi.sizeof("float") * #vertexData
 	self.device.queue:writeBuffer(ctx.quadVertex, vertexSize, ffi.new("float[?]", #vertexData, vertexData))
 
-	local indexSize = util.sizeof("u32") * #indexData
+	local indexSize = ffi.sizeof("uint32_t") * #indexData
 	self.device.queue:writeBuffer(ctx.quadIndex, indexSize, ffi.new("uint32_t[?]", #indexData, indexData))
 
 	ctx.nIndices = #indexData
@@ -76,7 +74,7 @@ function RenderPlugin:register(window)
 		:withAttribute({ type = "f32", size = 1, offset = 36 }) -- texture id
 
 	local quadVertex = self.device:createBuffer({ size = vertexDescriptor:getStride() * 100000, usages = { "VERTEX" } })
-	local quadIndex = self.device:createBuffer({ size = util.sizeof("u32") * 10000, usages = { "INDEX" } })
+	local quadIndex = self.device:createBuffer({ size = ffi.sizeof("uint32_t") * 10000, usages = { "INDEX" } })
 
 	local quadPipeline = self.device:createPipeline({
 		vertex = {
@@ -101,7 +99,7 @@ function RenderPlugin:register(window)
 	})
 
 	local overlayVertex = self.device:createBuffer({ size = vertexDescriptor:getStride() * 1000, usages = { "VERTEX" } })
-	local overlayIndex = self.device:createBuffer({ size = util.sizeof("u32") * 1000, usages = { "INDEX" } })
+	local overlayIndex = self.device:createBuffer({ size = ffi.sizeof("uint32_t") * 1000, usages = { "INDEX" } })
 
 	local overlayVertexDescriptor = VertexLayout
 		.new()
@@ -211,7 +209,7 @@ function RenderPlugin:event(event, handler)
 		-- ctx.swapchain.ctx:makeCurrent()
 		-- gl.viewport(0, 0, ctx.window.width, ctx.window.height)
 
-		if util.isWindows() then
+		if ffi.os == "Windows" then
 			handler:requestRedraw(event.window)
 		end
 	end

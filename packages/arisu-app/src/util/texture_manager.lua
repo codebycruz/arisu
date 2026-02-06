@@ -1,6 +1,4 @@
 local ffi = require("ffi")
-
-local util = require("arisu-util")
 local hood = require("hood")
 
 local Image = require("arisu-image")
@@ -42,7 +40,7 @@ function TextureManager.new(device)
 
 	-- Use vec4 for proper alignment
 	local textureUVScaleBuffer = device:createBuffer({
-		size = maxLayers * util.sizeof("f32") * 2,
+		size = maxLayers * ffi.sizeof("float") * 2,
 		usages = { "STORAGE", "COPY_DST" },
 	})
 

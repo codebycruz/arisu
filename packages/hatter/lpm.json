@@ -1,7 +1,5 @@
 {
 	"name": "hatter",
 	"version": "0.1.0",
-	"dependencies": {
-		"arisu-util": { "path": "../arisu-util" }
-	}
+	"dependencies": {}
 }
