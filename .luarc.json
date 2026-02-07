@@ -13,7 +13,6 @@
 	},
 	"runtime": {
 		"version": "LuaJIT",
-		"path": ["packages/?/init.lua", "packages/?.lua"],
-		"pathStrict": true
+		"path": ["./lpm_modules/?.lua", "./lpm_modules/?/init.lua"]
 	}
 }
