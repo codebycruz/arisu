@@ -4,6 +4,9 @@
 
 A painting program implemented entirely from scratch in LuaJIT.
 
+> [!NOTE]
+> The master branch is unstable and has regressed some features as it transitions from purely OpenGL to my cross-platform graphics library, [hood](https://github.com/codebycruz/hood).
+
 ## Requirements
 
 - Linux (Recommended) or Windows
@@ -15,28 +18,23 @@ There are no dependencies used by the library. Pure X11/Win32 and OpenGL.
 ## Goals
 
 - [x] Fast
-	- Best practices in the GPU pipeline and when writing LuaJIT code.
+    - Best practices in the GPU pipeline and when writing LuaJIT code.
 - [x] Written from scratch
-	- **Zero** dependencies
+    - **Zero** dependencies
 - [x] Implement all painting operations on the GPU
-	- Canvas is stored on the GPU and manipulated purely with compute shaders
+    - Canvas is stored on the GPU and manipulated purely with compute shaders
 
 ## Showcase
 
-![v4](./assets/showcase/v0.4.0.png)
-![v1](./assets/showcase/v0.1.0.png)
+![v4](./packages/arisu/assets/showcase/v0.4.0.png)
+![v1](./packages/arisu/assets/showcase/v0.1.0.png)
 
 ## Running
 
-1. Set up LuaJIT on your system
-	- Windows: `winget install -e --id DEVCOM.LuaJIT`
-	- Linux: `dnf install luajit` or `apt install luajit`
-2. Clone the repository
-	- `git clone https://github.com/codebycruz/arisu`
-3. Run this inside the repo folder
-	- `luajit ./src/main.lua`
+1. Set up [lpm](https://github.com/codebycruz/lpm) on your system.
+2. Run `lpm run` inside of `./packages/arisu`.
 
-And yes, it needs to be LuaJIT, not Lua! FFI is extensively used. This repo basically uses C.
+That's it. `lpm` contains a build of LuaJIT for you, and handles the installation of dependencies (in this case, only dependencies to itself).
 
 ## Attributions
 

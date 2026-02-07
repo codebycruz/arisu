@@ -1,0 +1,10 @@
+{
+	"name": "arisu",
+	"version": "0.1.0",
+	"engine": "luajit",
+	"dependencies": {
+		"arisu-app": { "path": "../arisu-app" },
+		"arisu-image": { "path": "../arisu-image" },
+		"winit": { "git": "https://github.com/codebycruz/winit" }
+	}
+}
