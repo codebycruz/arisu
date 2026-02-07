@@ -113,14 +113,14 @@ local nonCoreFnDefs = {
 local fetchNonCoreFn
 
 if ffi.os == "Linux" then
-	local glx = require("arisu-x11.glx")
+	local glx = require("x11api.glx")
 
 	function fetchNonCoreFn(name)
 		---@type function: We ensure nonCoreFnDefs has only function types
 		return ffi.cast(nonCoreFnDefs[name], glx.getProcAddress(name))
 	end
 elseif ffi.os == "Windows" then
-	local wgl = require("arisu-win32.wgl")
+	local wgl = require("winapi.wgl")
 
 	function fetchNonCoreFn(name)
 		local cached

@@ -1,7 +1,7 @@
-local user32 = require("arisu-win32.user32")
-local kernel32 = require("arisu-win32.kernel32")
-local wgl = require("arisu-win32.wgl")
-local gdi = require("arisu-win32.gdi")
+local user32 = require("winapi.user32")
+local kernel32 = require("winapi.kernel32")
+local wgl = require("winapi.wgl")
+local gdi = require("winapi.gdi")
 
 ---@class Win32Context
 ---@field display user32.HDC

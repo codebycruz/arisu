@@ -1,5 +1,5 @@
-local glx = require("arisu-x11.glx")
-local x11 = require("arisu-x11")
+local glx = require("x11api.glx")
+local x11 = require("x11api")
 
 --- @class X11Context
 --- @field display XDisplay

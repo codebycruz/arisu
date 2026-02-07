@@ -1,4 +1,4 @@
-local x11 = require("arisu-x11")
+local x11 = require("x11api")
 local ffi = require("ffi")
 
 ---@class winit.x11.Window: winit.Window

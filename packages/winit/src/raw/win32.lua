@@ -1,5 +1,5 @@
-local user32 = require("arisu-win32.user32")
-local kernel32 = require("arisu-win32.kernel32")
+local user32 = require("winapi.user32")
+local kernel32 = require("winapi.kernel32")
 local ffi = require("ffi")
 
 --- Casts a ffi pointer to a lua double for use as a hash key.

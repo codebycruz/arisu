@@ -2,7 +2,7 @@
 	"name": "hood-opengl",
 	"version": "0.1.0",
 	"dependencies": {
-		"arisu-x11": { "path": "../arisu-x11" },
-		"arisu-win32": { "path": "../arisu-win32" }
+		"x11api": { "git": "https://github.com/codebycruz/x11api" },
+		"winapi": { "git": "https://github.com/codebycruz/winapi" }
 	}
 }
