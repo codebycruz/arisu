@@ -6,6 +6,6 @@
 		"hood-vulkan": { "path": "../hood-vulkan" },
 		"arisu-text": { "path": "../arisu-text" },
 		"winit": { "git": "https://github.com/codebycruz/winit" },
-		"hood": { "path": "../hood" }
+		"hood": { "git": "https://github.com/codebycruz/hood" }
 	}
 }

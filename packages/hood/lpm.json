@@ -1,9 +1,0 @@
-{
-	"name": "hood",
-	"version": "0.1.0",
-	"dependencies": {
-		"hood-opengl": { "path": "../hood-opengl" },
-		"hood-vulkan": { "path": "../hood-vulkan" },
-		"winit": { "git": "https://github.com/codebycruz/winit" }
-	}
-}

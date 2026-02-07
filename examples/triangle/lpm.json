@@ -1,9 +1,0 @@
-{
-	"name": "triangle",
-	"version": "0.1.0",
-	"engine": "lpm",
-	"dependencies": {
-		"hood": { "path": "../../packages/hood" },
-		"winit": { "git": "https://github.com/codebycruz/winit" }
-	}
-}

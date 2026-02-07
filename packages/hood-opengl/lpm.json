@@ -1,8 +1,0 @@
-{
-	"name": "hood-opengl",
-	"version": "0.1.0",
-	"dependencies": {
-		"x11api": { "git": "https://github.com/codebycruz/x11api" },
-		"winapi": { "git": "https://github.com/codebycruz/winapi" }
-	}
-}
