@@ -4,6 +4,6 @@
 	"engine": "lpm",
 	"dependencies": {
 		"hood": { "path": "../../packages/hood" },
-		"winit": { "path": "../../packages/winit" }
+		"winit": { "git": "https://github.com/codebycruz/winit" }
 	}
 }

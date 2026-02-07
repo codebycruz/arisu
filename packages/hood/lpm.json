@@ -4,6 +4,6 @@
 	"dependencies": {
 		"hood-opengl": { "path": "../hood-opengl" },
 		"hood-vulkan": { "path": "../hood-vulkan" },
-		"winit": { "path": "../winit" }
+		"winit": { "git": "https://github.com/codebycruz/winit" }
 	}
 }

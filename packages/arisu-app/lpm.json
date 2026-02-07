@@ -5,7 +5,7 @@
 		"hood-opengl": { "path": "../hood-opengl" },
 		"hood-vulkan": { "path": "../hood-vulkan" },
 		"arisu-text": { "path": "../arisu-text" },
-		"winit": { "path": "../winit" },
+		"winit": { "git": "https://github.com/codebycruz/winit" },
 		"hood": { "path": "../hood" }
 	}
 }

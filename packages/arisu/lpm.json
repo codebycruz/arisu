@@ -5,6 +5,6 @@
 	"dependencies": {
 		"arisu-app": { "path": "../arisu-app" },
 		"arisu-image": { "path": "../arisu-image" },
-		"winit": { "path": "../winit" }
+		"winit": { "git": "https://github.com/codebycruz/winit" }
 	}
 }
