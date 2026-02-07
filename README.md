@@ -2,6 +2,9 @@
 
 A painting program implemented entirely from scratch in LuaJIT.
 
+> [!NOTE]
+> The master branch is unstable and has regressed some features as it transitions from purely OpenGL to my cross-platform graphics library, [hood](https://github.com/codebycruz/hood).
+
 ## Requirements
 
 - Linux (Recommended) or Windows
