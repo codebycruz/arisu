@@ -2,8 +2,6 @@
 	"name": "arisu-app",
 	"version": "0.1.0",
 	"dependencies": {
-		"hood-opengl": { "path": "../hood-opengl" },
-		"hood-vulkan": { "path": "../hood-vulkan" },
 		"arisu-text": { "path": "../arisu-text" },
 		"winit": { "git": "https://github.com/codebycruz/winit" },
 		"hood": { "git": "https://github.com/codebycruz/hood" }
