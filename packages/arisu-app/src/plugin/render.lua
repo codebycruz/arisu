@@ -5,6 +5,10 @@ local VertexLayout = require("hood.vertex_layout")
 local TextureManager = require("arisu-app.util.texture_manager")
 local FontManager = require("arisu-app.util.font_manager")
 
+local isVulkan = os.getenv("VULKAN") and true or false
+local shaderType = isVulkan and "spirv" or "glsl"
+local shaderExt = isVulkan and "spv" or "glsl"
+
 ---@class arisu.plugin.Render.Context
 ---@field window winit.Window
 ---@field swapchain hood.Swapchain
@@ -78,11 +82,11 @@ function RenderPlugin:register(window)
 
 	local quadPipeline = self.device:createPipeline({
 		vertex = {
-			module = { type = "glsl", source = io.open(dirName .. "../shaders/main.vert.glsl", "r"):read("*a") },
+			module = { type = shaderType, source = io.open(dirName .. "../shaders/main.vert." .. shaderExt, "rb"):read("*a") },
 			buffers = { vertexDescriptor },
 		},
 		fragment = {
-			module = { type = "glsl", source = io.open(dirName .. "../shaders/main.frag.glsl", "r"):read("*a") },
+			module = { type = shaderType, source = io.open(dirName .. "../shaders/main.frag." .. shaderExt, "rb"):read("*a") },
 			targets = {
 				{
 					blend = hood.BlendState.ALPHA_BLENDING,
@@ -109,11 +113,11 @@ function RenderPlugin:register(window)
 
 	local overlayPipeline = self.device:createPipeline({
 		vertex = {
-			module = { type = "glsl", source = io.open("../arisu/shaders/overlay.vert.glsl", "r"):read("*a") },
+			module = { type = shaderType, source = io.open("../arisu/shaders/overlay.vert." .. shaderExt, "rb"):read("*a") },
 			buffers = { overlayVertexDescriptor },
 		},
 		fragment = {
-			module = { type = "glsl", source = io.open("../arisu/shaders/overlay.frag.glsl", "r"):read("*a") },
+			module = { type = shaderType, source = io.open("../arisu/shaders/overlay.frag." .. shaderExt, "rb"):read("*a") },
 			targets = {
 				{
 					blend = hood.BlendState.ALPHA_BLENDING,

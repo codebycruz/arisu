@@ -1,6 +1,10 @@
 local ffi = require("ffi")
 
-local computeSource = io.open("shaders/brush.compute.glsl", "rb"):read("*a") --[[@as string]]
+local isVulkan = os.getenv("VULKAN") and true or false
+local shaderType = isVulkan and "spirv" or "glsl"
+local shaderExt = isVulkan and "spv" or "glsl"
+
+local computeSource = io.open("shaders/brush.compute." .. shaderExt, "rb"):read("*a") --[[@as string]]
 
 ---@class Compute
 ---@field pipeline hood.ComputePipeline
@@ -67,7 +71,7 @@ function Compute.new(textureManager, canvas, device)
 	})
 
 	local computePipeline = device:createComputePipeline({
-		module = { type = "glsl", source = computeSource },
+		module = { type = shaderType, source = computeSource },
 	})
 
 	-- TODO: Un-hard code this when canvas is passed as a Texture with width/height

@@ -3,3 +3,4 @@
 lpm_modules
 arisu
 !arisu/
+*.spv
