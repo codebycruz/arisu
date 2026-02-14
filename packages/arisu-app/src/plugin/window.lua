@@ -14,7 +14,7 @@ WindowPlugin.__index = WindowPlugin
 
 ---@param onWindowCreate unknown
 function WindowPlugin.new(onWindowCreate)
-	local instance = Instance.new({ backend = "opengl", flags = { "validate" } })
+	local instance = Instance.new({ backend = os.getenv("VULKAN") and "vulkan" or "opengl", flags = { "validate" } })
 	return setmetatable({ contexts = {}, instance = instance, onWindowCreate = onWindowCreate }, WindowPlugin)
 end
 

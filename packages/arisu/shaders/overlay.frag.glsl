@@ -1,11 +1,11 @@
-#version 430 core
+#version 450
 
 layout(location = 0) in vec4 vertexColor;
 layout(location = 1) in vec2 texCoord;
 
 layout(location = 0) out vec4 fragColor;
 
-layout(std430, binding = 0) buffer OverlayUniforms {
+layout(set = 0, binding = 0, std430) buffer OverlayUniforms {
     float time;
     int patternType;
 };
