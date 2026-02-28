@@ -1,7 +1,15 @@
 #version 450
 
-layout(set = 0, binding = 0) uniform sampler2DArray uTextureArray;
-layout(set = 0, binding = 1, std430) readonly buffer TextureUVs {
+#ifdef VULKAN
+#define BINDING(s, b) layout(set = s, binding = b)
+#define BUFFER_BINDING(s, b) layout(set = s, binding = b, std430)
+#else
+#define BINDING(s, b) layout(binding = b)
+#define BUFFER_BINDING(s, b) layout(binding = b, std430)
+#endif
+
+BINDING(0, 0)uniform sampler2DArray uTextureArray;
+BUFFER_BINDING(0, 1)readonly buffer TextureUVs {
     vec2 textureUVScale[];
 };
 

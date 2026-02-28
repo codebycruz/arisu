@@ -2,8 +2,18 @@
 
 layout(local_size_x = 16, local_size_y = 16, local_size_z = 1) in;
 
-layout(set = 0, binding = 0, rgba8) writeonly uniform image2D canvas;
-layout(set = 0, binding = 1, std430) readonly buffer ComputeInputs {
+#ifdef VULKAN
+#define BINDING(s, b) layout(set = s, binding = b)
+#define BUFFER_BINDING(s, b) layout(set = s, binding = b, std430)
+#define IMAGE_BINDING(s, b) layout(set = s, binding = b, rgba8)
+#else
+#define BINDING(s, b) layout(binding = b)
+#define BUFFER_BINDING(s, b) layout(binding = b, std430)
+#define IMAGE_BINDING(s, b) layout(binding = b, rgba8)
+#endif
+
+IMAGE_BINDING(0, 0)writeonly uniform image2D canvas;
+BUFFER_BINDING(0, 1)readonly buffer ComputeInputs {
     vec4 color;
     vec2 selectTopLeft;
     vec2 selectBottomRight;

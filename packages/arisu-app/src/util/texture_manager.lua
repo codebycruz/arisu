@@ -31,11 +31,11 @@ function TextureManager.new(device)
 	})
 
 	local sampler = device:createSampler({
-		minFilter = hood.FilterMode.NEAREST,
-		magFilter = hood.FilterMode.NEAREST,
-		addressModeU = hood.AddressMode.CLAMP_TO_EDGE,
-		addressModeV = hood.AddressMode.CLAMP_TO_EDGE,
-		addressModeW = hood.AddressMode.CLAMP_TO_EDGE,
+		minFilter = hood.FilterMode.Nearest,
+		magFilter = hood.FilterMode.Nearest,
+		addressModeU = hood.AddressMode.ClampToEdge,
+		addressModeV = hood.AddressMode.ClampToEdge,
+		addressModeW = hood.AddressMode.ClampToEdge,
 	})
 
 	-- Use vec4 for proper alignment
@@ -123,7 +123,8 @@ function TextureManager:update(texture, image)
 	assert(self.textures[texture], "Texture does not exist")
 
 	self:setTextureDimensions(texture, image.width, image.height)
-	self.device.queue:writeTexture(self.texture, { layer = texture, width = image.width, height = image.height }, image.pixels)
+	self.device.queue:writeTexture(self.texture, { layer = texture, width = image.width, height = image.height },
+		image.pixels)
 end
 
 ---@param image Image

@@ -17,7 +17,6 @@ function FontManager.new(textureManager)
 
 	local characters = " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~"
 
-	print("..!", dirName)
 	local defaultBitmap = assert(
 		Bitmap.fromPath(
 			{ ymargin = 2, xmargin = 4, gridWidth = 18, gridHeight = 18, characters = characters, perRow = 19 },

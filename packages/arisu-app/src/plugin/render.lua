@@ -97,7 +97,7 @@ function RenderPlugin:register(window)
 		},
 		depthStencil = {
 			depthWriteEnabled = true,
-			depthCompare = hood.CompareFunction.LESS_EQUAL,
+			depthCompare = hood.CompareFunction.LessEqual,
 			format = hood.TextureFormat.Depth24Plus,
 		},
 	})
