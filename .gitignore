@@ -1,6 +1,6 @@
 /arisu
 /arisu.zip
-lpm_modules
+target
 arisu
 !arisu/
 *.spv
