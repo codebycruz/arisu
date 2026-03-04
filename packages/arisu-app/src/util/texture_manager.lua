@@ -26,16 +26,17 @@ TextureManager.__index = TextureManager
 function TextureManager.new(device)
 	local texture = device:createTexture({
 		extents = { dim = "2d", width = maxWidth, height = maxHeight, count = maxLayers },
-		format = hood.TextureFormat.Rgba8UNorm,
+		format = "rgba8unorm",
 		usages = { "TEXTURE_BINDING", "STORAGE_BINDING", "COPY_DST", "COPY_SRC" },
 	})
 
 	local sampler = device:createSampler({
-		minFilter = hood.FilterMode.Nearest,
-		magFilter = hood.FilterMode.Nearest,
-		addressModeU = hood.AddressMode.ClampToEdge,
-		addressModeV = hood.AddressMode.ClampToEdge,
-		addressModeW = hood.AddressMode.ClampToEdge,
+		minFilter = "nearest",
+		magFilter = "nearest",
+		mipmapFilter = "nearest",
+		addressModeU = "clamp-to-edge",
+		addressModeV = "clamp-to-edge",
+		addressModeW = "clamp-to-edge",
 	})
 
 	-- Use vec4 for proper alignment

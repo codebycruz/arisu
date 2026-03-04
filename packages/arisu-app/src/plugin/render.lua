@@ -89,16 +89,16 @@ function RenderPlugin:register(window)
 			module = { type = shaderType, source = io.open(dirName .. "../shaders/main.frag." .. shaderExt, "rb"):read("*a") },
 			targets = {
 				{
-					blend = hood.BlendState.AlphaBlending,
+					blend = "alpha-blending",
 					writeMask = hood.ColorWrites.All,
-					format = hood.TextureFormat.Rgba8UNorm,
+					format = "rgba8unorm",
 				},
 			},
 		},
 		depthStencil = {
 			depthWriteEnabled = true,
-			depthCompare = hood.CompareFunction.LessEqual,
-			format = hood.TextureFormat.Depth24Plus,
+			depthCompare = "less-equal",
+			format = "depth24plus",
 		},
 	})
 
@@ -120,9 +120,9 @@ function RenderPlugin:register(window)
 			module = { type = shaderType, source = io.open("../arisu/shaders/overlay.frag." .. shaderExt, "rb"):read("*a") },
 			targets = {
 				{
-					blend = hood.BlendState.AlphaBlending,
+					blend = "alpha-blending",
 					writeMask = hood.ColorWrites.All,
-					format = hood.TextureFormat.Rgba8UNorm,
+					format = "rgba8unorm",
 				},
 			},
 		},
@@ -130,7 +130,7 @@ function RenderPlugin:register(window)
 
 	local depthBuffer = self.device:createTexture({
 		extents = { dim = "2d", width = window.width, height = window.height },
-		format = hood.TextureFormat.Depth24Plus,
+		format = "depth24plus",
 		usages = { "RENDER_ATTACHMENT" },
 	})
 
@@ -197,7 +197,7 @@ function RenderPlugin:draw(ctx)
 	encoder:setBindGroup(0, self.sharedResources.bindGroup)
 	encoder:setViewport(0, 0, ctx.window.width, ctx.window.height)
 	encoder:setVertexBuffer(0, ctx.quadVertex)
-	encoder:setIndexBuffer(ctx.quadIndex, hood.IndexType.u32)
+	encoder:setIndexBuffer(ctx.quadIndex, "u32")
 	encoder:drawIndexed(ctx.nIndices, 1)
 	encoder:endRendering()
 
