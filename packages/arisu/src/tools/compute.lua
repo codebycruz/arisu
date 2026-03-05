@@ -52,15 +52,26 @@ function Compute.new(textureManager, canvas, device)
 		usages = { "STORAGE", "COPY_DST" },
 	})
 
-	error("need to make the layout here too")
+	local bindGroupLayout = device:createBindGroupLayout({
+		{
+			binding = 0,
+			type = "storageTexture",
+			visibility = { "COMPUTE" },
+		},
+		{
+			binding = 1,
+			type = "buffer",
+			visibility = { "COMPUTE" },
+		},
+	})
 
 	local bindGroup = device:createBindGroup({
-		layout = 1,
+		layout = bindGroupLayout,
 		entries = {
 			{
 				binding = 0,
 				type = "storageTexture",
-				texture = textureManager.texture,
+				texture = textureManager.texture:createView({}),
 				visibility = { "COMPUTE" },
 				layer = canvas,
 				access = "WRITE_ONLY",

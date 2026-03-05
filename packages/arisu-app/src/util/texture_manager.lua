@@ -16,6 +16,7 @@ local maxLayers = 256
 ---@field textureCount number
 ---@field textureUVScaleBuffer hood.Buffer
 ---@field texture hood.Texture
+---@field view hood.TextureView
 ---@field sampler hood.Sampler
 ---@field whiteTexture Texture
 ---@field errorTexture Texture
@@ -49,6 +50,7 @@ function TextureManager.new(device)
 		textureCount = 0,
 		textureUVScaleBuffer = textureUVScaleBuffer,
 		texture = texture,
+		view = texture:createView({}),
 		sampler = sampler,
 		device = device,
 		textures = {},
@@ -172,7 +174,7 @@ function TextureManager:createBindGroup(layout, binding, samplerBinding, dimsBin
 			{
 				type = "texture",
 				binding = binding,
-				texture = self.texture,
+				texture = self.view,
 				visibility = { "FRAGMENT" },
 			},
 			{
