@@ -61,7 +61,14 @@ function RenderPlugin:setRenderData(window, vertexData, indexData)
 	ctx.nIndices = #indexData
 end
 
-local dirName = debug.getinfo(1, "S").source:sub(2):match("(.*/)")
+-- Directory of output package directory in target folder
+local packageDir = debug.getinfo(1, "S").source:sub(2):match("(.-/target/[^/]+)")
+
+local bindings = {
+	centralTexture = 0,
+	centralSampler = isVulkan and 1 or 0, -- Combine for OpenGL
+	dimsBuffer = 2,
+}
 
 ---@param window winit.Window
 function RenderPlugin:register(window)
@@ -80,13 +87,32 @@ function RenderPlugin:register(window)
 	local quadVertex = self.device:createBuffer({ size = vertexDescriptor:getStride() * 100000, usages = { "VERTEX", "COPY_DST" } })
 	local quadIndex = self.device:createBuffer({ size = ffi.sizeof("uint32_t") * 10000, usages = { "INDEX", "COPY_DST" } })
 
+	local quadLayout = self.device:createBindGroupLayout({
+		{
+			type = "texture",
+			binding = bindings.centralTexture,
+			visibility = { "FRAGMENT" },
+		},
+		{
+			type = "sampler",
+			binding = bindings.centralSampler,
+			visibility = { "FRAGMENT" },
+		},
+		{
+			type = "buffer",
+			binding = bindings.dimsBuffer,
+			visibility = { "FRAGMENT" },
+		},
+	})
+
 	local quadPipeline = self.device:createPipeline({
+		layout = quadLayout,
 		vertex = {
-			module = { type = shaderType, source = io.open(dirName .. "../shaders/main.vert." .. shaderExt, "rb"):read("*a") },
+			module = { type = shaderType, source = io.open(packageDir .. "/shaders/main.vert." .. shaderExt, "rb"):read("*a") },
 			buffers = { vertexDescriptor },
 		},
 		fragment = {
-			module = { type = shaderType, source = io.open(dirName .. "../shaders/main.frag." .. shaderExt, "rb"):read("*a") },
+			module = { type = shaderType, source = io.open(packageDir .. "/shaders/main.frag." .. shaderExt, "rb"):read("*a") },
 			targets = {
 				{
 					blend = "alpha-blending",
@@ -111,7 +137,26 @@ function RenderPlugin:register(window)
 		:withAttribute({ type = "f32", size = 4, offset = 12 }) -- color (rgba)
 		:withAttribute({ type = "f32", size = 2, offset = 28 }) -- uv
 
+	local overlayLayout = self.device:createBindGroupLayout({
+		{
+			type = "texture",
+			binding = bindings.centralTexture,
+			visibility = { "FRAGMENT" },
+		},
+		{
+			type = "sampler",
+			binding = bindings.centralSampler,
+			visibility = { "FRAGMENT" },
+		},
+		{
+			type = "buffer",
+			binding = bindings.dimsBuffer,
+			visibility = { "FRAGMENT" },
+		},
+	})
+
 	local overlayPipeline = self.device:createPipeline({
+		layout = overlayLayout,
 		vertex = {
 			module = { type = shaderType, source = io.open("../arisu/shaders/overlay.vert." .. shaderExt, "rb"):read("*a") },
 			buffers = { overlayVertexDescriptor },
@@ -137,7 +182,11 @@ function RenderPlugin:register(window)
 	-- Initialize shared resources
 	if not self.mainCtx then
 		local textureManager = TextureManager.new(self.device)
-		local bindGroup = textureManager:createBindGroup(0, 0, 1)
+		local bindGroup = textureManager:createBindGroup(
+			bindings.centralTexture,
+			bindings.centralSampler,
+			bindings.dimsBuffer
+		)
 		local fontManager = FontManager.new(textureManager)
 
 		self.sharedResources = {
