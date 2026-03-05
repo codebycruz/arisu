@@ -57,11 +57,14 @@ function OverlayPlugin:register(window)
 	})
 
 	local bindGroup = device:createBindGroup({
-		{
-			binding = 0,
-			type = "buffer",
-			buffer = uniformBuffer,
-			visibility = { "FRAGMENT" },
+		layout = renderCtx.overlayBindGroupLayout,
+		entries = {
+			{
+				binding = 0,
+				type = "buffer",
+				buffer = uniformBuffer,
+				visibility = { "FRAGMENT" },
+			},
 		},
 	})
 

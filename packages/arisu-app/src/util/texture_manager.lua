@@ -135,30 +135,58 @@ function TextureManager:upload(image)
 	return texture
 end
 
----Create a bind group for this texture manager
 ---@param binding number The binding index for the texture array
 ---@param samplerBinding number The binding index for the sampler
 ---@param dimsBinding number The binding index for the dimensions buffer
----@return hood.BindGroup
-function TextureManager:createBindGroup(binding, samplerBinding, dimsBinding)
-	return self.device:createBindGroup({
+---@return hood.BindGroupLayout
+function TextureManager:createBindGroupLayout(binding, samplerBinding, dimsBinding)
+	return self.device:createBindGroupLayout({
 		{
 			type = "texture",
 			binding = binding,
-			texture = self.texture,
 			visibility = { "FRAGMENT" },
 		},
 		{
 			type = "sampler",
 			binding = samplerBinding,
-			sampler = self.sampler,
 			visibility = { "FRAGMENT" },
 		},
 		{
 			type = "buffer",
 			binding = dimsBinding,
-			buffer = self.textureUVScaleBuffer,
 			visibility = { "FRAGMENT" },
+		},
+	})
+end
+
+---Create a bind group for this texture manager
+---@param layout hood.BindGroupLayout The bind group layout to use for this bind group
+---@param binding number The binding index for the texture array
+---@param samplerBinding number The binding index for the sampler
+---@param dimsBinding number The binding index for the dimensions buffer
+---@return hood.BindGroup
+function TextureManager:createBindGroup(layout, binding, samplerBinding, dimsBinding)
+	return self.device:createBindGroup({
+		layout = layout,
+		entries = {
+			{
+				type = "texture",
+				binding = binding,
+				texture = self.texture,
+				visibility = { "FRAGMENT" },
+			},
+			{
+				type = "sampler",
+				binding = samplerBinding,
+				sampler = self.sampler,
+				visibility = { "FRAGMENT" },
+			},
+			{
+				type = "buffer",
+				binding = dimsBinding,
+				buffer = self.textureUVScaleBuffer,
+				visibility = { "FRAGMENT" },
+			},
 		},
 	})
 end

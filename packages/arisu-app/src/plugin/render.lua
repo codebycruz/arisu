@@ -139,18 +139,8 @@ function RenderPlugin:register(window)
 
 	local overlayLayout = self.device:createBindGroupLayout({
 		{
-			type = "texture",
-			binding = bindings.centralTexture,
-			visibility = { "FRAGMENT" },
-		},
-		{
-			type = "sampler",
-			binding = bindings.centralSampler,
-			visibility = { "FRAGMENT" },
-		},
-		{
 			type = "buffer",
-			binding = bindings.dimsBuffer,
+			binding = 0,
 			visibility = { "FRAGMENT" },
 		},
 	})
@@ -182,15 +172,25 @@ function RenderPlugin:register(window)
 	-- Initialize shared resources
 	if not self.mainCtx then
 		local textureManager = TextureManager.new(self.device)
-		local bindGroup = textureManager:createBindGroup(
+
+		local bindGroupLayout = textureManager:createBindGroupLayout(
 			bindings.centralTexture,
 			bindings.centralSampler,
 			bindings.dimsBuffer
 		)
+
+		local bindGroup = textureManager:createBindGroup(
+			bindGroupLayout,
+			bindings.centralTexture,
+			bindings.centralSampler,
+			bindings.dimsBuffer
+		)
+
 		local fontManager = FontManager.new(textureManager)
 
 		self.sharedResources = {
 			bindGroup = bindGroup,
+			bindGroupLayout = bindGroupLayout,
 			textureManager = textureManager,
 			fontManager = fontManager,
 		}
@@ -200,9 +200,11 @@ function RenderPlugin:register(window)
 	local ctx = {
 		window = window,
 		swapchain = swapchain,
+		quadBindGroupLayout = quadLayout,
 		quadPipeline = quadPipeline,
 		quadVertex = quadVertex,
 		quadIndex = quadIndex,
+		overlayBindGroupLayout = overlayLayout,
 		overlayPipeline = overlayPipeline,
 		overlayVertex = overlayVertex,
 		overlayIndex = overlayIndex,
