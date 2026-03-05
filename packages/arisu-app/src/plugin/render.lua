@@ -117,7 +117,7 @@ function RenderPlugin:register(window)
 				{
 					blend = "alpha-blending",
 					writeMask = hood.ColorWrites.All,
-					format = "rgba8unorm",
+					format = swapchain.format,
 				},
 			},
 		},
@@ -254,7 +254,6 @@ function RenderPlugin:draw(ctx)
 
 	local commandBuffer = encoder:finish()
 	self.device.queue:submit(commandBuffer, ctx.swapchain)
-	self.device.queue:present(ctx.swapchain)
 end
 
 ---@param event winit.Event
