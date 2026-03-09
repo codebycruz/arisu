@@ -345,7 +345,7 @@ function OverlayPlugin:draw(window, pattern, time)
 		encoder:setPipeline(renderCtx.overlayPipeline)
 		encoder:setBindGroup(0, ctx.bindGroup)
 		encoder:setVertexBuffer(0, ctx.vertexBuffer)
-		encoder:setIndexBuffer(ctx.indexBuffer, hood.IndexType.u32)
+		encoder:setIndexBuffer(ctx.indexBuffer, "u32")
 		encoder:drawIndexed(ctx.nIndices, 1)
 		encoder:endRendering()
 
