@@ -1,4 +1,4 @@
-local Instance = require("hood.instance")
+local hood = require("hood")
 
 ---@class arisu.plugin.Window.Context
 ---@field window winit.Window
@@ -14,7 +14,11 @@ WindowPlugin.__index = WindowPlugin
 
 ---@param onWindowCreate unknown
 function WindowPlugin.new(onWindowCreate)
-	local instance = Instance.new({ backend = os.getenv("VULKAN") and "vulkan" or "opengl", flags = { "validate" } })
+	local isVulkan = os.getenv("VULKAN") and true or false
+	local isDebug = os.getenv("DEBUG") and true or false
+
+	local instance = hood.Instance.new({ backend = isVulkan and "vulkan" or "opengl", flags = { isDebug and "validate" } })
+
 	return setmetatable({ contexts = {}, instance = instance, onWindowCreate = onWindowCreate }, WindowPlugin)
 end
 
