@@ -1,7 +1,9 @@
 local outputDir = os.getenv("LPM_OUTPUT_DIR")
 
+local pathSep = string.sub(package.config, 1, 1)
+
 ---@type string
-local packageSourceDir = debug.getinfo(1, "S").source:sub(2):match("(.*)/")
+local packageSourceDir = debug.getinfo(1, "S").source:sub(2):match("(.*)" .. pathSep)
 
 ---@param stage "vert" | "frag" | "comp"
 ---@param glslPath string
@@ -46,5 +48,9 @@ end
 
 local targetShaderDir = outputDir .. "/shaders"
 if not exists(targetShaderDir) then
-	os.execute(string.format("ln -s %s %s", packageSourceDir .. "/shaders", targetShaderDir))
+	if jit.os == "Windows" then
+		os.execute(string.format('mklink /J "%s" "%s"', targetShaderDir, packageSourceDir .. "/shaders"))
+	else
+		os.execute(string.format("ln -s %s %s", packageSourceDir .. "/shaders", targetShaderDir))
+	end
 end

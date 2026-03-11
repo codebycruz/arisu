@@ -1,5 +1,7 @@
+local pathSep = string.sub(package.config, 1, 1)
+
 ---@type string
-local dirName = debug.getinfo(1, "S").source:sub(2):match("(.*)/")
+local dirName = debug.getinfo(1, "S").source:sub(2):match("(.*)" .. pathSep)
 
 ---@param stage "vert" | "frag" | "comp"
 ---@param glslPath string

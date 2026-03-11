@@ -61,8 +61,11 @@ function RenderPlugin:setRenderData(window, vertexData, indexData)
 	ctx.nIndices = #indexData
 end
 
+local pathSep = string.sub(package.config, 1, 1)
+
 -- Directory of output package directory in target folder
-local packageDir = debug.getinfo(1, "S").source:sub(2):match("(.-/target/[^/]+)")
+local packageDir = debug.getinfo(1, "S").source:sub(2):match("(.-" ..
+	pathSep .. "target" .. pathSep .. "[^" .. pathSep .. "]+)")
 
 local bindings = {
 	centralTexture = 0,
@@ -108,11 +111,11 @@ function RenderPlugin:register(window)
 	local quadPipeline = self.device:createPipeline({
 		layout = quadLayout,
 		vertex = {
-			module = { type = shaderType, source = io.open(packageDir .. "/shaders/main.vert." .. shaderExt, "rb"):read("*a") },
+			module = { type = shaderType, source = io.open(packageDir .. pathSep .. "shaders" .. pathSep .. "main.vert." .. shaderExt, "rb"):read("*a") },
 			buffers = { vertexDescriptor },
 		},
 		fragment = {
-			module = { type = shaderType, source = io.open(packageDir .. "/shaders/main.frag." .. shaderExt, "rb"):read("*a") },
+			module = { type = shaderType, source = io.open(packageDir .. pathSep .. "shaders" .. pathSep .. "main.frag." .. shaderExt, "rb"):read("*a") },
 			targets = {
 				{
 					blend = "alpha-blending",
