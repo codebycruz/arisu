@@ -47,11 +47,8 @@ void main() {
         return;
     }
 
-    imageStore(canvas, pixelCoords, color);
-    return;
-
     if (tool == 0) {
-        imageStore(canvas, pixelCoords, vec4(1.0, 0.0, 0.0, 1.0));
+        imageStore(canvas, pixelCoords, color);
     } else if (tool == 1) {
         imageStore(canvas, pixelCoords, vec4(0.0, 0.0, 0.0, 0.0));
     } else if (tool == 3) {
