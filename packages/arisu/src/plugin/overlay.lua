@@ -338,25 +338,26 @@ function OverlayPlugin:draw(window, pattern, time)
 
 		local indexSize = ffi.sizeof("uint32_t") * #ctx.indices
 		device.queue:writeBuffer(ctx.indexBuffer, indexSize, ffi.new("uint32_t[?]", #ctx.indices, ctx.indices))
-
-		local encoder = device:createCommandEncoder()
-		encoder:beginRendering({
-			colorAttachments = {
-				{
-					op = { type = "clear", color = { r = 0, g = 0, b = 0, a = 0 } },
-					texture = ctx.overlayTextureView,
-				},
-			},
-		})
-		encoder:setPipeline(renderCtx.overlayPipeline)
-		encoder:setBindGroup(0, ctx.bindGroup)
-		encoder:setVertexBuffer(0, ctx.vertexBuffer)
-		encoder:setIndexBuffer(ctx.indexBuffer, "u32")
-		encoder:drawIndexed(ctx.nIndices, 1)
-		encoder:endRendering()
-
-		device.queue:submit(encoder:finish())
 	end
+
+	-- TODO: Only clear renderer when nIndices == 0, when hood gets fixed
+	-- (Currently segfaults if you try..)
+	local encoder = device:createCommandEncoder()
+	encoder:beginRendering({
+		colorAttachments = {
+			{
+				op = { type = "clear", color = { r = 0, g = 0, b = 0, a = 0 } },
+				texture = ctx.overlayTextureView,
+			},
+		},
+	})
+	encoder:setPipeline(renderCtx.overlayPipeline)
+	encoder:setBindGroup(0, ctx.bindGroup)
+	encoder:setVertexBuffer(0, ctx.vertexBuffer)
+	encoder:setIndexBuffer(ctx.indexBuffer, "u32")
+	encoder:drawIndexed(ctx.nIndices, 1)
+	encoder:endRendering()
+	device.queue:submit(encoder:finish())
 end
 
 ---@param window winit.Window
