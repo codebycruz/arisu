@@ -52,11 +52,15 @@ jobs:
 
       - name: Install glslc (Linux)
         if: runner.os == 'Linux'
-        run: sudo apt-get install -y glslc
+        run: sudo apt-get install -y shaderc
 
       - name: Install glslc (Windows)
         if: runner.os == 'Windows'
-        run: choco install vulkan-sdk --no-progress -y
+        shell: pwsh
+        run: |
+          choco install vulkan-sdk --no-progress -y
+          $vulkanSdk = [System.Environment]::GetEnvironmentVariable("VULKAN_SDK", "Machine")
+          echo "$vulkanSdk\Bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
 
       - uses: lde-org/setup-lde@master
         with:
