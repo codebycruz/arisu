@@ -132,10 +132,12 @@ if assetsHandle then
 		local relPath = srcPath:sub(#packageSourceDir + 2)
 		local outPath = outputDir .. "/" .. relPath .. ".lua"
 		mkdirp(outPath:match("(.*)" .. pathSep))
+
 		local content = read(srcPath)
-		if content then
+		if content and not exists(outPath) then
 			write(outPath, string.format('return "%s"\n', toLuaStringLiteral(content)))
 		end
 	end
+
 	assetsHandle:close()
 end

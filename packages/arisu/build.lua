@@ -83,7 +83,7 @@ end
 local function mkdirp(path)
 	if not exists(path) then
 		if jit.os == "Windows" then
-			os.execute(string.format('mkdir "%s"', path))
+			os.execute(string.format('mkdir "%s" >nul 2>nul', path))
 		else
 			os.execute(string.format("mkdir -p %q", path))
 		end
@@ -128,8 +128,9 @@ if assetsHandle then
 		local relPath = srcPath:sub(#arisuDir + 2)
 		local outPath = outputDir .. "/" .. relPath .. ".lua"
 		mkdirp(outPath:match("(.*)" .. pathSep))
+
 		local content = read(srcPath)
-		if content then
+		if content and not exists(outPath) then
 			write(outPath, string.format('return "%s"\n', toLuaStringLiteral(content)))
 		end
 	end
