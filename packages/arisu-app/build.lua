@@ -86,28 +86,6 @@ local function toLuaStringLiteral(data)
 	end))
 end
 
-local listCmd
-if jit.os == "Windows" then
-	listCmd = string.format('dir /b "%s"', shaderSrcDir)
-else
-	listCmd = string.format("ls %q", shaderSrcDir)
-end
-
-local handle = io.popen(listCmd)
-if handle then
-	for filename in handle:lines() do
-		local content = read(shaderSrcDir .. "/" .. filename)
-		if content then
-			local code = string.format('return "%s"\n', toLuaStringLiteral(content))
-			write(shaderOutDir .. "/" .. filename .. ".lua", code)
-		end
-	end
-
-	handle:close()
-end
-
--- Write assets as Lua modules to output dir (recursive)
-
 local function mkdirp(path)
 	if not exists(path) then
 		if jit.os == "Windows" then
@@ -116,6 +94,27 @@ local function mkdirp(path)
 			os.execute(string.format("mkdir -p %q", path))
 		end
 	end
+end
+
+local shaderListCmd
+if jit.os == "Windows" then
+	shaderListCmd = string.format('dir /b "%s"', shaderSrcDir)
+else
+	shaderListCmd = string.format("ls %q", shaderSrcDir)
+end
+
+local shaderHandle = io.popen(shaderListCmd)
+if shaderHandle then
+	for filename in shaderHandle:lines() do
+		local content = read(shaderSrcDir .. "/" .. filename)
+		if content then
+			local outRelPath = filename:gsub("%.", pathSep)
+			local outPath = shaderOutDir .. pathSep .. outRelPath .. ".lua"
+			mkdirp(outPath:match("(.*)" .. pathSep))
+			write(outPath, string.format('return "%s"\n', toLuaStringLiteral(content)))
+		end
+	end
+	shaderHandle:close()
 end
 
 local assetsSrcDir = packageSourceDir .. "/assets"

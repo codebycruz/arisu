@@ -107,7 +107,10 @@ if shaderHandle then
 	for filename in shaderHandle:lines() do
 		local content = read(shaderSrcDir .. "/" .. filename)
 		if content then
-			write(shaderOutDir .. "/" .. filename .. ".lua", string.format('return "%s"\n', toLuaStringLiteral(content)))
+			local outRelPath = filename:gsub("%.", pathSep)
+			local outPath = shaderOutDir .. pathSep .. outRelPath .. ".lua"
+			mkdirp(outPath:match("(.*)" .. pathSep))
+			write(outPath, string.format('return "%s"\n', toLuaStringLiteral(content)))
 		end
 	end
 	shaderHandle:close()
