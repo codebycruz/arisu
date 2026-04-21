@@ -11,15 +11,15 @@
 		},
 		"glapi": {
 			"commit": "382def7e3aa0437d36d586c9497d6508bbb2a80f",
-			"git": "https://github.com/codebycruz/glapi"
+			"git": "https://github.com/bycruz/glapi"
 		},
 		"hood": {
-			"commit": "7bd09dd50826d0b1e9cb5ca88b7fc427e91ed4fd",
-			"git": "https://github.com/codebycruz/hood"
+			"commit": "7eeccd2ebf2514e48d89045fd761444e11df5503",
+			"git": "https://github.com/bycruz/hood"
 		},
 		"vkapi": {
-			"commit": "0430c92094c1b920a89b15c1326ee2eeadb6fdc5",
-			"git": "https://github.com/codebycruz/vkapi"
+			"commit": "05879db6237dc2aebb66b609003df5c3a124230e",
+			"git": "https://github.com/bycruz/vkapi"
 		},
 		"winapi": {
 			"commit": "b3a6a8f040ad8216105317e0772b7b62eb783285",
@@ -28,7 +28,7 @@
 		},
 		"winit": {
 			"commit": "ed6af8864b130b84edcec7ce704c98c0cd189c6c",
-			"git": "https://github.com/codebycruz/winit"
+			"git": "https://github.com/bycruz/winit"
 		},
 		"x11api": {
 			"commit": "65f9a61a4e6e489cfb6a8c1b94ef3dd3cec656b0",

@@ -3,7 +3,7 @@
 	"version": "0.1.0",
 	"dependencies": {
 		"arisu-text": { "path": "../arisu-text" },
-		"winit": { "git": "https://github.com/codebycruz/winit" },
-		"hood": { "git": "https://github.com/codebycruz/hood" }
+		"winit": { "git": "https://github.com/bycruz/winit" },
+		"hood": { "git": "https://github.com/bycruz/hood" }
 	}
 }
