@@ -845,6 +845,13 @@ function App:event(event, handler)
 		return windowUpdate
 	end
 
+	if event.name == "resize" then
+		if self.resources then
+			self.plugins.ui:refreshView(event.window)
+		end
+		return nil
+	end
+
 	if event.name == "redraw" then
 		self.plugins.overlay:clear(event.window)
 
