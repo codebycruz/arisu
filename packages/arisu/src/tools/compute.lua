@@ -15,6 +15,8 @@ local computeSource = require("arisu.shaders.brush.compute." .. shaderExt) --[[@
 ---@field textureManager TextureManager
 ---@field bindGroup hood.BindGroup
 ---@field device hood.Device
+---@field fillQueueX ffi.cdata*
+---@field fillQueueY ffi.cdata*
 local Compute = {}
 Compute.__index = Compute
 
@@ -94,6 +96,7 @@ function Compute.new(textureManager, canvas, device)
 	-- TODO: Un-hard code this when canvas is passed as a Texture with width/height
 	local tempLayer = textureManager:allocate(800, 600)
 
+	local maxPixels = 1024 * 1024
 	local self = setmetatable({
 		device = device,
 		textureManager = textureManager,
@@ -103,6 +106,8 @@ function Compute.new(textureManager, canvas, device)
 		inputs = inputs,
 		inputsBuffer = inputsBuffer,
 		bindGroup = bindGroup,
+		fillQueueX = ffi.new("int32_t[?]", maxPixels),
+		fillQueueY = ffi.new("int32_t[?]", maxPixels),
 	}, Compute)
 
 	self:resetSelection()
@@ -302,42 +307,47 @@ function Compute:fill(x, y, color)
 	self.device.queue:waitIdle()
 
 	readBuffer:mapAsync()
-	local pixels = ffi.cast("uint8_t*", readBuffer:getMappedRange())
+	local pixelsU32 = ffi.cast("uint32_t*", readBuffer:getMappedRange())
 
 	local fr = math.floor(color.r * 255 + 0.5)
 	local fg = math.floor(color.g * 255 + 0.5)
 	local fb = math.floor(color.b * 255 + 0.5)
 	local fa = math.floor(color.a * 255 + 0.5)
+	local fillPacked = bit.bor(fr, bit.lshift(fg, 8), bit.lshift(fb, 16), bit.lshift(fa, 24))
 
-	local seedIdx = (iy * cw + ix) * 4
-	local tr, tg, tb, ta = pixels[seedIdx], pixels[seedIdx+1], pixels[seedIdx+2], pixels[seedIdx+3]
+	local seedI = iy * cw + ix
+	local targetPacked = pixelsU32[seedI]
 
-	if tr == fr and tg == fg and tb == fb and ta == fa then
+	if targetPacked == fillPacked then
 		readBuffer:unmap()
 		readBuffer:destroy()
 		return
 	end
 
-	local queue = {}
-	local head, tail = 1, 1
-	queue[tail] = ix + iy * cw; tail = tail + 1
-	pixels[seedIdx] = fr; pixels[seedIdx+1] = fg; pixels[seedIdx+2] = fb; pixels[seedIdx+3] = fa
+	local qx, qy = self.fillQueueX, self.fillQueueY
+	local head, tail = 0, 0
+	qx[tail] = ix; qy[tail] = iy; tail = tail + 1
+	pixelsU32[seedI] = fillPacked
 
+	local cw1, ch1 = cw - 1, ch - 1
 	while head < tail do
-		local pos = queue[head]; head = head + 1
-		local px = pos % cw
-		local py = math.floor(pos / cw)
+		local px = qx[head]; local py = qy[head]; head = head + 1
 
-		local neighbors = { px-1, py, px+1, py, px, py-1, px, py+1 }
-		for i = 1, #neighbors, 2 do
-			local nx, ny = neighbors[i], neighbors[i+1]
-			if nx >= 0 and nx < cw and ny >= 0 and ny < ch then
-				local idx = (ny * cw + nx) * 4
-				if pixels[idx] == tr and pixels[idx+1] == tg and pixels[idx+2] == tb and pixels[idx+3] == ta then
-					pixels[idx] = fr; pixels[idx+1] = fg; pixels[idx+2] = fb; pixels[idx+3] = fa
-					queue[tail] = nx + ny * cw; tail = tail + 1
-				end
-			end
+		if px > 0 then
+			local ni = py * cw + px - 1
+			if pixelsU32[ni] == targetPacked then pixelsU32[ni] = fillPacked; qx[tail] = px-1; qy[tail] = py; tail = tail + 1 end
+		end
+		if px < cw1 then
+			local ni = py * cw + px + 1
+			if pixelsU32[ni] == targetPacked then pixelsU32[ni] = fillPacked; qx[tail] = px+1; qy[tail] = py; tail = tail + 1 end
+		end
+		if py > 0 then
+			local ni = (py - 1) * cw + px
+			if pixelsU32[ni] == targetPacked then pixelsU32[ni] = fillPacked; qx[tail] = px; qy[tail] = py-1; tail = tail + 1 end
+		end
+		if py < ch1 then
+			local ni = (py + 1) * cw + px
+			if pixelsU32[ni] == targetPacked then pixelsU32[ni] = fillPacked; qx[tail] = px; qy[tail] = py+1; tail = tail + 1 end
 		end
 	end
 
@@ -346,7 +356,7 @@ function Compute:fill(x, y, color)
 	self.device.queue:writeTexture(
 		self.textureManager.texture,
 		{ layer = self.canvas, width = cw, height = ch },
-		pixels
+		ffi.cast("uint8_t*", pixelsU32)
 	)
 
 	readBuffer:destroy()
