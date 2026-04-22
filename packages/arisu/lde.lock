@@ -17,7 +17,7 @@
 			"git": "https://github.com/bycruz/glapi"
 		},
 		"hood": {
-			"commit": "0db84422ef6994af60ea56d81bf40ee808248cf7",
+			"commit": "d5c4ef7d062f195374d890ce8bc0e4f0f3ce1361",
 			"git": "https://github.com/bycruz/hood"
 		},
 		"vkapi": {

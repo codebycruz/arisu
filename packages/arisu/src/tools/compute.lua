@@ -285,25 +285,71 @@ end
 ---@param y number
 ---@param color { r: number, g: number, b: number, a: number }
 function Compute:fill(x, y, color)
-	self.inputs.center[0] = x
-	self.inputs.center[1] = y
-	self.inputs.color[0] = color.r
-	self.inputs.color[1] = color.g
-	self.inputs.color[2] = color.b
-	self.inputs.color[3] = color.a
-	self.inputs.tool = TOOL_FILL
+	local cw, ch = self.textureManager:getSize(self.canvas)
+	local ix, iy = math.floor(x), math.floor(y)
+	if ix < 0 or ix >= cw or iy < 0 or iy >= ch then return end
 
-	local groupsX = math.ceil(800 / WORK_GROUP_SIZE)
-	local groupsY = math.ceil(600 / WORK_GROUP_SIZE)
+	local bufferSize = cw * ch * 4
+	local readBuffer = self.device:createBuffer({ size = bufferSize, usages = { "COPY_DST", "MAP_READ" } })
 
-	self:updateInputs()
 	local encoder = self.device:createCommandEncoder()
-	encoder:setComputePipeline(self.pipeline)
-	encoder:setBindGroup(0, self.bindGroup)
-	encoder:beginComputePass({})
-	encoder:dispatchWorkgroups(groupsX, groupsY, 1)
-	encoder:endComputePass()
+	encoder:copyTextureToBuffer(
+		{ texture = self.textureManager.texture, origin = { x = 0, y = 0, z = self.canvas } },
+		{ buffer = readBuffer, bytesPerRow = cw * 4 },
+		{ width = cw, height = ch, depthOrArrayLayers = 1 }
+	)
 	self.device.queue:submit(encoder:finish())
+	self.device.queue:waitIdle()
+
+	readBuffer:mapAsync()
+	local pixels = ffi.cast("uint8_t*", readBuffer:getMappedRange())
+
+	local fr = math.floor(color.r * 255 + 0.5)
+	local fg = math.floor(color.g * 255 + 0.5)
+	local fb = math.floor(color.b * 255 + 0.5)
+	local fa = math.floor(color.a * 255 + 0.5)
+
+	local seedIdx = (iy * cw + ix) * 4
+	local tr, tg, tb, ta = pixels[seedIdx], pixels[seedIdx+1], pixels[seedIdx+2], pixels[seedIdx+3]
+
+	if tr == fr and tg == fg and tb == fb and ta == fa then
+		readBuffer:unmap()
+		readBuffer:destroy()
+		return
+	end
+
+	local queue = {}
+	local head, tail = 1, 1
+	queue[tail] = ix + iy * cw; tail = tail + 1
+	pixels[seedIdx] = fr; pixels[seedIdx+1] = fg; pixels[seedIdx+2] = fb; pixels[seedIdx+3] = fa
+
+	while head < tail do
+		local pos = queue[head]; head = head + 1
+		local px = pos % cw
+		local py = math.floor(pos / cw)
+
+		local neighbors = { px-1, py, px+1, py, px, py-1, px, py+1 }
+		for i = 1, #neighbors, 2 do
+			local nx, ny = neighbors[i], neighbors[i+1]
+			if nx >= 0 and nx < cw and ny >= 0 and ny < ch then
+				local idx = (ny * cw + nx) * 4
+				if pixels[idx] == tr and pixels[idx+1] == tg and pixels[idx+2] == tb and pixels[idx+3] == ta then
+					pixels[idx] = fr; pixels[idx+1] = fg; pixels[idx+2] = fb; pixels[idx+3] = fa
+					queue[tail] = nx + ny * cw; tail = tail + 1
+				end
+			end
+		end
+	end
+
+	readBuffer:unmap()
+
+	self.device.queue:writeTexture(
+		self.textureManager.texture,
+		{ layer = self.canvas, width = cw, height = ch },
+		pixels
+	)
+
+	readBuffer:destroy()
 end
 
 return Compute
