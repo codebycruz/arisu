@@ -29,6 +29,8 @@ local OverlayPlugin = require("arisu.plugin.overlay")
 --- | { type: "Hovered", x: number, y: number, elementWidth: number, elementHeight: number }
 --- | { type: "ColorClicked", r: number, g: number, b: number }
 --- | { type: "CompleteCurve" }
+--- | { type: "BrushesToggled" }
+--- | { type: "BrushSizeSelected", size: number }
 
 ---@class App.Resources.Icons
 ---@field brush Texture
@@ -87,6 +89,8 @@ local OverlayPlugin = require("arisu.plugin.overlay")
 ---@field currentAction App.Action
 ---@field startTime number
 ---@field overlaySelection { start: { x: number, y: number }, finish: { x: number, y: number }? }?
+---@field brushesOpen boolean
+---@field brushSize number
 local App = {}
 App.__index = App
 
@@ -112,6 +116,8 @@ function App.new()
 	self.overlayCurve = nil
 	self.overlayText = nil
 	self.filePickerPath = ""
+	self.brushesOpen = false
+	self.brushSize = 10
 
 	return self
 end
@@ -777,14 +783,32 @@ function App:view(window)
 						})
 					}),
 
-				Element.new("div")
-					:withStyle({
-						direction = "column",
-						width = { abs = 100 },
-						height = { rel = 1.0 },
-						border = { right = { width = 1, color = borderColor } }
-					})
-					:withChildren({
+				(function()
+					local function brushSizeCell(size)
+						local visualSize = math.max(4, math.min(size, 22))
+						local isSelected = self.brushSize == size
+						local cellBg = isSelected and { r = 0.75, g = 0.9, b = 1.0, a = 1.0 }
+							or { r = 1, g = 1, b = 1, a = 1.0 }
+						return Element.new("div")
+							:withStyle({
+								width = { abs = 36 },
+								height = { abs = 36 },
+								bg = cellBg,
+								border = squareBorder,
+								align = "center",
+								justify = "center"
+							})
+							:withChildren({
+								Element.new("div"):withStyle({
+									width = { abs = visualSize },
+									height = { abs = visualSize },
+									bg = { r = 0, g = 0, b = 0, a = 1 }
+								})
+							})
+							:onClick({ type = "BrushSizeSelected", size = size })
+					end
+
+					local sectionChildren = {
 						Element.new("div")
 							:withStyle({
 								align = "center",
@@ -805,7 +829,49 @@ function App:view(window)
 							fg = disabledColor,
 							height = { rel = 0.3 }
 						})
-					}),
+					}
+
+					if self.brushesOpen then
+						sectionChildren[#sectionChildren + 1] = Element.new("div")
+							:withStyle({
+								position = "relative",
+								top = 100,
+								zIndex = 100,
+								width = { abs = 124 },
+								bg = { r = 0.95, g = 0.95, b = 0.95, a = 1.0 },
+								border = squareBorder,
+								direction = "column",
+								padding = { top = 6, bottom = 6, left = 6, right = 6 },
+								gap = 4
+							})
+							:withChildren({
+								Element.new("div")
+									:withStyle({ direction = "row", gap = 2, height = { abs = 36 } })
+									:withChildren({
+										brushSizeCell(1),
+										brushSizeCell(3),
+										brushSizeCell(5)
+									}),
+								Element.new("div")
+									:withStyle({ direction = "row", gap = 2, height = { abs = 36 } })
+									:withChildren({
+										brushSizeCell(10),
+										brushSizeCell(20),
+										brushSizeCell(30)
+									})
+							})
+					end
+
+					return Element.new("div")
+						:withStyle({
+							direction = "column",
+							width = { abs = 100 },
+							height = { rel = 1.0 },
+							border = { right = { width = 1, color = borderColor } }
+						})
+						:withChildren(sectionChildren)
+						:onClick({ type = "BrushesToggled" })
+				end)(),
 
 				Element.new("div")
 					:withStyle({
@@ -1187,7 +1253,7 @@ function App:update(message, window)
 			self.resources.compute:stamp(
 				(message.x / message.elementWidth) * cw,
 				(message.y / message.elementHeight) * ch,
-				10,
+				self.brushSize,
 				self.currentColor
 			)
 			self.isDrawing = true
@@ -1316,7 +1382,7 @@ function App:update(message, window)
 				self.resources.compute:stamp(
 					(message.x / message.elementWidth) * cw,
 					(message.y / message.elementHeight) * ch,
-					10,
+					self.brushSize,
 					self.currentColor
 				)
 			elseif self.currentAction.tool == "pencil" then
@@ -1391,6 +1457,13 @@ function App:update(message, window)
 		return { type = "closeWindow" }
 	elseif message.type == "SaveClicked" then
 		print("Save clicked - not implemented")
+	elseif message.type == "BrushesToggled" then
+		self.brushesOpen = not self.brushesOpen
+		self.plugins.ui:refreshView(window)
+	elseif message.type == "BrushSizeSelected" then
+		self.brushSize = message.size
+		self.brushesOpen = false
+		self.plugins.ui:refreshView(window)
 	end
 end
 

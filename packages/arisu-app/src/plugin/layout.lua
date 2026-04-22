@@ -7,16 +7,17 @@ local function findElementAtPosition(element, layout, x, y, parentX, parentY, ac
 	local absX = (parentX or 0) + (layout.x or 0)
 	local absY = (parentY or 0) + (layout.y or 0)
 
-	if (x >= absX and x <= absX + layout.width) and (y >= absY and y <= absY + layout.height) then
-		if layout.children and element.children then
-			for i, childLayout in ipairs(layout.children) do
-				local found = findElementAtPosition(element.children[i], childLayout, x, y, absX, absY, acceptFn)
-				if found and (not acceptFn or acceptFn(found.element)) then
-					return found
-				end
+	-- Always recurse into children: relative-positioned children may extend outside parent bounds
+	if layout.children and element.children then
+		for i, childLayout in ipairs(layout.children) do
+			local found = findElementAtPosition(element.children[i], childLayout, x, y, absX, absY, acceptFn)
+			if found and (not acceptFn or acceptFn(found.element)) then
+				return found
 			end
 		end
+	end
 
+	if (x >= absX and x <= absX + layout.width) and (y >= absY and y <= absY + layout.height) then
 		if not acceptFn or acceptFn(element) then
 			return { element = element, layout = layout, absX = absX, absY = absY }
 		end
@@ -34,11 +35,12 @@ local function findElementsAtPosition(element, layout, x, y, parentX, parentY, r
 
 	if (x >= absX and x <= absX + layout.width) and (y >= absY and y <= absY + layout.height) then
 		results[element] = { layout = layout, absX = absX, absY = absY }
+	end
 
-		if layout.children and element.children then
-			for i, childLayout in ipairs(layout.children) do
-				findElementsAtPosition(element.children[i], childLayout, x, y, absX, absY, results)
-			end
+	-- Always recurse: relative-positioned children may extend outside parent bounds
+	if layout.children and element.children then
+		for i, childLayout in ipairs(layout.children) do
+			findElementsAtPosition(element.children[i], childLayout, x, y, absX, absY, results)
 		end
 	end
 end
