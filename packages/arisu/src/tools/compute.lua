@@ -286,6 +286,38 @@ function Compute:drawEllipse(x1, y1, x2, y2, thickness, color)
 	self.device.queue:submit(encoder:finish())
 end
 
+---@param points {x: number, y: number}[]
+---@param thickness number
+---@param color { r: number, g: number, b: number, a: number }
+function Compute:drawCatmullRom(points, thickness, color)
+	if #points < 2 then return end
+	local n = #points
+	local steps = 20
+	local prev = nil
+	for i = 1, n - 1 do
+		local p0 = points[math.max(1, i - 1)]
+		local p1 = points[i]
+		local p2 = points[i + 1]
+		local p3 = points[math.min(n, i + 2)]
+		for s = 0, steps - 1 do
+			local t = s / steps
+			local t2 = t * t
+			local t3 = t2 * t
+			local x = 0.5 * ((2*p1.x) + (-p0.x + p2.x)*t + (2*p0.x - 5*p1.x + 4*p2.x - p3.x)*t2 + (-p0.x + 3*p1.x - 3*p2.x + p3.x)*t3)
+			local y = 0.5 * ((2*p1.y) + (-p0.y + p2.y)*t + (2*p0.y - 5*p1.y + 4*p2.y - p3.y)*t2 + (-p0.y + 3*p1.y - 3*p2.y + p3.y)*t3)
+			local cur = { x = x, y = y }
+			if prev then
+				self:drawLine(prev.x, prev.y, cur.x, cur.y, thickness, color)
+			end
+			prev = cur
+		end
+	end
+	local last = points[n]
+	if prev then
+		self:drawLine(prev.x, prev.y, last.x, last.y, thickness, color)
+	end
+end
+
 ---@param x number
 ---@param y number
 ---@param color { r: number, g: number, b: number, a: number }

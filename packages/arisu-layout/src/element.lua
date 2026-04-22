@@ -91,4 +91,11 @@ function Element:onMouseUp(message)
 	return self
 end
 
+---@generic T
+---@param message T
+function Element:onDoubleClick(message)
+	self.ondblclick = message
+	return self
+end
+
 return Element

@@ -24,6 +24,7 @@ local OverlayPlugin = require("arisu.plugin.overlay")
 --- | { type: "StopDrawing", x: number, y: number, elementWidth: number, elementHeight: number }
 --- | { type: "Hovered", x: number, y: number, elementWidth: number, elementHeight: number }
 --- | { type: "ColorClicked", r: number, g: number, b: number }
+--- | { type: "CompleteCurve" }
 
 ---@class App.Resources.Icons
 ---@field brush Texture
@@ -104,6 +105,7 @@ function App.new()
 	self.overlayLine = nil
 	self.overlayRectangle = nil
 	self.overlayCircle = nil
+	self.overlayCurve = nil
 
 	return self
 end
@@ -290,40 +292,46 @@ function App:view(window)
 					position = "relative",
 					margin = { right = 20, left = 20, top = 20, bottom = 20 }
 				}),
-				Element.new("div")
-					:withStyle({
-						bgImage = self.resources.textures.canvas,
-						width = { rel = 1 },
-						height = { rel = 1 },
-						margin = { right = 20, left = 20, top = 20, bottom = 20 }
-					})
-					:onMouseDown(function(x, y, elementWidth, elementHeight)
-						return {
-							type = "StartDrawing",
-							x = x,
-							y = y,
-							elementWidth = elementWidth,
-							elementHeight = elementHeight
-						}
-					end)
-					:onMouseUp(function(x, y, elementWidth, elementHeight)
-						return {
-							type = "StopDrawing",
-							x = x,
-							y = y,
-							elementWidth = elementWidth,
-							elementHeight = elementHeight
-						}
-					end)
-					:onMouseMove(function(x, y, elementWidth, elementHeight)
-						return {
-							type = "Hovered",
-							x = x,
-							y = y,
-							elementWidth = elementWidth,
-							elementHeight = elementHeight
-						}
-					end),
+				(function()
+						local canvasEl = Element.new("div")
+							:withStyle({
+								bgImage = self.resources.textures.canvas,
+								width = { rel = 1 },
+								height = { rel = 1 },
+								margin = { right = 20, left = 20, top = 20, bottom = 20 }
+							})
+							:onMouseDown(function(x, y, elementWidth, elementHeight)
+								return {
+									type = "StartDrawing",
+									x = x,
+									y = y,
+									elementWidth = elementWidth,
+									elementHeight = elementHeight
+								}
+							end)
+							:onMouseUp(function(x, y, elementWidth, elementHeight)
+								return {
+									type = "StopDrawing",
+									x = x,
+									y = y,
+									elementWidth = elementWidth,
+									elementHeight = elementHeight
+								}
+							end)
+							:onMouseMove(function(x, y, elementWidth, elementHeight)
+								return {
+									type = "Hovered",
+									x = x,
+									y = y,
+									elementWidth = elementWidth,
+									elementHeight = elementHeight
+								}
+							end)
+						if self.currentAction.tool == "curve" then
+							canvasEl:onDoubleClick({ type = "CompleteCurve" })
+						end
+						return canvasEl
+					end)(),
 				Element.new("div"):withStyle({
 					bgImage = assert(self.plugins.overlay:getTexture(window), "Overlay texture not found"),
 					width = { rel = 1 },
@@ -908,13 +916,29 @@ function App:event(event, handler)
 			self.plugins.overlay:addEllipse(event.window, start.x, start.y, finish.x, finish.y, self.currentColor, 2)
 		end
 
+		if self.overlayCurve then
+			local pts = {}
+			for _, p in ipairs(self.overlayCurve.points) do
+				pts[#pts + 1] = p
+			end
+			if self.overlayCurve.mouse then
+				pts[#pts + 1] = self.overlayCurve.mouse
+			end
+			if #pts >= 2 then
+				self.plugins.overlay:addCatmullRom(event.window, pts, self.currentColor, 2)
+			end
+			for _, p in ipairs(self.overlayCurve.points) do
+				self.plugins.overlay:addEllipse(event.window, p.x - 3, p.y - 3, p.x + 3, p.y + 3, self.currentColor, 1)
+			end
+		end
+
 		local time = os.clock() - self.startTime
 		self.plugins.overlay:draw(event.window, "marching_ants", time)
 
 		local ctx = self.plugins.render:getContext(event.window)
 		self.plugins.render:draw(ctx)
 
-		if self.overlaySelection or self.overlayLine or self.overlayRectangle or self.overlayCircle then
+		if self.overlaySelection or self.overlayLine or self.overlayRectangle or self.overlayCircle or self.overlayCurve then
 			handler:requestRedraw(event.window)
 		end
 
@@ -924,6 +948,10 @@ function App:event(event, handler)
 	local renderUpdate = self.plugins.render:event(event, handler)
 	if renderUpdate then
 		return renderUpdate
+	end
+
+	if event.name == "keyPress" and event.key == "return" and self.overlayCurve then
+		return { type = "CompleteCurve" }
 	end
 
 	local layoutUpdate = self.plugins.layout:event(event)
@@ -1003,6 +1031,14 @@ function App:update(message, window)
 			local y = (message.y / message.elementHeight) * ch
 			self.overlayCircle = { start = { x = x, y = y }, finish = nil }
 			self.isDrawing = true
+		elseif self.currentAction.tool == "curve" then
+			local x = (message.x / message.elementWidth) * cw
+			local y = (message.y / message.elementHeight) * ch
+			if not self.overlayCurve then
+				self.overlayCurve = { points = {}, mouse = nil }
+			end
+			self.overlayCurve.points[#self.overlayCurve.points + 1] = { x = x, y = y }
+			window.shouldRedraw = true
 		end
 	elseif message.type == "StopDrawing" then
 		local cw, ch = self.resources.canvasWidth, self.resources.canvasHeight
@@ -1050,11 +1086,22 @@ function App:update(message, window)
 				self.plugins.ui:refreshView(window)
 			end
 			self.overlayCircle = nil
+		elseif self.currentAction.tool == "curve" then
+			-- curve is completed by double-click or Enter, not mouse release
 		end
-		self.isDrawing = false
+		if self.currentAction.tool ~= "curve" then
+			self.isDrawing = false
+		end
 		window.shouldRedraw = true
 	elseif message.type == "Hovered" then
-		if self.isDrawing then
+		if self.overlayCurve then
+			local cw, ch = self.resources.canvasWidth, self.resources.canvasHeight
+			local x = (message.x / message.elementWidth) * cw
+			local y = (message.y / message.elementHeight) * ch
+			self.overlayCurve.mouse = { x = x, y = y }
+			window.shouldRedraw = true
+			self.plugins.ui:requestRedraw(window)
+		elseif self.isDrawing then
 			local cw, ch = self.resources.canvasWidth, self.resources.canvasHeight
 			if self.currentAction.tool == "eraser" then
 				self.resources.compute:erase(
@@ -1099,10 +1146,22 @@ function App:update(message, window)
 			end
 			self.plugins.ui:requestRedraw(window)
 		end
+	elseif message.type == "CompleteCurve" then
+		if self.overlayCurve and #self.overlayCurve.points >= 2 then
+			self.resources.compute:drawCatmullRom(self.overlayCurve.points, 2, self.currentColor)
+			self.plugins.ui:refreshView(window)
+		end
+		self.overlayCurve = nil
+		self.isDrawing = false
+		window.shouldRedraw = true
 	elseif message.type == "ColorClicked" then
 		self.currentColor = { r = message.r, g = message.g, b = message.b, a = 1.0 }
 		self.plugins.ui:refreshView(window)
 	elseif message.type == "ToolClicked" then
+		if self.overlayCurve then
+			self.overlayCurve = nil
+			self.isDrawing = false
+		end
 		self.currentAction = { tool = message.tool }
 		self.plugins.ui:refreshView(window)
 	elseif message.type == "ClearClicked" then

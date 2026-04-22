@@ -198,6 +198,40 @@ function OverlayPlugin:addEllipse(window, x1, y1, x2, y2, color, thickness, z)
 	end
 end
 
+local function catmullRomPoints(pts, steps)
+	local result = {}
+	local n = #pts
+	for i = 1, n - 1 do
+		local p0 = pts[math.max(1, i - 1)]
+		local p1 = pts[i]
+		local p2 = pts[i + 1]
+		local p3 = pts[math.min(n, i + 2)]
+		for s = 0, steps - 1 do
+			local t = s / steps
+			local t2 = t * t
+			local t3 = t2 * t
+			local x = 0.5 * ((2*p1.x) + (-p0.x + p2.x)*t + (2*p0.x - 5*p1.x + 4*p2.x - p3.x)*t2 + (-p0.x + 3*p1.x - 3*p2.x + p3.x)*t3)
+			local y = 0.5 * ((2*p1.y) + (-p0.y + p2.y)*t + (2*p0.y - 5*p1.y + 4*p2.y - p3.y)*t2 + (-p0.y + 3*p1.y - 3*p2.y + p3.y)*t3)
+			result[#result + 1] = { x = x, y = y }
+		end
+	end
+	result[#result + 1] = pts[n]
+	return result
+end
+
+---@param window winit.Window
+---@param points {x: number, y: number}[]
+---@param color {r: number, g: number, b: number, a: number}
+---@param thickness number?
+---@param z number?
+function OverlayPlugin:addCatmullRom(window, points, color, thickness, z)
+	if #points < 2 then return end
+	local pts = catmullRomPoints(points, 20)
+	for i = 1, #pts - 1 do
+		self:addLine(window, pts[i].x, pts[i].y, pts[i + 1].x, pts[i + 1].y, color, thickness, z)
+	end
+end
+
 ---@param window winit.Window
 ---@param x1 number
 ---@param y1 number

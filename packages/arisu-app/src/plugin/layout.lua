@@ -81,8 +81,10 @@ local function hasMouseUp(e) ---@param e arisu.Element
 end
 
 local function hasMouseDownOrClick(e) ---@param e arisu.Element
-	return e.onmousedown ~= nil or e.onclick ~= nil
+	return e.onmousedown ~= nil or e.onclick ~= nil or e.ondblclick ~= nil
 end
+
+local DOUBLE_CLICK_THRESHOLD = 0.3 -- seconds
 
 ---@param event winit.Event
 ---@return Message?
@@ -121,6 +123,25 @@ function Layout:event(event)
 		local info = findElementAtPosition(ctx.ui, ctx.computedLayout, event.x, event.y, 0, 0, hasMouseDownOrClick)
 
 		if info then
+			local now = os.clock()
+			local isDblClick = info.element.ondblclick
+				and ctx.lastPressElement == info.element
+				and ctx.lastPressTime
+				and (now - ctx.lastPressTime) <= DOUBLE_CLICK_THRESHOLD
+				and ctx.lastPressX == event.x
+				and ctx.lastPressY == event.y
+
+			ctx.lastPressElement = info.element
+			ctx.lastPressTime = now
+			ctx.lastPressX = event.x
+			ctx.lastPressY = event.y
+
+			if isDblClick then
+				ctx.lastPressElement = nil
+				ctx.lastPressTime = nil
+				return info.element.ondblclick
+			end
+
 			if info.element.onclick then
 				return info.element.onclick
 			end
