@@ -21,6 +21,9 @@ local OverlayPlugin = require("arisu.plugin.overlay")
 --- | { type: "SaveClicked" }
 --- | { type: "OpenClicked" }
 --- | { type: "OpenPopupClosed" }
+--- | { type: "FilePathChanged", value: string }
+--- | { type: "FilePathSubmit", value: string }
+--- | { type: "_inputRefresh" }
 --- | { type: "StartDrawing", x: number, y: number, elementWidth: number, elementHeight: number }
 --- | { type: "StopDrawing", x: number, y: number, elementWidth: number, elementHeight: number }
 --- | { type: "Hovered", x: number, y: number, elementWidth: number, elementHeight: number }
@@ -107,6 +110,7 @@ function App.new()
 	self.overlayRectangle = nil
 	self.overlayCircle = nil
 	self.overlayCurve = nil
+	self.filePickerPath = ""
 
 	return self
 end
@@ -170,33 +174,62 @@ end
 ---@param window winit.Window
 function App:filePickerView(window)
 	local borderColor = { r = 0.8, g = 0.8, b = 0.8, a = 1 }
+	local focusedId = self.plugins.layout:getFocusedId(window)
+	local cursorPos = self.plugins.layout:getCursorPos(window)
+
+	local displayValue = self.filePickerPath
+	if focusedId == "filePath" then
+		displayValue = displayValue:sub(1, cursorPos) .. "|" .. displayValue:sub(cursorPos + 1)
+	else
+		displayValue = #displayValue > 0 and displayValue or " "
+	end
+
+	local focusBorderColor = { r = 0.3, g = 0.5, b = 1, a = 1 }
+	local inputBorder = focusedId == "filePath" and {
+		top    = { width = 2, color = focusBorderColor },
+		bottom = { width = 2, color = focusBorderColor },
+		left   = { width = 2, color = focusBorderColor },
+		right  = { width = 2, color = focusBorderColor },
+	} or {
+		top    = { width = 1, color = borderColor },
+		bottom = { width = 1, color = borderColor },
+		left   = { width = 1, color = borderColor },
+		right  = { width = 1, color = borderColor },
+	}
+
 	return Element.new("div")
-		:withStyle({
-			direction = "column",
-			bg = { r = 0.95, g = 0.95, b = 0.95, a = 1.0 }
-		})
+		:withStyle({ direction = "column", bg = { r = 0.95, g = 0.95, b = 0.95, a = 1.0 } })
 		:withChildren({
 			Element.new("div")
 				:withStyle({
 					height = { abs = 30 },
 					direction = "row",
 					align = "center",
-					gap = 5,
 					padding = { left = 5 },
 					border = { bottom = { width = 1, color = borderColor } }
 				})
-				:withChildren({
-					Element.from("Open File"):withStyle({ width = { abs = 100 } })
-				}),
+				:withChildren({ Element.from("Open File") }),
 			Element.new("div")
-				:withStyle({
-					height = "auto",
-					align = "center",
-					justify = "center"
-				})
+				:withStyle({ height = "auto", padding = { all = 10 }, direction = "column", gap = 6 })
 				:withChildren({
-					Element.from("File browser not yet implemented")
-						:withStyle({ padding = { all = 20 } })
+					Element.from("File path:"):withStyle({ height = { abs = 14 } }),
+					Element.new("div")
+						:withStyle({
+							height = { abs = 26 },
+							bg = { r = 1, g = 1, b = 1, a = 1 },
+							border = inputBorder,
+							padding = { left = 4 },
+							align = "center",
+						})
+						:asTextInput({
+							id = "filePath",
+							value = self.filePickerPath,
+							oninput = function(v) return { type = "FilePathChanged", value = v } end,
+							onsubmit = function(v) return { type = "FilePathSubmit", value = v } end,
+						})
+						:withChildren({
+							Element.from(displayValue):withStyle({ height = { abs = 14 } }),
+						}),
 				}),
 			Element.new("div")
 				:withStyle({
@@ -210,7 +243,10 @@ function App:filePickerView(window)
 				:withChildren({
 					Element.from("Cancel")
 						:withStyle({ width = { abs = 80 }, align = "center" })
-						:onClick({ type = "OpenPopupClosed" })
+						:onClick({ type = "OpenPopupClosed" }),
+					Element.from("Open")
+						:withStyle({ width = { abs = 80 }, align = "center" })
+						:onClick({ type = "FilePathSubmit", value = self.filePickerPath }),
 				})
 		})
 end
@@ -1229,7 +1265,17 @@ function App:update(message, window)
 	elseif message.type == "OpenClicked" then
 		return { type = "createWindow", width = 500, height = 350, kind = "Open File" }
 	elseif message.type == "OpenPopupClosed" then
+		self.filePickerPath = ""
 		return { type = "closeWindow" }
+	elseif message.type == "FilePathChanged" then
+		self.filePickerPath = message.value
+		self.plugins.ui:refreshView(window)
+	elseif message.type == "FilePathSubmit" then
+		print("Open file: " .. message.value)
+		self.filePickerPath = ""
+		return { type = "closeWindow" }
+	elseif message.type == "_inputRefresh" then
+		self.plugins.ui:refreshView(window)
 	elseif message.type == "SaveClicked" then
 		print("Save clicked - not implemented")
 	end

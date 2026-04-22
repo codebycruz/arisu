@@ -47,6 +47,8 @@ end
 ---@field window winit.Window
 ---@field ui arisu.Element?
 ---@field computedLayout arisu.ComputedLayout?
+---@field focusedId string?
+---@field cursorPos number
 
 ---@class arisu.plugin.Layout
 ---@field textPlugin arisu.plugin.Text
@@ -63,8 +65,22 @@ end
 
 ---@param window winit.Window
 function Layout:register(window)
-	self.contexts[window] = { window = window }
+	self.contexts[window] = { window = window, focusedId = nil, cursorPos = 0 }
 	self:refreshView(window)
+end
+
+---@param window winit.Window
+---@return string?
+function Layout:getFocusedId(window)
+	local ctx = self.contexts[window]
+	return ctx and ctx.focusedId
+end
+
+---@param window winit.Window
+---@return number
+function Layout:getCursorPos(window)
+	local ctx = self.contexts[window]
+	return ctx and ctx.cursorPos or 0
 end
 
 ---@param window winit.Window
@@ -81,7 +97,21 @@ local function hasMouseUp(e) ---@param e arisu.Element
 end
 
 local function hasMouseDownOrClick(e) ---@param e arisu.Element
-	return e.onmousedown ~= nil or e.onclick ~= nil or e.ondblclick ~= nil
+	return e.isTextInput or e.onmousedown ~= nil or e.onclick ~= nil or e.ondblclick ~= nil
+end
+
+---@param element arisu.Element
+---@param id string
+---@return arisu.Element?
+local function findElementById(element, id)
+	if element.id == id then return element end
+	if element.children then
+		for _, child in ipairs(element.children) do
+			local found = findElementById(child, id)
+			if found then return found end
+		end
+	end
+	return nil
 end
 
 local DOUBLE_CLICK_THRESHOLD = 0.3 -- seconds
@@ -99,7 +129,7 @@ function Layout:event(event)
 
 		local anyWithMouseDown = false
 		for el, _ in pairs(hoveredElements) do
-			if el.onmousedown or el.onclick then
+			if el.isTextInput or el.onmousedown or el.onclick then
 				anyWithMouseDown = true
 				break
 			end
@@ -121,6 +151,15 @@ function Layout:event(event)
 	elseif event.name == "mousePress" then
 		local ctx = self.contexts[event.window]
 		local info = findElementAtPosition(ctx.ui, ctx.computedLayout, event.x, event.y, 0, 0, hasMouseDownOrClick)
+
+		-- Update focus: set on text input click, clear otherwise
+		if info and info.element.isTextInput then
+			ctx.focusedId = info.element.id
+			ctx.cursorPos = #(info.element.inputValue or "")
+		else
+			ctx.focusedId = nil
+			ctx.cursorPos = 0
+		end
 
 		if info then
 			local now = os.clock()
@@ -146,10 +185,63 @@ function Layout:event(event)
 				return info.element.onclick
 			end
 
-			local relX = event.x - info.absX
-			local relY = event.y - info.absY
+			if info.element.onmousedown then
+				local relX = event.x - info.absX
+				local relY = event.y - info.absY
+				return info.element.onmousedown(relX, relY, info.layout.width, info.layout.height)
+			end
+		end
+	elseif event.name == "keyPress" then
+		local ctx = self.contexts[event.window]
+		if ctx and ctx.focusedId then
+			local element = findElementById(ctx.ui, ctx.focusedId)
+			if element and element.isTextInput then
+				local value = element.inputValue or ""
+				local cursor = ctx.cursorPos
+				local key = event.key
 
-			return info.element.onmousedown(relX, relY, info.layout.width, info.layout.height)
+				if key == "escape" then
+					ctx.focusedId = nil
+					ctx.cursorPos = 0
+					return { type = "_inputRefresh" }
+				elseif key == "return" then
+					if element.onsubmit then
+						return element.onsubmit(value)
+					end
+				elseif key == "backspace" then
+					if cursor > 0 then
+						value = value:sub(1, cursor - 1) .. value:sub(cursor + 1)
+						ctx.cursorPos = cursor - 1
+						if element.oninput then return element.oninput(value) end
+					end
+				elseif key == "delete" then
+					if cursor < #value then
+						value = value:sub(1, cursor) .. value:sub(cursor + 2)
+						if element.oninput then return element.oninput(value) end
+					end
+				elseif key == "left" then
+					ctx.cursorPos = math.max(0, cursor - 1)
+					return { type = "_inputRefresh" }
+				elseif key == "right" then
+					ctx.cursorPos = math.min(#value, cursor + 1)
+					return { type = "_inputRefresh" }
+				elseif key == "home" then
+					ctx.cursorPos = 0
+					return { type = "_inputRefresh" }
+				elseif key == "end" then
+					ctx.cursorPos = #value
+					return { type = "_inputRefresh" }
+				elseif event.modifiers and event.modifiers.ctrl then
+					if key == "a" or key:byte(1) == 1 then
+						ctx.cursorPos = #value
+						return { type = "_inputRefresh" }
+					end
+				elseif #key == 1 and key:byte(1) >= 32 then
+					value = value:sub(1, cursor) .. key .. value:sub(cursor + 1)
+					ctx.cursorPos = cursor + 1
+					if element.oninput then return element.oninput(value) end
+				end
+			end
 		end
 	elseif event.name == "mouseRelease" then
 		local ctx = self.contexts[event.window]

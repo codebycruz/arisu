@@ -98,4 +98,21 @@ function Element:onDoubleClick(message)
 	return self
 end
 
+---@class arisu.TextInputOpts<T>
+---@field id string
+---@field value string
+---@field oninput fun(value: string): T
+---@field onsubmit fun(value: string): T
+
+---@generic T
+---@param opts arisu.TextInputOpts<T>
+function Element:asTextInput(opts)
+	self.isTextInput = true
+	self.id = opts.id
+	self.inputValue = opts.value or ""
+	self.oninput = opts.oninput
+	self.onsubmit = opts.onsubmit
+	return self
+end
+
 return Element
