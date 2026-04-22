@@ -313,7 +313,7 @@ function Compute:fill(x, y, color)
 	local fg = math.floor(color.g * 255 + 0.5)
 	local fb = math.floor(color.b * 255 + 0.5)
 	local fa = math.floor(color.a * 255 + 0.5)
-	local fillPacked = bit.bor(fr, bit.lshift(fg, 8), bit.lshift(fb, 16), bit.lshift(fa, 24))
+	local fillPacked = ffi.cast("uint32_t", bit.bor(fr, bit.lshift(fg, 8), bit.lshift(fb, 16), bit.lshift(fa, 24)))
 
 	local seedI = iy * cw + ix
 	local targetPacked = pixelsU32[seedI]
