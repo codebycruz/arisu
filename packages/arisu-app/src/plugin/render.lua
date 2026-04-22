@@ -228,7 +228,16 @@ function RenderPlugin:draw(ctx)
 		local ctx = self:getContext(ctx.window)
 		ctx.swapchain = windowCtx.surface:configure(self.device, { presentMode = "fifo" }, ctx.swapchain)
 
-		return
+		ctx.depthBufferView:destroy()
+		ctx.depthBuffer:destroy()
+		ctx.depthBuffer = self.device:createTexture({
+			extents = { dim = "2d", width = ctx.window.width, height = ctx.window.height },
+			format = "depth24plus",
+			usages = { "RENDER_ATTACHMENT" }
+		})
+		ctx.depthBufferView = ctx.depthBuffer:createView({})
+
+		return false
 	end
 
 	local encoder = self.device:createCommandEncoder()
@@ -263,6 +272,8 @@ function RenderPlugin:draw(ctx)
 	local commandBuffer = encoder:finish()
 	self.device.queue:submit(commandBuffer, ctx.swapchain)
 	self.device.queue:present(ctx.swapchain)
+
+	return true
 end
 
 ---@param event winit.Event
