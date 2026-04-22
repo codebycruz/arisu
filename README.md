@@ -3,12 +3,12 @@
 A painting program implemented entirely from scratch in LuaJIT.
 
 > [!NOTE]
-> The master branch is unstable and has regressed some features as it transitions from purely OpenGL to my cross-platform graphics library, [hood](https://github.com/codebycruz/hood).
+> This has recently transitioned from pure OpenGL to my cross-platform graphics library, [hood](https://github.com/bycruz/hood). Use `VULKAN=1 lde run` to run with vulkan.
 
 ## Requirements
 
 - Linux (Recommended) or Windows
-- Support for OpenGL 4.3 (you most certainly have this)
+- Support for OpenGL 4.3 (you most certainly have this) or Vulkan 1.0
 - _That's it._
 
 There are no dependencies used by the library. Pure X11/Win32 and OpenGL.
