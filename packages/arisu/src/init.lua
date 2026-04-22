@@ -56,6 +56,8 @@ local OverlayPlugin = require("arisu.plugin.overlay")
 ---@field textures App.Resources.Textures
 ---@field icons App.Resources.Icons
 ---@field compute Compute
+---@field canvasWidth number
+---@field canvasHeight number
 
 ---@class App.Plugins
 ---@field window arisu.plugin.Window
@@ -109,6 +111,7 @@ end
 function App:makeResources() ---@return App.Resources
 	local textureManager = self.plugins.render.sharedResources.textureManager
 	local canvas = textureManager:allocate(800, 600)
+	local canvasWidth, canvasHeight = textureManager:getSize(canvas)
 
 	return {
 		---@type App.Resources.Icons
@@ -143,6 +146,8 @@ function App:makeResources() ---@return App.Resources
 			canvas = canvas
 		},
 
+		canvasWidth = canvasWidth,
+		canvasHeight = canvasHeight,
 		compute = Compute.new(textureManager, canvas, self.plugins.render.device)
 	}
 end
@@ -944,31 +949,32 @@ function App:update(message, window)
 		self.plugins.layout:register(window)
 		self.plugins.ui:refreshView(window)
 	elseif message.type == "StartDrawing" then
+		local cw, ch = self.resources.canvasWidth, self.resources.canvasHeight
 		if self.currentAction.tool == "fill" then
 			self.resources.compute:fill(
-				(message.x / message.elementWidth) * 800,
-				(message.y / message.elementHeight) * 600,
+				(message.x / message.elementWidth) * cw,
+				(message.y / message.elementHeight) * ch,
 				self.currentColor
 			)
 			self.plugins.ui:refreshView(window)
 		elseif self.currentAction.tool == "brush" then
 			self.resources.compute:stamp(
-				(message.x / message.elementWidth) * 800,
-				(message.y / message.elementHeight) * 600,
+				(message.x / message.elementWidth) * cw,
+				(message.y / message.elementHeight) * ch,
 				10,
 				self.currentColor
 			)
 			self.isDrawing = true
 			self.plugins.ui:refreshView(window)
 		elseif self.currentAction.tool == "select" then
-			local x = (message.x / message.elementWidth) * 800
-			local y = (message.y / message.elementHeight) * 600
+			local x = (message.x / message.elementWidth) * cw
+			local y = (message.y / message.elementHeight) * ch
 			self.overlaySelection = { start = { x = x, y = y }, finish = nil }
 			self.isDrawing = true
 		elseif self.currentAction.tool == "pencil" then
 			self.resources.compute:stamp(
-				(message.x / message.elementWidth) * 800,
-				(message.y / message.elementHeight) * 600,
+				(message.x / message.elementWidth) * cw,
+				(message.y / message.elementHeight) * ch,
 				1,
 				self.currentColor
 			)
@@ -976,32 +982,33 @@ function App:update(message, window)
 			self.plugins.ui:refreshView(window)
 		elseif self.currentAction.tool == "eraser" then
 			self.resources.compute:erase(
-				(message.x / message.elementWidth) * 800,
-				(message.y / message.elementHeight) * 600,
+				(message.x / message.elementWidth) * cw,
+				(message.y / message.elementHeight) * ch,
 				10
 			)
 			self.isDrawing = true
 			self.plugins.ui:refreshView(window)
 		elseif self.currentAction.tool == "line" then
-			local x = (message.x / message.elementWidth) * 800
-			local y = (message.y / message.elementHeight) * 600
+			local x = (message.x / message.elementWidth) * cw
+			local y = (message.y / message.elementHeight) * ch
 			self.overlayLine = { start = { x = x, y = y }, finish = nil }
 			self.isDrawing = true
 		elseif self.currentAction.tool == "square" then
-			local x = (message.x / message.elementWidth) * 800
-			local y = (message.y / message.elementHeight) * 600
+			local x = (message.x / message.elementWidth) * cw
+			local y = (message.y / message.elementHeight) * ch
 			self.overlayRectangle = { start = { x = x, y = y }, finish = nil }
 			self.isDrawing = true
 		elseif self.currentAction.tool == "circle" then
-			local x = (message.x / message.elementWidth) * 800
-			local y = (message.y / message.elementHeight) * 600
+			local x = (message.x / message.elementWidth) * cw
+			local y = (message.y / message.elementHeight) * ch
 			self.overlayCircle = { start = { x = x, y = y }, finish = nil }
 			self.isDrawing = true
 		end
 	elseif message.type == "StopDrawing" then
+		local cw, ch = self.resources.canvasWidth, self.resources.canvasHeight
 		if self.currentAction.tool == "select" and self.overlaySelection then
-			local x = (message.x / message.elementWidth) * 800
-			local y = (message.y / message.elementHeight) * 600
+			local x = (message.x / message.elementWidth) * cw
+			local y = (message.y / message.elementHeight) * ch
 
 			local start = self.overlaySelection.start
 			if start.x == x and start.y == y then
@@ -1014,8 +1021,8 @@ function App:update(message, window)
 				self.overlaySelection.finish = { x = x, y = y }
 			end
 		elseif self.currentAction.tool == "line" and self.overlayLine then
-			local x = (message.x / message.elementWidth) * 800
-			local y = (message.y / message.elementHeight) * 600
+			local x = (message.x / message.elementWidth) * cw
+			local y = (message.y / message.elementHeight) * ch
 
 			local start = self.overlayLine.start
 			if start.x ~= x or start.y ~= y then
@@ -1024,8 +1031,8 @@ function App:update(message, window)
 			end
 			self.overlayLine = nil
 		elseif self.currentAction.tool == "square" and self.overlayRectangle then
-			local x = (message.x / message.elementWidth) * 800
-			local y = (message.y / message.elementHeight) * 600
+			local x = (message.x / message.elementWidth) * cw
+			local y = (message.y / message.elementHeight) * ch
 
 			local start = self.overlayRectangle.start
 			if start.x ~= x or start.y ~= y then
@@ -1034,8 +1041,8 @@ function App:update(message, window)
 			end
 			self.overlayRectangle = nil
 		elseif self.currentAction.tool == "circle" and self.overlayCircle then
-			local x = (message.x / message.elementWidth) * 800
-			local y = (message.y / message.elementHeight) * 600
+			local x = (message.x / message.elementWidth) * cw
+			local y = (message.y / message.elementHeight) * ch
 
 			local start = self.overlayCircle.start
 			if start.x ~= x or start.y ~= y then
@@ -1048,44 +1055,45 @@ function App:update(message, window)
 		window.shouldRedraw = true
 	elseif message.type == "Hovered" then
 		if self.isDrawing then
+			local cw, ch = self.resources.canvasWidth, self.resources.canvasHeight
 			if self.currentAction.tool == "eraser" then
 				self.resources.compute:erase(
-					(message.x / message.elementWidth) * 800,
-					(message.y / message.elementHeight) * 600,
+					(message.x / message.elementWidth) * cw,
+					(message.y / message.elementHeight) * ch,
 					10
 				)
 			elseif self.currentAction.tool == "brush" then
 				self.resources.compute:stamp(
-					(message.x / message.elementWidth) * 800,
-					(message.y / message.elementHeight) * 600,
+					(message.x / message.elementWidth) * cw,
+					(message.y / message.elementHeight) * ch,
 					10,
 					self.currentColor
 				)
 			elseif self.currentAction.tool == "pencil" then
 				self.resources.compute:stamp(
-					(message.x / message.elementWidth) * 800,
-					(message.y / message.elementHeight) * 600,
+					(message.x / message.elementWidth) * cw,
+					(message.y / message.elementHeight) * ch,
 					1,
 					self.currentColor
 				)
 			elseif self.currentAction.tool == "select" and self.overlaySelection then
-				local x = (message.x / message.elementWidth) * 800
-				local y = (message.y / message.elementHeight) * 600
+				local x = (message.x / message.elementWidth) * cw
+				local y = (message.y / message.elementHeight) * ch
 				self.overlaySelection.finish = { x = x, y = y }
 				window.shouldRedraw = true
 			elseif self.currentAction.tool == "line" and self.overlayLine then
-				local x = (message.x / message.elementWidth) * 800
-				local y = (message.y / message.elementHeight) * 600
+				local x = (message.x / message.elementWidth) * cw
+				local y = (message.y / message.elementHeight) * ch
 				self.overlayLine.finish = { x = x, y = y }
 				window.shouldRedraw = true
 			elseif self.currentAction.tool == "square" and self.overlayRectangle then
-				local x = (message.x / message.elementWidth) * 800
-				local y = (message.y / message.elementHeight) * 600
+				local x = (message.x / message.elementWidth) * cw
+				local y = (message.y / message.elementHeight) * ch
 				self.overlayRectangle.finish = { x = x, y = y }
 				window.shouldRedraw = true
 			elseif self.currentAction.tool == "circle" and self.overlayCircle then
-				local x = (message.x / message.elementWidth) * 800
-				local y = (message.y / message.elementHeight) * 600
+				local x = (message.x / message.elementWidth) * cw
+				local y = (message.y / message.elementHeight) * ch
 				self.overlayCircle.finish = { x = x, y = y }
 				window.shouldRedraw = true
 			end
@@ -1100,7 +1108,7 @@ function App:update(message, window)
 	elseif message.type == "ClearClicked" then
 		-- TODO: this is awful since we dont free the old resources
 		local textureManager = self.plugins.render.sharedResources.textureManager
-		local canvas = textureManager:allocate(800, 600)
+		local canvas = textureManager:allocate(self.resources.canvasWidth, self.resources.canvasHeight)
 		self.resources.textures.canvas = canvas
 		self.resources.compute = Compute.new(textureManager, canvas, self.plugins.render.device)
 		self.plugins.ui:refreshView(window)

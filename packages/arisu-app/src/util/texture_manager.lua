@@ -121,6 +121,14 @@ function TextureManager:allocate(width, height)
 	return layer
 end
 
+---@param id Texture
+---@return number, number
+function TextureManager:getSize(id)
+	local texture = self.textures[id]
+	assert(texture, "Texture does not exist")
+	return texture.width, texture.height
+end
+
 ---@param image Image
 function TextureManager:update(texture, image)
 	assert(self.textures[texture], "Texture does not exist")
