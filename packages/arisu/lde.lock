@@ -6,6 +6,9 @@
 		"arisu-image": {
 			"path": "../arisu-image"
 		},
+		"arisu-layout": {
+			"path": "../arisu-layout"
+		},
 		"arisu-text": {
 			"path": "../arisu-text"
 		},

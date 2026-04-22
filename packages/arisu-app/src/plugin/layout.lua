@@ -1,4 +1,4 @@
-local UILayout = require("arisu-app.ui.layout")
+local UILayout = require("arisu-layout.layout")
 
 ---@param element arisu.Element
 ---@param acceptFn? fun(element: arisu.Element): boolean

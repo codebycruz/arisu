@@ -3,7 +3,7 @@ local Image = require("arisu-image")
 local Compute = require("arisu.tools.compute")
 
 local Arisu = require("arisu-app")
-local Element = require("arisu-app.ui.element")
+local Element = require("arisu-layout.element")
 
 -- Builtins
 local WindowPlugin = require("arisu-app.plugin.window")

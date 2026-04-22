@@ -1,4 +1,4 @@
-local Element = require("arisu-app.ui.element")
+local Element = require("arisu-layout.element")
 
 ---@class arisu.plugin.Text
 ---@field renderPlugin arisu.plugin.Render
