@@ -12,6 +12,10 @@
 		"arisu-text": {
 			"path": "../arisu-text"
 		},
+		"fs": {
+			"commit": "c30781aae0051c6b0ae7a0b71aa381132fc835d5",
+			"git": "https://github.com/lde-org/fs"
+		},
 		"glapi": {
 			"commit": "382def7e3aa0437d36d586c9497d6508bbb2a80f",
 			"git": "https://github.com/bycruz/glapi"

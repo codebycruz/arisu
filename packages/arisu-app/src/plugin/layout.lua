@@ -84,6 +84,15 @@ function Layout:getCursorPos(window)
 end
 
 ---@param window winit.Window
+---@param id string?
+function Layout:setFocus(window, id)
+	local ctx = self.contexts[window]
+	if not ctx then return end
+	ctx.focusedId = id
+	ctx.cursorPos = 0
+end
+
+---@param window winit.Window
 function Layout:refreshView(window)
 	local ctx = self.contexts[window]
 	ctx.ui = self.textPlugin:convertTextElements(self.view(window))

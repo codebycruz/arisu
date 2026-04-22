@@ -1,3 +1,4 @@
+local ffi = require("ffi")
 local Image = require("arisu-image")
 
 local Compute = require("arisu.tools.compute")
@@ -23,7 +24,6 @@ local OverlayPlugin = require("arisu.plugin.overlay")
 --- | { type: "OpenPopupClosed" }
 --- | { type: "FilePathChanged", value: string }
 --- | { type: "FilePathSubmit", value: string }
---- | { type: "_inputRefresh" }
 --- | { type: "StartDrawing", x: number, y: number, elementWidth: number, elementHeight: number }
 --- | { type: "StopDrawing", x: number, y: number, elementWidth: number, elementHeight: number }
 --- | { type: "Hovered", x: number, y: number, elementWidth: number, elementHeight: number }
@@ -110,6 +110,7 @@ function App.new()
 	self.overlayRectangle = nil
 	self.overlayCircle = nil
 	self.overlayCurve = nil
+	self.overlayText = nil
 	self.filePickerPath = ""
 
 	return self
@@ -189,12 +190,12 @@ function App:filePickerView(window)
 		top    = { width = 2, color = focusBorderColor },
 		bottom = { width = 2, color = focusBorderColor },
 		left   = { width = 2, color = focusBorderColor },
-		right  = { width = 2, color = focusBorderColor },
+		right  = { width = 2, color = focusBorderColor }
 	} or {
 		top    = { width = 1, color = borderColor },
 		bottom = { width = 1, color = borderColor },
 		left   = { width = 1, color = borderColor },
-		right  = { width = 1, color = borderColor },
+		right  = { width = 1, color = borderColor }
 	}
 
 	return Element.new("div")
@@ -219,17 +220,17 @@ function App:filePickerView(window)
 							bg = { r = 1, g = 1, b = 1, a = 1 },
 							border = inputBorder,
 							padding = { left = 4 },
-							align = "center",
+							align = "center"
 						})
 						:asTextInput({
 							id = "filePath",
 							value = self.filePickerPath,
 							oninput = function(v) return { type = "FilePathChanged", value = v } end,
-							onsubmit = function(v) return { type = "FilePathSubmit", value = v } end,
+							onsubmit = function(v) return { type = "FilePathSubmit", value = v } end
 						})
 						:withChildren({
-							Element.from(displayValue):withStyle({ height = { abs = 14 } }),
-						}),
+							Element.from(displayValue):withStyle({ height = { abs = 14 } })
+						})
 				}),
 			Element.new("div")
 				:withStyle({
@@ -246,7 +247,7 @@ function App:filePickerView(window)
 						:onClick({ type = "OpenPopupClosed" }),
 					Element.from("Open")
 						:withStyle({ width = { abs = 80 }, align = "center" })
-						:onClick({ type = "FilePathSubmit", value = self.filePickerPath }),
+						:onClick({ type = "FilePathSubmit", value = self.filePickerPath })
 				})
 		})
 end
@@ -268,10 +269,6 @@ function App:view(window)
 	}
 
 	local function toolBg(tool)
-		if tool == "text" then
-			return disabledColor
-		end
-
 		if self.currentAction.tool == tool then
 			return selectedColor
 		else
@@ -382,45 +379,45 @@ function App:view(window)
 					margin = { right = 20, left = 20, top = 20, bottom = 20 }
 				}),
 				(function()
-						local canvasEl = Element.new("div")
-							:withStyle({
-								bgImage = self.resources.textures.canvas,
-								width = { rel = 1 },
-								height = { rel = 1 },
-								margin = { right = 20, left = 20, top = 20, bottom = 20 }
-							})
-							:onMouseDown(function(x, y, elementWidth, elementHeight)
-								return {
-									type = "StartDrawing",
-									x = x,
-									y = y,
-									elementWidth = elementWidth,
-									elementHeight = elementHeight
-								}
-							end)
-							:onMouseUp(function(x, y, elementWidth, elementHeight)
-								return {
-									type = "StopDrawing",
-									x = x,
-									y = y,
-									elementWidth = elementWidth,
-									elementHeight = elementHeight
-								}
-							end)
-							:onMouseMove(function(x, y, elementWidth, elementHeight)
-								return {
-									type = "Hovered",
-									x = x,
-									y = y,
-									elementWidth = elementWidth,
-									elementHeight = elementHeight
-								}
-							end)
-						if self.currentAction.tool == "curve" then
-							canvasEl:onDoubleClick({ type = "CompleteCurve" })
-						end
-						return canvasEl
-					end)(),
+					local canvasEl = Element.new("div")
+						:withStyle({
+							bgImage = self.resources.textures.canvas,
+							width = { rel = 1 },
+							height = { rel = 1 },
+							margin = { right = 20, left = 20, top = 20, bottom = 20 }
+						})
+						:onMouseDown(function(x, y, elementWidth, elementHeight)
+							return {
+								type = "StartDrawing",
+								x = x,
+								y = y,
+								elementWidth = elementWidth,
+								elementHeight = elementHeight
+							}
+						end)
+						:onMouseUp(function(x, y, elementWidth, elementHeight)
+							return {
+								type = "StopDrawing",
+								x = x,
+								y = y,
+								elementWidth = elementWidth,
+								elementHeight = elementHeight
+							}
+						end)
+						:onMouseMove(function(x, y, elementWidth, elementHeight)
+							return {
+								type = "Hovered",
+								x = x,
+								y = y,
+								elementWidth = elementWidth,
+								elementHeight = elementHeight
+							}
+						end)
+					if self.currentAction.tool == "curve" then
+						canvasEl:onDoubleClick({ type = "CompleteCurve" })
+					end
+					return canvasEl
+				end)(),
 				Element.new("div"):withStyle({
 					bgImage = assert(self.plugins.overlay:getTexture(window), "Overlay texture not found"),
 					width = { rel = 1 },
@@ -479,7 +476,7 @@ function App:view(window)
 							height = { abs = swatchSize },
 							bg = { r = color.r, g = color.g, b = color.b, a = 1.0 },
 							border = squareBorder,
-							margin = { all = 1 },
+							margin = { all = 1 }
 						})
 						:onClick({ type = "ColorClicked", r = color.r, g = color.g, b = color.b })
 				end))
@@ -495,7 +492,7 @@ function App:view(window)
 				bg = { r = 0.95, g = 0.95, b = 0.95, a = 1.0 },
 				border = { right = { width = 1, color = borderColor } },
 				padding = { all = 4 },
-				gap = 8,
+				gap = 8
 			})
 			:withChildren({
 				-- Tools: 32 + 3gap + 32 + 3gap + 16 = 86px
@@ -507,16 +504,16 @@ function App:view(window)
 							:withChildren({
 								toolBtn(self.resources.icons.brush, "brush"),
 								toolBtn(self.resources.icons.eraser, "eraser"),
-								toolBtn(self.resources.icons.bucket, "fill"),
+								toolBtn(self.resources.icons.bucket, "fill")
 							}),
 						Element.new("div")
 							:withStyle({ direction = "row", gap = 3, height = { abs = iconSize } })
 							:withChildren({
 								toolBtn(self.resources.icons.pencil, "pencil"),
 								toolBtn(self.resources.icons.select, "select"),
-								disabledToolBtn(self.resources.icons.magnifier),
+								toolBtn(self.resources.icons.text, "text")
 							}),
-						Element.from("Tools"):withStyle({ fg = disabledColor, height = { abs = labelH } }),
+						Element.from("Tools"):withStyle({ fg = disabledColor, height = { abs = labelH } })
 					}),
 				-- Shapes: grid(64) + 3gap + 16 = 83px
 				Element.new("div")
@@ -529,23 +526,23 @@ function App:view(window)
 								border = squareBorder,
 								gap = 2,
 								padding = { all = 2 },
-								height = { abs = 64 },
+								height = { abs = 64 }
 							})
 							:withChildren({
 								Element.new("div")
 									:withStyle({ direction = "row", gap = 2, height = { abs = shapeSize } })
 									:withChildren({
 										shapeBtn(self.resources.icons.line, "line"),
-										shapeBtn(self.resources.icons.curve, "curve"),
+										shapeBtn(self.resources.icons.curve, "curve")
 									}),
 								Element.new("div")
 									:withStyle({ direction = "row", gap = 2, height = { abs = shapeSize } })
 									:withChildren({
 										shapeBtn(self.resources.icons.square, "square"),
-										shapeBtn(self.resources.icons.circle, "circle"),
-									}),
+										shapeBtn(self.resources.icons.circle, "circle")
+									})
 							}),
-						Element.from("Shapes"):withStyle({ fg = disabledColor, height = { abs = labelH } }),
+						Element.from("Shapes"):withStyle({ fg = disabledColor, height = { abs = labelH } })
 					}),
 				-- Colors: row(34) + 3gap + 16 = 53px
 				Element.new("div")
@@ -558,17 +555,17 @@ function App:view(window)
 									width = { abs = 28 },
 									height = { abs = 28 },
 									bg = self.currentColor,
-									border = squareBorder,
+									border = squareBorder
 								}),
 								Element.new("div")
 									:withStyle({ direction = "column", gap = 1 })
 									:withChildren({
 										makeCompactColorRow(colorPalette1),
-										makeCompactColorRow(colorPalette2),
-									}),
+										makeCompactColorRow(colorPalette2)
+									})
 							}),
-						Element.from("Colors"):withStyle({ fg = disabledColor, height = { abs = labelH } }),
-					}),
+						Element.from("Colors"):withStyle({ fg = disabledColor, height = { abs = labelH } })
+					})
 			})
 
 		return Element.new("div")
@@ -764,7 +761,7 @@ function App:view(window)
 											height = { abs = 35 },
 											bg = toolBg("text"),
 											bgImage = self.resources.icons.text
-										}),
+										}):onClick({ type = "ToolClicked", tool = "text" }),
 										Element.new("div"):withStyle({
 											width = { abs = 35 },
 											height = { abs = 35 },
@@ -1024,6 +1021,86 @@ function App:event(event, handler)
 		local time = os.clock() - self.startTime
 		self.plugins.overlay:draw(event.window, "marching_ants", time)
 
+		if self.overlayText then
+			local device = self.plugins.render.device
+			local textureManager = self.plugins.render.sharedResources.textureManager
+			local fontManager = self.plugins.render.sharedResources.fontManager
+			local overlayCtx = self.plugins.overlay:getContext(event.window)
+
+			local W, H = 800, 600
+			local buf = ffi.new("uint8_t[?]", W * H * 4, 0)
+
+			local color = self.currentColor
+			local cr = math.floor(color.r * 255 + 0.5)
+			local cg = math.floor(color.g * 255 + 0.5)
+			local cb = math.floor(color.b * 255 + 0.5)
+			local ca = math.floor(color.a * 255 + 0.5)
+
+			local tx = math.floor(self.overlayText.x)
+			local ty = math.floor(self.overlayText.y)
+			local penX = tx
+
+			if #self.overlayText.value > 0 then
+				local fontBitmap = fontManager:getBitmap(fontManager:getDefault())
+				local img = fontBitmap.image
+				local imgW, imgH, imgC = img.width, img.height, img.channels
+				local imgPixels = img.pixels
+
+				for i = 1, #self.overlayText.value do
+					local char = self.overlayText.value:sub(i, i)
+					if not fontBitmap.config.characters:find(char, 1, true) then
+						penX = penX + fontBitmap.config.gridWidth - (fontBitmap.config.xmargin or 0) * 2
+					else
+						local quad = fontBitmap:getCharUVs(char)
+						local px0 = math.floor(quad.u0 * imgW + 0.5)
+						local py0 = math.floor(quad.v0 * imgH + 0.5)
+						local pw = quad.width
+						local ph = quad.height
+
+						for dy = 0, ph - 1 do
+							for dx = 0, pw - 1 do
+								local fx = px0 + dx
+								local fy = py0 + dy
+								if fx >= 0 and fx < imgW and fy >= 0 and fy < imgH then
+									local fontIdx = (fy * imgW + fx) * imgC
+									local mask = imgPixels[fontIdx]
+									if imgC >= 4 then mask = imgPixels[fontIdx + 3] end
+									if mask > 127 then
+										local cx2 = penX + dx
+										local cy2 = ty + dy
+										if cx2 >= 0 and cx2 < W and cy2 >= 0 and cy2 < H then
+											local idx = (cy2 * W + cx2) * 4
+											buf[idx] = cr
+											buf[idx + 1] = cg
+											buf[idx + 2] = cb
+											buf[idx + 3] = ca
+										end
+									end
+								end
+							end
+						end
+						penX = penX + pw
+					end
+				end
+			end
+
+			for y = ty, math.min(ty + 13, H - 1) do
+				if penX >= 0 and penX < W and y >= 0 then
+					local idx = (y * W + penX) * 4
+					buf[idx] = cr
+					buf[idx + 1] = cg
+					buf[idx + 2] = cb
+					buf[idx + 3] = ca
+				end
+			end
+
+			device.queue:writeTexture(
+				textureManager.texture,
+				{ layer = overlayCtx.overlayTexture, width = W, height = H },
+				buf
+			)
+		end
+
 		local ctx = self.plugins.render:getContext(event.window)
 		self.plugins.render:draw(ctx)
 
@@ -1039,8 +1116,38 @@ function App:event(event, handler)
 		return renderUpdate
 	end
 
-	if event.name == "keyPress" and event.key == "return" and self.overlayCurve then
-		return { type = "CompleteCurve" }
+	if event.name == "keyPress" then
+		if self.overlayText then
+			local key = event.key
+			if key == "return" then
+				if #self.overlayText.value > 0 then
+					local fontManager = self.plugins.render.sharedResources.fontManager
+					local fontBitmap = fontManager:getBitmap(fontManager:getDefault())
+					self.resources.compute:drawText(
+						self.overlayText.x,
+						self.overlayText.y,
+						self.overlayText.value,
+						fontBitmap,
+						self.currentColor
+					)
+					self.plugins.ui:refreshView(event.window)
+				end
+				self.overlayText = nil
+				event.window.shouldRedraw = true
+			elseif key == "escape" then
+				self.overlayText = nil
+				event.window.shouldRedraw = true
+			elseif key == "backspace" then
+				self.overlayText.value = self.overlayText.value:sub(1, -2)
+				event.window.shouldRedraw = true
+			elseif #key == 1 and key:byte(1) >= 32 then
+				self.overlayText.value = self.overlayText.value .. key
+				event.window.shouldRedraw = true
+			end
+			return nil
+		elseif event.key == "return" and self.overlayCurve then
+			return { type = "CompleteCurve" }
+		end
 	end
 
 	local layoutUpdate = self.plugins.layout:event(event)
@@ -1129,6 +1236,11 @@ function App:update(message, window)
 				self.overlayCurve = { points = {}, mouse = nil }
 			end
 			self.overlayCurve.points[#self.overlayCurve.points + 1] = { x = x, y = y }
+			window.shouldRedraw = true
+		elseif self.currentAction.tool == "text" then
+			local x = (message.x / message.elementWidth) * cw
+			local y = (message.y / message.elementHeight) * ch
+			self.overlayText = { x = x, y = y, value = "" }
 			window.shouldRedraw = true
 		end
 	elseif message.type == "StopDrawing" then
@@ -1253,6 +1365,9 @@ function App:update(message, window)
 			self.overlayCurve = nil
 			self.isDrawing = false
 		end
+		if self.overlayText then
+			self.overlayText = nil
+		end
 		self.currentAction = { tool = message.tool }
 		self.plugins.ui:refreshView(window)
 	elseif message.type == "ClearClicked" then
@@ -1274,8 +1389,6 @@ function App:update(message, window)
 		print("Open file: " .. message.value)
 		self.filePickerPath = ""
 		return { type = "closeWindow" }
-	elseif message.type == "_inputRefresh" then
-		self.plugins.ui:refreshView(window)
 	elseif message.type == "SaveClicked" then
 		print("Save clicked - not implemented")
 	end

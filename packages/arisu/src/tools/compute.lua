@@ -403,4 +403,87 @@ function Compute:fill(x, y, color)
 	readBuffer:destroy()
 end
 
+---@param x number
+---@param y number
+---@param text string
+---@param fontBitmap Bitmap
+---@param color { r: number, g: number, b: number, a: number }
+function Compute:drawText(x, y, text, fontBitmap, color)
+	if #text == 0 then return end
+
+	local cw, ch = self.textureManager:getSize(self.canvas)
+	local bufferSize = cw * ch * 4
+	local readBuffer = self.device:createBuffer({ size = bufferSize, usages = { "COPY_DST", "MAP_READ" } })
+
+	local encoder = self.device:createCommandEncoder()
+	encoder:copyTextureToBuffer(
+		{ texture = self.textureManager.texture, origin = { x = 0, y = 0, z = self.canvas } },
+		{ buffer = readBuffer, bytesPerRow = cw * 4 },
+		{ width = cw, height = ch, depthOrArrayLayers = 1 }
+	)
+	self.device.queue:submit(encoder:finish())
+	self.device.queue:waitIdle()
+
+	readBuffer:mapAsync()
+	local pixels = ffi.cast("uint8_t*", readBuffer:getMappedRange())
+
+	local fr = math.floor(color.r * 255 + 0.5)
+	local fg = math.floor(color.g * 255 + 0.5)
+	local fb = math.floor(color.b * 255 + 0.5)
+	local fa = math.floor(color.a * 255 + 0.5)
+
+	local img = fontBitmap.image
+	local imgW = img.width
+	local imgH = img.height
+	local imgC = img.channels
+	local imgPixels = img.pixels
+	local penX = math.floor(x)
+	local penY = math.floor(y)
+
+	for i = 1, #text do
+		local char = text:sub(i, i)
+		if not fontBitmap.config.characters:find(char, 1, true) then
+			penX = penX + fontBitmap.config.gridWidth - (fontBitmap.config.xmargin or 0) * 2
+		else
+			local quad = fontBitmap:getCharUVs(char)
+			local px0 = math.floor(quad.u0 * imgW + 0.5)
+			local py0 = math.floor(quad.v0 * imgH + 0.5)
+			local pw = quad.width
+			local ph = quad.height
+
+			for dy = 0, ph - 1 do
+				for dx = 0, pw - 1 do
+					local fx = px0 + dx
+					local fy = py0 + dy
+					if fx >= 0 and fx < imgW and fy >= 0 and fy < imgH then
+						local fontIdx = (fy * imgW + fx) * imgC
+						local mask = imgPixels[fontIdx]
+						if imgC >= 4 then mask = imgPixels[fontIdx + 3] end
+						if mask > 127 then
+							local cx = penX + dx
+							local cy = penY + dy
+							if cx >= 0 and cx < cw and cy >= 0 and cy < ch then
+								local idx = (cy * cw + cx) * 4
+								pixels[idx] = fr
+								pixels[idx + 1] = fg
+								pixels[idx + 2] = fb
+								pixels[idx + 3] = fa
+							end
+						end
+					end
+				end
+			end
+			penX = penX + pw
+		end
+	end
+
+	readBuffer:unmap()
+	self.device.queue:writeTexture(
+		self.textureManager.texture,
+		{ layer = self.canvas, width = cw, height = ch },
+		ffi.cast("uint8_t*", pixels)
+	)
+	readBuffer:destroy()
+end
+
 return Compute
