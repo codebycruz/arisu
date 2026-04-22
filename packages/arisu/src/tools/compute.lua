@@ -327,27 +327,36 @@ function Compute:fill(x, y, color)
 	local qx, qy = self.fillQueueX, self.fillQueueY
 	local head, tail = 0, 0
 	qx[tail] = ix; qy[tail] = iy; tail = tail + 1
-	pixelsU32[seedI] = fillPacked
 
-	local cw1, ch1 = cw - 1, ch - 1
+	local ch1 = ch - 1
 	while head < tail do
-		local px = qx[head]; local py = qy[head]; head = head + 1
+		local x = qx[head]; local y = qy[head]; head = head + 1
 
-		if px > 0 then
-			local ni = py * cw + px - 1
-			if pixelsU32[ni] == targetPacked then pixelsU32[ni] = fillPacked; qx[tail] = px-1; qy[tail] = py; tail = tail + 1 end
-		end
-		if px < cw1 then
-			local ni = py * cw + px + 1
-			if pixelsU32[ni] == targetPacked then pixelsU32[ni] = fillPacked; qx[tail] = px+1; qy[tail] = py; tail = tail + 1 end
-		end
-		if py > 0 then
-			local ni = (py - 1) * cw + px
-			if pixelsU32[ni] == targetPacked then pixelsU32[ni] = fillPacked; qx[tail] = px; qy[tail] = py-1; tail = tail + 1 end
-		end
-		if py < ch1 then
-			local ni = (py + 1) * cw + px
-			if pixelsU32[ni] == targetPacked then pixelsU32[ni] = fillPacked; qx[tail] = px; qy[tail] = py+1; tail = tail + 1 end
+		-- scan left
+		local x1 = x
+		while x1 > 0 and pixelsU32[y * cw + x1 - 1] == targetPacked do x1 = x1 - 1 end
+
+		-- scan right, fill span, push one point per contiguous run above/below
+		local spanAbove, spanBelow = false, false
+		local xi = x1
+		while xi < cw and pixelsU32[y * cw + xi] == targetPacked do
+			pixelsU32[y * cw + xi] = fillPacked
+
+			if y > 0 then
+				local ai = (y - 1) * cw + xi
+				if pixelsU32[ai] == targetPacked then
+					if not spanAbove then qx[tail] = xi; qy[tail] = y-1; tail = tail + 1; spanAbove = true end
+				else spanAbove = false end
+			end
+
+			if y < ch1 then
+				local bi = (y + 1) * cw + xi
+				if pixelsU32[bi] == targetPacked then
+					if not spanBelow then qx[tail] = xi; qy[tail] = y+1; tail = tail + 1; spanBelow = true end
+				else spanBelow = false end
+			end
+
+			xi = xi + 1
 		end
 	end
 
