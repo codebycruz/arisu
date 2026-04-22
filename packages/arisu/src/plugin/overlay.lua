@@ -54,12 +54,12 @@ function OverlayPlugin:register(window)
 	local overlayTextureView = textureManager.texture:createView({
 		dimension = "2d",
 		baseArrayLayer = overlayTexture,
-		layerCount = 1,
+		layerCount = 1
 	})
 
 	local uniformBuffer = device:createBuffer({
 		size = sizeofOverlayUniforms,
-		usages = { "STORAGE", "COPY_DST" },
+		usages = { "STORAGE", "COPY_DST" }
 	})
 
 	local bindGroup = device:createBindGroup({
@@ -69,19 +69,19 @@ function OverlayPlugin:register(window)
 				binding = 0,
 				type = "buffer",
 				buffer = uniformBuffer,
-				visibility = { "FRAGMENT" },
-			},
-		},
+				visibility = { "FRAGMENT" }
+			}
+		}
 	})
 
 	local vertexBuffer = device:createBuffer({
 		size = 36 * 1000,
-		usages = { "VERTEX", "COPY_DST" },
+		usages = { "VERTEX", "COPY_DST" }
 	})
 
 	local indexBuffer = device:createBuffer({
 		size = ffi.sizeof("uint32_t") * 6000,
-		usages = { "INDEX", "COPY_DST" },
+		usages = { "INDEX", "COPY_DST" }
 	})
 
 	---@type plugin.Overlay.Context
@@ -95,7 +95,7 @@ function OverlayPlugin:register(window)
 		overlayTexture = overlayTexture,
 		overlayTextureView = overlayTextureView,
 		vertexBuffer = vertexBuffer,
-		indexBuffer = indexBuffer,
+		indexBuffer = indexBuffer
 	}
 
 	self.contexts[window] = ctx
@@ -108,10 +108,19 @@ function OverlayPlugin:getContext(window)
 	return self.contexts[window]
 end
 
-local function toNDC(pos, screenSize)
+---@param pos number
+---@param screenSize number
+local function toNDCx(pos, screenSize)
 	return (pos / (screenSize * 0.5)) - 1.0
 end
 
+---@param pos number
+---@param screenSize number
+local function toNDCy(pos, screenSize)
+	return 1.0 - (pos / (screenSize * 0.5))
+end
+
+---@param z number
 local function convertZ(z)
 	return 1 - math.min(z or 0, 100000) / 1000000
 end
@@ -234,14 +243,14 @@ function OverlayPlugin:addLine(window, x1, y1, x2, y2, color, thickness, z)
 
 	local baseIdx = #ctx.vertices / 9
 
-	local left1 = toNDC(x1a, w)
-	local top1 = toNDC(y1a, h)
-	local left2 = toNDC(x1b, w)
-	local top2 = toNDC(y1b, h)
-	local right1 = toNDC(x2a, w)
-	local bottom1 = toNDC(y2a, h)
-	local right2 = toNDC(x2b, w)
-	local bottom2 = toNDC(y2b, h)
+	local left1 = toNDCx(x1a, w)
+	local top1 = toNDCy(y1a, h)
+	local left2 = toNDCx(x1b, w)
+	local top2 = toNDCy(y1b, h)
+	local right1 = toNDCx(x2a, w)
+	local bottom1 = toNDCy(y2a, h)
+	local right2 = toNDCx(x2b, w)
+	local bottom2 = toNDCy(y2b, h)
 
 	local zNDC = convertZ(z)
 
@@ -281,7 +290,7 @@ function OverlayPlugin:addLine(window, x1, y1, x2, y2, color, thickness, z)
 		color.b,
 		color.a,
 		0,
-		1,
+		1
 	}) do
 		table.insert(ctx.vertices, v)
 	end
@@ -292,7 +301,7 @@ function OverlayPlugin:addLine(window, x1, y1, x2, y2, color, thickness, z)
 		baseIdx + 2,
 		baseIdx,
 		baseIdx + 2,
-		baseIdx + 3,
+		baseIdx + 3
 	}) do
 		table.insert(ctx.indices, idx)
 	end
@@ -347,9 +356,9 @@ function OverlayPlugin:draw(window, pattern, time)
 		colorAttachments = {
 			{
 				op = { type = "clear", color = { r = 0, g = 0, b = 0, a = 0 } },
-				texture = ctx.overlayTextureView,
-			},
-		},
+				texture = ctx.overlayTextureView
+			}
+		}
 	})
 	encoder:setPipeline(renderCtx.overlayPipeline)
 	encoder:setViewport(0, 0, 800, 600)
