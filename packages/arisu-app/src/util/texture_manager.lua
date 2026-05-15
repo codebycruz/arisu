@@ -28,7 +28,7 @@ function TextureManager.new(device)
 	local texture = device:createTexture({
 		extents = { dim = "2d", width = maxWidth, height = maxHeight, count = maxLayers },
 		format = "rgba8unorm",
-		usages = { "TEXTURE_BINDING", "STORAGE_BINDING", "COPY_DST", "COPY_SRC", "RENDER_ATTACHMENT" },
+		usages = { "TEXTURE_BINDING", "STORAGE_BINDING", "COPY_DST", "COPY_SRC", "RENDER_ATTACHMENT" }
 	})
 
 	local sampler = device:createSampler({
@@ -37,13 +37,13 @@ function TextureManager.new(device)
 		mipmapFilter = "nearest",
 		addressModeU = "clamp-to-edge",
 		addressModeV = "clamp-to-edge",
-		addressModeW = "clamp-to-edge",
+		addressModeW = "clamp-to-edge"
 	})
 
 	-- Use vec4 for proper alignment
 	local textureUVScaleBuffer = device:createBuffer({
 		size = maxLayers * ffi.sizeof("float") * 2,
-		usages = { "STORAGE", "COPY_DST" },
+		usages = { "STORAGE", "COPY_DST" }
 	})
 
 	local this = setmetatable({
@@ -53,7 +53,7 @@ function TextureManager.new(device)
 		view = texture:createView({}),
 		sampler = sampler,
 		device = device,
-		textures = {},
+		textures = {}
 	}, TextureManager)
 
 	this.whiteTexture = this:upload(Image.new(1, 1, 4, ffi.new("uint8_t[?]", 3, { 255, 255, 255, 255 }), ""))
@@ -77,7 +77,7 @@ function TextureManager.new(device)
 			255,
 			0,
 			255,
-			255,
+			255
 		}),
 		""
 	))
@@ -154,18 +154,18 @@ function TextureManager:createBindGroupLayout(binding, samplerBinding, dimsBindi
 		{
 			type = "texture",
 			binding = binding,
-			visibility = { "FRAGMENT" },
+			visibility = { "FRAGMENT" }
 		},
 		{
 			type = "sampler",
 			binding = samplerBinding,
-			visibility = { "FRAGMENT" },
+			visibility = { "FRAGMENT" }
 		},
 		{
-			type = "buffer",
+			type = "storage-buffer",
 			binding = dimsBinding,
-			visibility = { "FRAGMENT" },
-		},
+			visibility = { "FRAGMENT" }
+		}
 	})
 end
 
@@ -183,21 +183,21 @@ function TextureManager:createBindGroup(layout, binding, samplerBinding, dimsBin
 				type = "texture",
 				binding = binding,
 				texture = self.view,
-				visibility = { "FRAGMENT" },
+				visibility = { "FRAGMENT" }
 			},
 			{
 				type = "sampler",
 				binding = samplerBinding,
 				sampler = self.sampler,
-				visibility = { "FRAGMENT" },
+				visibility = { "FRAGMENT" }
 			},
 			{
-				type = "buffer",
+				type = "storage-buffer",
 				binding = dimsBinding,
 				buffer = self.textureUVScaleBuffer,
-				visibility = { "FRAGMENT" },
-			},
-		},
+				visibility = { "FRAGMENT" }
+			}
+		}
 	})
 end
 

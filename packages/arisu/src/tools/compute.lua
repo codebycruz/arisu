@@ -51,20 +51,20 @@ function Compute.new(textureManager, canvas, device)
 
 	local inputsBuffer = device:createBuffer({
 		size = sizeofComputeInputs,
-		usages = { "STORAGE", "COPY_DST" },
+		usages = { "STORAGE", "COPY_DST" }
 	})
 
 	local bindGroupLayout = device:createBindGroupLayout({
 		{
 			binding = 0,
 			type = "storageTexture",
-			visibility = { "COMPUTE" },
+			visibility = { "COMPUTE" }
 		},
 		{
 			binding = 1,
-			type = "buffer",
-			visibility = { "COMPUTE" },
-		},
+			type = "storage-buffer",
+			visibility = { "COMPUTE" }
+		}
 	})
 
 	local bindGroup = device:createBindGroup({
@@ -76,21 +76,21 @@ function Compute.new(textureManager, canvas, device)
 				texture = textureManager.texture:createView({ dimension = "2d", baseArrayLayer = canvas, layerCount = 1 }),
 				visibility = { "COMPUTE" },
 				layer = canvas,
-				access = "WRITE_ONLY",
+				access = "WRITE_ONLY"
 			},
 
 			{
 				binding = 1,
-				type = "buffer",
+				type = "storage-buffer",
 				buffer = inputsBuffer,
-				visibility = { "COMPUTE" },
-			},
-		},
+				visibility = { "COMPUTE" }
+			}
+		}
 	})
 
 	local computePipeline = device:createComputePipeline({
 		layout = bindGroupLayout,
-		module = { type = shaderType, source = computeSource },
+		module = { type = shaderType, source = computeSource }
 	})
 
 	local cw, ch = textureManager:getSize(canvas)
@@ -107,7 +107,7 @@ function Compute.new(textureManager, canvas, device)
 		inputsBuffer = inputsBuffer,
 		bindGroup = bindGroup,
 		fillQueueX = ffi.new("int32_t[?]", maxPixels),
-		fillQueueY = ffi.new("int32_t[?]", maxPixels),
+		fillQueueY = ffi.new("int32_t[?]", maxPixels)
 	}, Compute)
 
 	self:resetSelection()
@@ -306,8 +306,10 @@ function Compute:drawCatmullRom(points, thickness, color)
 			local t = s / steps
 			local t2 = t * t
 			local t3 = t2 * t
-			local x = 0.5 * ((2*p1.x) + (-p0.x + p2.x)*t + (2*p0.x - 5*p1.x + 4*p2.x - p3.x)*t2 + (-p0.x + 3*p1.x - 3*p2.x + p3.x)*t3)
-			local y = 0.5 * ((2*p1.y) + (-p0.y + p2.y)*t + (2*p0.y - 5*p1.y + 4*p2.y - p3.y)*t2 + (-p0.y + 3*p1.y - 3*p2.y + p3.y)*t3)
+			local x = 0.5 *
+			((2 * p1.x) + (-p0.x + p2.x) * t + (2 * p0.x - 5 * p1.x + 4 * p2.x - p3.x) * t2 + (-p0.x + 3 * p1.x - 3 * p2.x + p3.x) * t3)
+			local y = 0.5 *
+			((2 * p1.y) + (-p0.y + p2.y) * t + (2 * p0.y - 5 * p1.y + 4 * p2.y - p3.y) * t2 + (-p0.y + 3 * p1.y - 3 * p2.y + p3.y) * t3)
 			local cur = { x = x, y = y }
 			if prev then
 				self:drawLine(prev.x, prev.y, cur.x, cur.y, thickness, color)
@@ -380,15 +382,23 @@ function Compute:fill(x, y, color)
 			if y > 0 then
 				local ai = (y - 1) * cw + xi
 				if pixelsU32[ai] == targetPacked then
-					if not spanAbove then qx[tail] = xi; qy[tail] = y-1; tail = tail + 1; spanAbove = true end
-				else spanAbove = false end
+					if not spanAbove then
+						qx[tail] = xi; qy[tail] = y - 1; tail = tail + 1; spanAbove = true
+					end
+				else
+					spanAbove = false
+				end
 			end
 
 			if y < ch1 then
 				local bi = (y + 1) * cw + xi
 				if pixelsU32[bi] == targetPacked then
-					if not spanBelow then qx[tail] = xi; qy[tail] = y+1; tail = tail + 1; spanBelow = true end
-				else spanBelow = false end
+					if not spanBelow then
+						qx[tail] = xi; qy[tail] = y + 1; tail = tail + 1; spanBelow = true
+					end
+				else
+					spanBelow = false
+				end
 			end
 
 			xi = xi + 1

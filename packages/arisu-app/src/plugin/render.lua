@@ -97,7 +97,7 @@ function RenderPlugin:register(window)
 			visibility = { "FRAGMENT" }
 		},
 		{
-			type = "buffer",
+			type = "storage-buffer",
 			binding = bindings.dimsBuffer,
 			visibility = { "FRAGMENT" }
 		}
@@ -137,7 +137,7 @@ function RenderPlugin:register(window)
 
 	local overlayLayout = self.device:createBindGroupLayout({
 		{
-			type = "buffer",
+			type = "storage-buffer",
 			binding = 0,
 			visibility = { "FRAGMENT" }
 		}
