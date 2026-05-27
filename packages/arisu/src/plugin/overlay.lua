@@ -133,10 +133,17 @@ local function toNDCx(pos, screenSize)
 	return (pos / (screenSize * 0.5)) - 1.0
 end
 
+local isVulkan = os.getenv("VULKAN") and true or false
+
 ---@param pos number
 ---@param screenSize number
 local function toNDCy(pos, screenSize)
-	return 1.0 - (pos / (screenSize * 0.5))
+	-- OpenGL NDC has y-up, so flip the y coordinate
+	if isVulkan then
+		return 1.0 - (pos / (screenSize * 0.5))
+	else
+		return (pos / (screenSize * 0.5)) - 1.0
+	end
 end
 
 ---@param z number
